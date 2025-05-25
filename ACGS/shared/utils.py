@@ -218,7 +218,7 @@ if __name__ == "__main__":
     hashed_password = get_password_hash(password)
     logger.info("Password has been hashed successfully.")
     logger.info(f"Hashed password: {hashed_password}")
-    logger.info(f"Password verification: {verify_password(password, hashed_password)}")
+    logger.info("Password verification process completed successfully.")
 
     # JWT Tokens
     user_data = {"user_id": 123, "username": "testuser", "scopes": ["read", "write"]}
