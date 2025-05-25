@@ -89,7 +89,7 @@ async def login_for_access_token(
     response.set_cookie(
         key="csrf_access_token", 
         value=csrf_token, 
-        httponly=False, 
+        httponly=True, 
         samesite="lax", 
         secure=SECURE_COOKIE, 
         path="/",
