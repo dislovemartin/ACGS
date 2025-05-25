@@ -1,3 +1,9 @@
-# acgs-pgp/requirements.txt
-alembic
-psycopg2-binary 
+# ACGS/requirements.txt
+# Root requirements, primarily for Alembic and any top-level scripts.
+# Service-specific dependencies are in their respective requirements.txt files.
+
+alembic>=1.13.1
+psycopg2-binary>=2.9.9 # For PostgreSQL synchronous connections (Alembic)
+SQLAlchemy>=2.0.25     # Core SQLAlchemy, used by Alembic and services
+python-dotenv>=1.0.0   # For loading .env files
+greenlet>=3.0.0        # Often a dependency for SQLAlchemy async or eventlet/gevent scenarios

@@ -1,17 +1,28 @@
-# backend/shared/Dockerfile.alembic
-FROM python:3.10-alpine
+# ACGS/shared/Dockerfile.alembic
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy root requirements first, then shared, then specific service if needed
-# For Alembic, we need common db libs and alembic itself.
-COPY requirements.txt . 
+# Install psql client for pg_isready (used in wait-for-postgres.sh)
+# Also install build-essential and libpq-dev if any Python packages need to compile C extensions for PostgreSQL
+RUN apt-get update &&     apt-get install -y --no-install-recommends postgresql-client build-essential libpq-dev &&     rm -rf /var/lib/apt/lists/*
+
+# Copy root requirements (contains alembic, sqlalchemy, psycopg2-binary)
+# This path is relative to the Dockerfile's location (ACGS/shared/)
+COPY ../requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the db directory which contains alembic.ini and migrations
-COPY ./db /app/db
-# Copy shared models needed by alembic env.py
-COPY ./shared /app/shared
+# Copy the alembic directory (ACGS/alembic) into /app/alembic in the image
+COPY ../alembic /app/alembic
 
-# The command to run migrations will be given by docker-compose
-# Example: CMD ["alembic", "-c", "/app/db/alembic.ini", "upgrade", "head"] 
+# Copy the contents of the 'shared' directory (ACGS/shared/) from the host
+# into /app/shared in the image.
+# '.' here refers to the build context, which is ACGS/shared/
+COPY . /app/shared
+
+# wait-for-postgres.sh is now at /app/shared/wait-for-postgres.sh
+# Make it executable
+RUN chmod +x /app/shared/wait-for-postgres.sh
+
+# The command in docker-compose.yml for alembic-runner will need to use
+# /app/shared/wait-for-postgres.sh and /app/alembic/alembic.ini

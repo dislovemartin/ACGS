@@ -1,1 +1,20 @@
-Generic single-database configuration.
+Generic single-database configuration for ACGS-PGP.
+
+This directory contains Alembic migration scripts and configuration.
+Alembic is used to manage PostgreSQL database schema migrations.
+
+Key files:
+- `env.py`: Runtime configuration for Alembic. It's set up to read the
+             DATABASE_URL from environment variables and to recognize
+             models defined in `shared/models.py`.
+- `script.py.mako`: Template for new migration scripts.
+- `versions/`: Contains individual migration scripts.
+
+To create a new migration (after changing models in `shared/models.py`):
+  docker-compose exec alembic-runner alembic revision -m "your_migration_message" --autogenerate
+
+To apply migrations:
+  docker-compose exec alembic-runner alembic upgrade head
+
+Ensure your `DATABASE_URL` in the `.env` file (for the `alembic-runner` service)
+points to the correct PostgreSQL database.
