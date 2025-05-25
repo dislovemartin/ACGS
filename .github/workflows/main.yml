@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0     # <-- This line ensures the full git history is fetched
 
       - name: Setup Qodana Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ runner.temp }}/qodana/caches
