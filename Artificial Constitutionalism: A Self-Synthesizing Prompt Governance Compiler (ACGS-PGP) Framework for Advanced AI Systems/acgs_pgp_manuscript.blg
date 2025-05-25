@@ -1,0 +1,104 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: acgs_pgp_manuscript.aux
+The style file: ACM-Reference-Format.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: acgs_pgp_refs.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--no number and no volume in almulla2024emergence
+Warning--page numbers missing in both pages and numpages fields in almulla2024emergence
+Warning--can't use both volume and number fields in amershi2014power
+Warning--empty publisher in amershi2014power
+Warning--empty address in amershi2014power
+Warning--empty publisher in amodei2016concrete
+Warning--empty address in amodei2016concrete
+Warning--no number and no volume in bai2022constitutional
+Warning--page numbers missing in both pages and numpages fields in bai2022constitutional
+Warning--no journal in bender2021dangers
+Warning--no number and no volume in bender2021dangers
+Warning--empty address in bostrom2014superintelligence
+Warning--empty address in brown2020software
+Warning--no number and no volume in brown2020language
+Warning--page numbers missing in both pages and numpages fields in brown2020language
+Warning--no number and no volume in chen2021evaluating
+Warning--page numbers missing in both pages and numpages fields in chen2021evaluating
+Warning--empty publisher in fjeld2020principled
+Warning--empty address in fjeld2020principled
+Warning--page numbers missing in both pages and numpages fields in fjeld2020principled
+Warning--can't use both volume and number fields in floridi2018ai
+Warning--empty address in floridi2018ai
+Warning--no number and no volume in hendrycks2021aligning
+Warning--page numbers missing in both pages and numpages fields in hendrycks2021aligning
+Warning--empty address in huth2004logic
+Warning--articleno or eid field, but no numpages field, in ji2023survey
+Warning--INFO: reduced pages = [1--38] to numpages = [38]
+Warning--empty address in katz2020introduction
+Warning--empty publisher in kroll2017accountable
+Warning--empty address in kroll2017accountable
+Warning--no number and no volume in lewis2020retrieval
+Warning--page numbers missing in both pages and numpages fields in lewis2020retrieval
+Warning--no number and no volume in li2024vericoder
+Warning--page numbers missing in both pages and numpages fields in li2024vericoder
+Warning--no number and no volume in perez2022red
+Warning--page numbers missing in both pages and numpages fields in perez2022red
+Warning--empty address in russell2015human
+Warning--empty address in ieee2019ethically
+Warning--no number and no volume in voigt2017eu
+Warning--page numbers missing in both pages and numpages fields in voigt2017eu
+Warning--no number and no volume in wei2022chain
+Warning--page numbers missing in both pages and numpages fields in wei2022chain
+Warning--no number and no volume in weidinger2021ethical
+Warning--page numbers missing in both pages and numpages fields in weidinger2021ethical
+Warning--articleno or eid field, but no numpages field, in wilkinson2016fair
+Warning--page numbers missing in both pages and numpages fields in wilkinson2016fair
+Warning--articleno or eid, but no pages or numpages field in wilkinson2016fair
+Warning--no number and no volume in yao2023tree
+Warning--page numbers missing in both pages and numpages fields in yao2023tree
+You've used 40 entries,
+            5981 wiz_defined-function locations,
+            1679 strings with 28761 characters,
+and the built_in function-call counts, 50534 in all, are:
+= -- 6113
+> -- 2878
+< -- 0
++ -- 1017
+- -- 1058
+* -- 4370
+:= -- 5798
+add.period$ -- 205
+call.type$ -- 40
+change.case$ -- 473
+chr.to.int$ -- 72
+cite$ -- 88
+duplicate$ -- 3568
+empty$ -- 2540
+format.name$ -- 1161
+if$ -- 11759
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 127
+newline$ -- 361
+num.names$ -- 280
+pop$ -- 1644
+preamble$ -- 1
+purify$ -- 790
+quote$ -- 0
+skip$ -- 1222
+stack$ -- 0
+substring$ -- 2768
+swap$ -- 297
+text.length$ -- 29
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 788
+warning$ -- 49
+while$ -- 244
+width$ -- 0
+write$ -- 791
+(There were 49 warnings)

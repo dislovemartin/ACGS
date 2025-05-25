@@ -1,0 +1,46 @@
+graph TB
+    subgraph "ACGS-PGP Framework"
+        subgraph "Governance Layer"
+            AC["Artificial Constitution (AC)<br/>Repository & Management<br/>• Stores normative principles<br/>• Manages amendments<br/>• Version control"]
+            HO["Human Oversight Interface<br/>Governance Dashboard<br/>• AC management<br/>• Rule oversight<br/>• Escalation handling"]
+        end
+        
+        subgraph "Synthesis Layer"
+            GS["Self-Synthesizing (GS) Engine<br/>AI-Driven Rule Generation<br/>• Interprets AC principles<br/>• Generates operational rules<br/>• Adapts based on feedback"]
+        end
+        
+        subgraph "Enforcement Layer"
+            PGC["Prompt Governance Compiler (PGC)<br/>with PGP Assurance<br/>• Runtime rule enforcement<br/>• Action interception<br/>• Cryptographic verification"]
+        end
+        
+        subgraph "Audit & Logging"
+            LOG["Logging & Audit Module<br/>Tamper-Evident Records<br/>• Immutable audit trails<br/>• Compliance reporting<br/>• PGP-signed logs"]
+        end
+        
+        subgraph "External Systems"
+            AI_APP["AI Application<br/>(e.g., LLM Agent)<br/>• Governed AI system<br/>• Executes actions<br/>• Receives constraints"]
+            EXT["External Context Sources<br/>• Regulatory updates<br/>• Threat intelligence<br/>• Policy changes"]
+        end
+    end
+    
+    %% Data flow relationships
+    AC -->|Current AC Version| GS
+    GS -->|Operational Rules| PGC
+    PGC -->|Enforcement Actions| AI_APP
+    PGC -->|Feedback| GS
+    AI_APP -->|Action Requests| PGC
+    
+    %% Human oversight flows
+    HO -->|Directives| GS
+    HO -->|AC Amendments| AC
+    GS -->|Rule Proposals| HO
+    PGC -->|Escalations| HO
+    
+    %% External inputs
+    EXT -->|Context Updates| GS
+    
+    %% Audit flows
+    AC -->|Events| LOG
+    GS -->|Events| LOG
+    PGC -->|Events| LOG
+    HO -->|Events| LOG 
