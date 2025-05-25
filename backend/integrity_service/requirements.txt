@@ -1,0 +1,9 @@
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9 # For PostgreSQL
+pydantic[email]>=2.6.1 # Using email type for consistency, though may not be strictly needed here
+python-dotenv>=1.0.1 # For loading .env files
+# For JSON field in models (SQLAlchemy handles this with Python's json for supported backends like PostgreSQL)
+# No specific library needed for JSON with psycopg2 and PostgreSQL.
+# For ARRAY(Integer) with PostgreSQL, SQLAlchemy also handles it.

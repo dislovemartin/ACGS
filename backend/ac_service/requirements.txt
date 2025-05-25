@@ -1,0 +1,10 @@
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9 # For PostgreSQL
+pydantic[email]>=2.6.1 
+python-dotenv>=1.0.1 # For loading .env files
+# Add other specific dependencies for AC service if any emerge
+# For now, core/auth.py uses OAuth2PasswordBearer which is part of fastapi
+# but if we were to do full JWT validation here, python-jose would be needed.
+# Since auth is placeholder, keeping it minimal.

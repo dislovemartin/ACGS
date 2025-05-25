@@ -1,0 +1,14 @@
+# backend/auth_service/requirements.txt
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+passlib[bcrypt]
+python-jose[cryptography]
+psycopg2-binary
+python-dotenv 
+fastapi-csrf-protect==1.0.3 # For CSRF protection
+asyncpg
+httpx # For async HTTP requests in tests
+aiosqlite # For async SQLite operations in tests
+pydantic-settings # For Pydantic v2+ settings management 

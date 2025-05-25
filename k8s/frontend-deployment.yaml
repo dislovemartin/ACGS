@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 1 # Adjust as needed
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: yourdockerhubusername/acgs-pgp-frontend:latest # Replace with your actual image path
+        ports:
+        - containerPort: 80 # Port Nginx is listening on inside the container (see frontend Dockerfile)
+        # You might need to pass environment variables to the frontend if it's built to consume them at runtime,
+        # but typically React apps build them in. If Nginx needs env vars, configure them here.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80 # Port the service will be available on (e.g., for an Ingress controller)
+      targetPort: 80 # Port the container is listening on
+  type: LoadBalancer # Or NodePort/ClusterIP depending on how you expose it (e.g., via Ingress)

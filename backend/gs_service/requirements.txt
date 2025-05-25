@@ -1,0 +1,5 @@
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+pydantic[email]>=2.6.1 # Using email type for consistency, though may not be strictly needed here
+httpx>=0.26.0 # For making HTTP requests to other services
+python-dotenv>=1.0.1 # For loading .env files

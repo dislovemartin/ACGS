@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gs-service-deployment
+  labels:
+    app: gs-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gs-service
+  template:
+    metadata:
+      labels:
+        app: gs-service
+    spec:
+      containers:
+      - name: gs-service
+        image: yourdockerhubusername/gs-service:latest # Replace with your actual image path
+        ports:
+        - containerPort: 8004 # Port exposed by GS Service
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: database_url
+        # Add other necessary environment variables
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gs-service
+spec:
+  selector:
+    app: gs-service
+  ports:
+    - protocol: TCP
+      port: 8004
+      targetPort: 8004
+  type: ClusterIP

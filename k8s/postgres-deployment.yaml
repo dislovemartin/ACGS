@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine # Use a specific version
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef: # Or use a ConfigMap for non-sensitive parts of DB config
+              name: postgres-config
+              key: db_name
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc # Ensure a PersistentVolumeClaim is defined
+
+# --- PersistentVolumeClaim (PVC) ---
+# This requests storage from Kubernetes. A PersistentVolume (PV) must be available.
+# For local development (e.g., Minikube, Docker Desktop K8s), default storage classes often handle this.
+# For cloud providers, you'd typically use their specific storage classes.
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: postgres-pvc
+# spec:
+#   accessModes:
+#     - ReadWriteOnce # Suitable for a single PostgreSQL instance
+#   resources:
+#     requests:
+#       storage: 5Gi # Adjust storage size as needed

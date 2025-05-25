@@ -1,0 +1,3 @@
+# acgs-pgp/requirements.txt
+alembic
+psycopg2-binary 

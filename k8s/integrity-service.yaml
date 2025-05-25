@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: integrity-service-deployment
+  labels:
+    app: integrity-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: integrity-service
+  template:
+    metadata:
+      labels:
+        app: integrity-service
+    spec:
+      containers:
+      - name: integrity-service
+        image: yourdockerhubusername/integrity-service:latest # Replace with your actual image path
+        ports:
+        - containerPort: 8002 # Port exposed by Integrity Service
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: database_url
+        - name: LOG_LEVEL
+          value: "INFO"
+        # Add other necessary environment variables
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: integrity-service
+spec:
+  selector:
+    app: integrity-service
+  ports:
+    - protocol: TCP
+      port: 8002
+      targetPort: 8002
+  type: ClusterIP

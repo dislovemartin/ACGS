@@ -1,0 +1,12 @@
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9 # For PostgreSQL
+python-jose[cryptography]>=3.3.0
+pydantic[email]>=2.6.1
+python-dotenv>=1.0.1 # For loading .env files
+argon2-cffi>=23.1.0 # For password hashing
+fastapi-csrf-protect>=1.2.0 # For CSRF protection
+cryptography==44.0.1 # Pinning a specific recent version compatible with python-jose
+slowapi>=0.1.9 # For rate limiting
+# cryptography is also a dependency of python-jose, but good to be aware of it.

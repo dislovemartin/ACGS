@@ -1,0 +1,17 @@
+# backend/shared/Dockerfile.alembic
+FROM python:3.10-alpine
+
+WORKDIR /app
+
+# Copy root requirements first, then shared, then specific service if needed
+# For Alembic, we need common db libs and alembic itself.
+COPY requirements.txt . 
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the db directory which contains alembic.ini and migrations
+COPY ./db /app/db
+# Copy shared models needed by alembic env.py
+COPY ./shared /app/shared
+
+# The command to run migrations will be given by docker-compose
+# Example: CMD ["alembic", "-c", "/app/db/alembic.ini", "upgrade", "head"] 
