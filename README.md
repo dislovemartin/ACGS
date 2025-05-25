@@ -1,90 +1,127 @@
-# ACGS - Advanced Cloud Governance System
+# ACGS-PGP: AI Compliance Governance System - Policy Generation Platform
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Next.js](https://img.shields.io/badge/Next.js-13.5.6-black?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.5-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+The ACGS-PGP framework is a microservices-based system designed to facilitate the creation, management, verification, and audit of AI governance policies. It aims to integrate constitutional principles with dynamic, AI-driven rule synthesis and verifiable runtime enforcement.
 
 ## Overview
 
-ACGS (Advanced Cloud Governance System) is a modern web application built with Next.js, TypeScript, and Tailwind CSS. The application provides comprehensive cloud governance solutions with features like user authentication, role-based access control, and various financial management modules.
+This project implements the core components of the ACGS-PGP framework, including:
+-   **Authentication Service (`auth_service`):** Manages user authentication and authorization.
+-   **Audit & Compliance Service (`ac_service`):** Manages AI governance principles and guidelines.
+-   **Governance Synthesis Service (`gs_service`):** Generates policies (e.g., Datalog rules) from principles, potentially using LLMs.
+-   **Formal Verification Service (`fv_service`):** Verifies synthesized policies against principles.
+-   **Integrity & Verifiability Service (`integrity_service`):** Stores policies, verification results, and manages audit logs.
+-   **Protective Governance Controls Service (`pgc_service`):** Enforces policies at runtime.
+-   **Frontend Service:** A React-based SPA for user interaction.
 
-## ✨ Features
+## Technology Stack
 
-- 🔐 Authentication & Authorization with Supabase
-- 📱 Responsive design with Tailwind CSS
-- 🏗️ Modern React with TypeScript
-- 📊 Financial Management Modules
-  - Bookkeeping
-  - Estate Planning
-  - Personal Tax Filing
-  - Admin Dashboard
-- 🚀 Optimized for production
+-   **Backend:** Python (FastAPI)
+-   **Frontend:** JavaScript (React)
+-   **Database:** PostgreSQL
+-   **Containerization:** Docker
+-   **Orchestration (Optional):** Kubernetes
+-   **Database Migrations:** Alembic
+-   **API Gateway (Docker Compose):** Nginx
 
-## 🚀 Getting Started
+## Project Structure
+
+The project is organized into several main directories:
+-   `alembic/`: Database migration scripts.
+-   `backend/`: Contains the source code for all backend microservices.
+    -   `ac_service/`
+    -   `auth_service/`
+    -   `fv_service/`
+    -   `gs_service/`
+    -   `integrity_service/`
+    -   `pgc_service/`
+-   `docs/`: Project documentation.
+-   `frontend/`: React frontend application.
+-   `k8s/`: Kubernetes deployment manifests.
+-   `shared/`: Shared Python modules (database models, schemas, utilities).
+
+## Local Development Setup
 
 ### Prerequisites
 
-- Node.js 18.0.0 or later
-- npm or yarn
-- Supabase account and project
+-   Docker
+-   Docker Compose
 
-### Installation
+### Steps
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/acgs.git
-   cd acgs
-   ```
+1.  **Clone the Repository:**
+    ```bash
+    git clone <repository_url>
+    cd ACGS
+    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+2.  **Configure Environment Variables:**
+    *   Copy the root `.env.example` to `.env` and update the variables, especially `DATABASE_URL` and service-specific secrets like `AUTH_SERVICE_SECRET_KEY`.
+        ```bash
+        cp .env.example .env
+        ```
+    *   Navigate to the `frontend` directory, copy `frontend/.env.example` to `frontend/.env`, and update `REACT_APP_API_BASE_URL` if necessary (default is `/api` which assumes Nginx proxying from root or a specific host port).
+        ```bash
+        cd frontend
+        cp .env.example .env
+        cd ..
+        ```
+        The `REACT_APP_API_BASE_URL` in `frontend/.env` should typically be `/api` if you are accessing the frontend via `http://localhost:3000` and the Nginx gateway (defined in `docker-compose.yml`) is serving backend APIs at `http://localhost:8000/api/...`. The `proxy` setting in `frontend/package.json` (e.g., `"proxy": "http://localhost:8000"`) can also handle this for development by proxying frontend's `/api` calls to the backend Nginx.
 
-3. Set up environment variables:
-   Create a `.env.local` file in the root directory and add your Supabase credentials:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-   ```
+3.  **Build and Run Services using Docker Compose:**
+    From the project root directory (`ACGS/`):
+    ```bash
+    docker-compose up --build -d
+    ```
+    This command will:
+    *   Build Docker images for all services.
+    *   Start containers for each service, including PostgreSQL and Nginx.
+    *   Run database migrations via the `alembic-runner` service.
 
-4. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+4.  **Accessing Services:**
+    *   **Frontend:** `http://localhost:3000` (served by React development server, proxied by Docker Compose)
+    *   **Backend API Gateway (Nginx):** `http://localhost:8000`
+        *   Auth Service: `http://localhost:8000/api/auth/`
+        *   AC Service: `http://localhost:8000/api/ac/`
+        *   GS Service: `http://localhost:8000/api/gs/`
+        *   FV Service: `http://localhost:8000/api/fv/`
+        *   Integrity Service: `http://localhost:8000/api/integrity/`
+        *   PGC Service: `http://localhost:8000/api/pgc/`
+    *   API documentation for each service is typically available at `/docs` or `/redoc` on their respective Nginx paths (e.g., `http://localhost:8000/api/auth/docs`).
 
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5.  **Database Migrations (Manual, if needed):**
+    The `alembic-runner` service runs migrations on startup. To run them manually:
+    ```bash
+    docker-compose exec alembic-runner alembic upgrade head
+    ```
+    To create a new migration after changing models in `shared/models.py`:
+    ```bash
+    docker-compose exec alembic-runner alembic revision -m "your_migration_message" --autogenerate
+    ```
+    Remember to review and edit the autogenerated script.
 
-## 🛠️ Project Structure
+6.  **Stopping Services:**
+    ```bash
+    docker-compose down
+    ```
+    To remove volumes (including PostgreSQL data):
+    ```bash
+    docker-compose down -v
+    ```
 
-```
-ACGS/
-├── app/                  # Next.js 13+ app directory
-├── components/           # Reusable UI components
-│   ├── auth/            # Authentication components
-│   └── page-specific/   # Page-specific components
-├── lib/                  # Utility functions and configurations
-├── public/               # Static files
-└── styles/               # Global styles
-```
+## Documentation
 
-## 📝 License
+Detailed documentation can be found in the `/docs` directory:
+-   `architecture.md`: System architecture overview.
+-   `deployment.md`: Deployment guides for Docker Compose and Kubernetes.
+-   `developer_guide.md`: Information for developers contributing to the project.
+-   `user_guide.md`: How to use the platform (from a user's perspective).
+-   `security.md`: Security considerations.
+-   `roadmap.md`: Project development roadmap.
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+## Kubernetes Deployment
 
-## 🤝 Contributing
+For deployment to Kubernetes, refer to the instructions in `k8s/README.md`.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Contributing
 
-## 📬 Contact
-
-For any questions or feedback, please open an issue on GitHub.
-
----
-
-Built with ❤️ using Next.js, TypeScript, and Tailwind CSS
+Please refer to `docs/developer_guide.md` for guidelines on contributing to the project.
