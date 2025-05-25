@@ -1,184 +1,196 @@
-# Pydantic schemas 
+# ACGS/shared/schemas.py
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List, Dict, Any
 from datetime import datetime
-from typing import Optional
+from uuid import UUID # For UUID validation if used in models
 
-from pydantic import BaseModel, EmailStr
+# Base Pydantic model for common settings
+class BaseSchema(BaseModel):
+    class Config:
+        # orm_mode = True # Replaced by from_attributes = True in Pydantic V2
+        from_attributes = True # Use this for Pydantic V2
+
+# Token Schemas (originally from auth_service/app/schemas/token.py)
+class Token(BaseSchema):
+    access_token: str
+    refresh_token: Optional[str] = None # Refresh token might not always be sent with access token
+    token_type: str = "bearer"
+
+class TokenPayload(BaseModel): # Not inheriting BaseSchema as it's for internal processing
+    sub: Optional[str] = None # Subject (user identifier, e.g., username or user ID)
+    user_id: Optional[int] = None # Or Optional[UUID] if User.id is UUID
+    # Add any other claims you expect in the token payload (e.g., roles, permissions)
+    # exp: Optional[int] = None # Expiration time (handled by JWT library)
+
+class RefreshTokenCreate(BaseModel):
+    user_id: int # Or UUID
+    jti: str
+    token: str # The actual refresh token string
+    expires_at: datetime
+
+class RefreshTokenSchema(RefreshTokenCreate):
+    id: int
+    created_at: datetime
+    is_revoked: bool
+
+    class Config:
+        from_attributes = True
 
 
-# User Schemas
-class UserBase(BaseModel):
-    username: str
+# User Schemas (originally from auth_service/app/schemas/user.py)
+class UserBase(BaseSchema):
+    username: str = Field(..., min_length=3, max_length=100)
     email: EmailStr
+    full_name: Optional[str] = Field(None, max_length=255)
+    role: str = Field("user", max_length=50) # Default role
+    is_active: Optional[bool] = True
 
 class UserCreate(UserBase):
-    password: str
-    role: Optional[str] = "user"
+    password: str = Field(..., min_length=8)
 
-class UserInDB(UserBase):
-    id: int
-    role: str
-    is_active: bool
+class UserUpdate(UserBase):
+    password: Optional[str] = Field(None, min_length=8)
+    username: Optional[str] = Field(None, min_length=3, max_length=100)
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = Field(None, max_length=255)
+    role: Optional[str] = Field(None, max_length=50)
+    is_active: Optional[bool] = None
+
+class UserSchema(UserBase): # For reading user data (doesn't include password)
+    id: int # Or UUID
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+# Response model for user list, could include pagination later
+class UserListResponse(BaseSchema):
+    users: List[UserSchema]
+    total: int
 
 
-from typing import List, Dict, Any # Add Any if not present
-
-# PolicyTemplate Schemas
-class PolicyTemplateBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    default_content: str
-    parameters_schema: Optional[Dict[str, Any]] = None # JSON schema for parameters
-
-class PolicyTemplateCreate(PolicyTemplateBase):
-    pass
-
-class PolicyTemplateUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    default_content: Optional[str] = None
-    parameters_schema: Optional[Dict[str, Any]] = None
-    version: Optional[int] = None
-
-class PolicyTemplateInDBBase(PolicyTemplateBase):
-    id: int
-    version: int
-    created_at: datetime
-    updated_at: datetime
-    created_by_user_id: Optional[int] = None
-
-    class Config:
-        from_attributes = True
-
-class PolicyTemplate(PolicyTemplateInDBBase):
-    pass
-
-# Policy Schemas
-class PolicyBase(BaseModel):
-    name: str
+# Principle Schemas (for ac_service)
+class PrincipleBase(BaseSchema):
+    name: str = Field(..., max_length=255)
     description: Optional[str] = None
     content: str
-    status: Optional[str] = "draft"
-    template_id: Optional[int] = None
-    customization_parameters: Optional[Dict[str, Any]] = None
-
-class PolicyCreate(PolicyBase):
-    pass
-
-class PolicyUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    content: Optional[str] = None
-    status: Optional[str] = None
-    customization_parameters: Optional[Dict[str, Any]] = None
-    version: Optional[int] = None
-
-class PolicyInDBBase(PolicyBase):
-    id: int
-    version: int
-    created_at: datetime
-    updated_at: datetime
-    created_by_user_id: Optional[int] = None
-    # template: Optional[PolicyTemplate] = None # Could be added if needed for responses
-
-    class Config:
-        from_attributes = True
-
-class Policy(PolicyInDBBase):
-    pass
-
-# For displaying Policy with its template details
-class PolicyWithTemplate(Policy):
-   template: Optional[PolicyTemplate] = None
-
-# Token Schemas
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel): # This is typically for username from an older form of token, can be removed if not used
-    username: Optional[str] = None
-
-class TokenPayload(BaseModel): # Payload within the JWT
-    sub: str # Subject (username)
-    user_id: int
-    roles: List[str] = []
-    # exp: Optional[int] = None # Expiration time, handled by JWT library; jose handles this internally
-
-# Principle Schemas
-class PrincipleBase(BaseModel):
-    name: str
-    description: str
-    content: str
+    version: Optional[int] = 1
+    status: Optional[str] = Field("draft", max_length=50)
 
 class PrincipleCreate(PrincipleBase):
     pass
 
-class PrincipleUpdate(BaseModel):
-    description: Optional[str] = None
+class PrincipleUpdate(PrincipleBase):
+    name: Optional[str] = Field(None, max_length=255)
     content: Optional[str] = None
-    status: Optional[str] = None
+    version: Optional[int] = None
+    status: Optional[str] = Field(None, max_length=50)
 
-class Principle(PrincipleBase):
+class PrincipleSchema(PrincipleBase):
     id: int
-    version: int
-    status: str
     created_at: datetime
     updated_at: datetime
-    created_by_user_id: Optional[int]
+    created_by_user_id: Optional[int] = None # Or UUID
 
-    class Config:
-        from_attributes = True
 
-# Policy Rule Schemas
-class PolicyRuleBase(BaseModel):
-    # principle_id: int # Replaced by source_principle_ids
-    source_principle_ids: Optional[List[int]] = None
-    rule_name: str
+# PolicyRule Schemas (for integrity_service, gs_service, pgc_service)
+class PolicyRuleBase(BaseSchema):
+    rule_name: Optional[str] = Field(None, max_length=255)
     datalog_content: str
+    version: Optional[int] = 1
+    policy_id: Optional[int] = None # Link to parent Policy
+    source_principle_ids: Optional[List[int]] = None
+    status: Optional[str] = Field("pending_synthesis", max_length=50)
+    verification_status: Optional[str] = Field("not_verified", max_length=50)
+    verification_feedback: Optional[Dict[str, Any]] = None
 
 class PolicyRuleCreate(PolicyRuleBase):
-    pass
+    datalog_content: str = Field(...) # Make mandatory for creation
 
-class PolicyRuleUpdate(BaseModel):
-    datalog_content: Optional[str] = None
-    status: Optional[str] = None
-    verification_status: Optional[str] = None
+class PolicyRuleUpdate(PolicyRuleBase):
+    datalog_content: Optional[str] = None # Allow partial updates
+    # Other fields can be updated as needed
 
-class PolicyRule(PolicyRuleBase):
+class PolicyRuleSchema(PolicyRuleBase):
     id: int
-    version: int
-    status: str
-    verification_status: str
+    verified_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
-    synthesized_by_gs_engine_id: Optional[str]
-    verified_by_fv_service_id: Optional[str]
+    synthesized_by_gs_run_id: Optional[str] = None
+    verified_by_fv_run_id: Optional[str] = None
 
-    class Config:
-        from_attributes = True
 
-# Audit Log Schemas
-class AuditLogBase(BaseModel):
-    event_type: str
-    entity_type: str
-    entity_id: Optional[int] = None
+# AuditLog Schemas (for integrity_service)
+class AuditLogBase(BaseSchema):
+    service_name: str = Field(..., max_length=100)
+    event_type: str = Field(..., max_length=100)
+    actor_id: Optional[int] = None # Or UUID
+    entity_type: Optional[str] = Field(None, max_length=100)
+    entity_id_int: Optional[int] = None
+    entity_id_uuid: Optional[UUID] = None
+    entity_id_str: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None
-    actor_id: Optional[int] = None
-    metadata_json: Optional[str] = None
+    details: Optional[Dict[str, Any]] = None
 
 class AuditLogCreate(AuditLogBase):
+    pass # timestamp is auto-generated
+
+class AuditLogSchema(AuditLogBase):
+    id: UUID # Assuming AuditLog.id is UUID
+    timestamp: datetime
+
+
+# PolicyTemplate Schemas (for gs_service)
+class PolicyTemplateBase(BaseSchema):
+    name: str = Field(..., max_length=255)
+    description: Optional[str] = None
+    template_content: str
+    parameters_schema: Optional[Dict[str, Any]] = None # JSON Schema for parameters
+    version: Optional[int] = 1
+    status: Optional[str] = Field("draft", max_length=50)
+
+class PolicyTemplateCreate(PolicyTemplateBase):
     pass
 
-class AuditLog(AuditLogBase):
-    id: int
-    timestamp: datetime
-    previous_hash: Optional[str]
-    current_hash: str
+class PolicyTemplateUpdate(PolicyTemplateBase):
+    name: Optional[str] = Field(None, max_length=255)
+    template_content: Optional[str] = None
+    # Allow other fields to be updatable
 
-    class Config:
-        from_attributes = True
+class PolicyTemplateSchema(PolicyTemplateBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    created_by_user_id: Optional[int] = None # Or UUID
+
+
+# Policy Schemas (for gs_service)
+class PolicyBase(BaseSchema):
+    name: str = Field(..., max_length=255)
+    description: Optional[str] = None
+    high_level_content: Optional[str] = None
+    version: Optional[int] = 1
+    status: Optional[str] = Field("draft", max_length=50)
+    template_id: Optional[int] = None
+    customization_parameters: Optional[Dict[str, Any]] = None
+    source_principle_ids: Optional[List[int]] = None
+
+class PolicyCreate(PolicyBase):
+    name: str = Field(..., max_length=255) # Ensure name is provided on create
+
+class PolicyUpdate(PolicyBase):
+    name: Optional[str] = Field(None, max_length=255)
+    # Allow other fields to be updatable
+
+class PolicySchema(PolicyBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    created_by_user_id: Optional[int] = None # Or UUID
+    rules: Optional[List[PolicyRuleSchema]] = [] # Show associated rules
+
+# Generic message schema for responses
+class Message(BaseSchema):
+    message: str
+
+# Schema for ID response
+class IdResponse(BaseSchema):
+    id: Any
