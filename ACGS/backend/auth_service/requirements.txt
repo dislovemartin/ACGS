@@ -1,0 +1,15 @@
+# ACGS/backend/auth_service/requirements.txt
+fastapi>=0.109.2,<0.111.0
+uvicorn[standard]>=0.27.1,<0.28.0
+# SQLAlchemy and DB driver (asyncpg) are used via shared module
+asyncpg>=0.29.0
+pydantic[email]>=2.6.1,<2.8.0
+pydantic-settings>=2.0.0 # For settings management in Pydantic v2+
+python-jose[cryptography]>=3.3.0
+argon2-cffi>=23.1.0 # For password hashing (Argon2)
+python-dotenv>=1.0.0
+fastapi-csrf-protect==1.2.0 
+httpx>=0.26.0 # For async HTTP requests in tests
+aiosqlite # For async SQLite operations in tests (conftest.py)
+slowapi>=0.1.9 # For rate limiting
+# cryptography is a sub-dependency of python-jose, explicit pin if needed.
