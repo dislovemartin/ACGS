@@ -216,7 +216,7 @@ if __name__ == "__main__":
     # Password Hashing
     password = "securepassword123"
     hashed_password = get_password_hash(password)
-    logger.info(f"Original password: {password}")
+    logger.info("Password has been hashed successfully.")
     logger.info(f"Hashed password: {hashed_password}")
     logger.info(f"Password verification: {verify_password(password, hashed_password)}")
 
