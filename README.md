@@ -69,6 +69,8 @@ The project is organized into several main directories:
 
 3.  **Build and Run Services using Docker Compose:**
     From the project root directory (`ACGS/`):
+
+    **Primary Command to Start the System:**
     ```bash
     docker-compose up --build -d
     ```

@@ -19,7 +19,7 @@ This document outlines the planned features and development milestones for the A
 *   **[DONE] Orchestration (Basic):**
     *   `docker-compose.yml` for local development.
     *   Initial Kubernetes manifests for each service.
-*   **[DONE] Basic User Authentication:** User registration (to be added), login, JWT issuance.
+*   **[DONE] Basic User Authentication:** User registration, login, JWT issuance. ✅ <!-- Audit M3.1 added tests for registration -->
 *   **[IN PROGRESS] Principles & Guidelines Management (`ac_service`):**
     *   API endpoints to list principles and guidelines.
     *   Frontend pages to display principles and guidelines.
@@ -31,8 +31,8 @@ This document outlines the planned features and development milestones for the A
     *   Frontend elements to input customizations.
 *   **[DONE] Basic CI/CD Pipeline:** GitHub Actions workflow for tests (placeholder) and Docker builds (placeholder).
 *   **[DONE] Documentation:**
-    *   Initial `README.md` files for services and key directories.
-    *   `architecture.md`, `deployment.md`, `developer_guide.md`, `user_guide.md`, `security.md`, `roadmap.md`.
+    *   Initial `README.md` files for services and key directories. ✅ <!-- Audit M2.1 populated some READMEs -->
+    *   `architecture.md`, `deployment.md`, `developer_guide.md`, `user_guide.md`, `security.md`, `roadmap.md`. ✅ <!-- Audit M2.1 updated user_guide.md -->
 
 ## Phase 2: Enhanced Features & Integrations
 

@@ -8,6 +8,7 @@
 \usepackage{listings} % For code snippets
 \usepackage{xcolor}   % For colors (e.g., in listings or diagrams)
 \usepackage{hyperref} % For hyperlinks (acmart loads this, but good to be explicit)
+\hypersetup{pdftitle={Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems}}
 \usepackage{balance}  % To balance columns on the last page
 
 % Define colors for listings (optional)
@@ -511,7 +512,7 @@ M1: "Principles may be amended to address new regulatory requirements."
 And recent External Stimulus:
 S1: "New 'Digital Services Act' (DSA) mandates explicit user consent for cross-context data usage for personalization."
 
-Task: Propose an amendment or a new principle for the Artificial Constitution to align with DSA S1, maintaining consistency with existing principles. Explain your reasoning. Output in JSON format: {"proposed_change": "...", "rationale": "...", "affected_principles": ["..."]}.
+Task: Propose an amendment or a new principle for the Artificial Constitution to align with DSA S1, maintaining consistency with existing principles. Explain your reasoning. Output in JSON format: {"proposed_change": "[Description of the proposed change, e.g., Add new principle Px or amend existing Py]", "rationale": "[Explanation of why this change is needed and how it aligns with DSA S1 and existing principles]", "affected_principles": ["[List of principle IDs affected by this change, e.g., P1, P2]"]}.
 \end{lstlisting}
 
 \textbf{PGC Prompt (Conceptual) - For Compiling a Directive to Rego:}
@@ -549,29 +550,29 @@ These snippets would illustrate the type of structured interaction planned with 
 This appendix would present a table detailing potential risks associated with the ACGS-PGP framework and corresponding mitigation strategies.
 
 \begin{table*}[htbp]
-  \caption{Detailed Risk/Mitigation Matrix for ACGS-PGP}
+  \caption{Detailed Risk/Mitigation Matrix for ACGS-PGP. [Note: Likelihood and Impact assessments are illustrative placeholders and require expert evaluation.]}
   \label{tab:risk_mitigation_appendix}
   \centering
   \begin{tabular}{@{}p{0.15\linewidth}p{0.25\linewidth}p{0.1\linewidth}p{0.1\linewidth}p{0.3\linewidth}@{}}
     \toprule
     Risk Category & Description of Risk & Likelihood (H/M/L) & Impact (H/M/L) & Mitigation Strategy \\
     \midrule
-    LLM Reliability (GS/PGC) & LLM hallucinates or generates flawed/biased policy logic. & H & H & Multi-stage validation (semantic, syntactic, safety), CoT/ToT prompting, RAG with verified examples, human-in-the-loop for critical policies, continuous LLM monitoring and fine-tuning. \\
+    LLM Reliability (GS/PGC) & LLM hallucinates or generates flawed/biased policy logic. & H & H & Multi-stage validation (semantic, syntactic, safety), CoT/ToT prompting, RAG with verified examples, human-in-the-loop for critical policies, continuous LLM monitoring and fine-tuning. [Additional details on validation techniques to be added.] \\
     \addlinespace
-    AC Definition Complexity & Initial AC principles ($\mathcal{P}$) or meta-rules ($\mathcal{M}$) are ambiguous, conflicting, or incomplete. & M & H & Iterative AC development with diverse stakeholder input, formal methods for principle clarification where possible, simulation and testing of meta-rules. \\
+    AC Definition Complexity & Initial AC principles ($\mathcal{P}$) or meta-rules ($\mathcal{M}$) are ambiguous, conflicting, or incomplete. & M & H & Iterative AC development with diverse stakeholder input, formal methods for principle clarification where possible, simulation and testing of meta-rules. [Specific formal methods to be listed.] \\
     \addlinespace
-    Constitutional Gaming/Exploitation & Governed AI system or external actors exploit loopholes in compiled policies or the AC amendment process. & M & H & Adversarial testing of policies, robust semantic validation by GS Engine, clear meta-rules for amendment with strong human oversight, anomaly detection in AI behavior. \\
+    Constitutional Gaming/Exploitation & Governed AI system or external actors exploit loopholes in compiled policies or the AC amendment process. & M & H & Adversarial testing of policies, robust semantic validation by GS Engine, clear meta-rules for amendment with strong human oversight, anomaly detection in AI behavior. [Further examples of anomaly detection to be included.] \\
     \addlinespace
-    Security of ACGS-PGP & Malicious actors compromise GS Engine, PGC, AC Repository, or PGP assurance mechanisms. & L & H & Strong access controls, cryptographic protection of all artifacts (PGP layer), regular security audits, secure software development practices for ACGS components. \\
+    Security of ACGS-PGP & Malicious actors compromise GS Engine, PGC, AC Repository, or PGP assurance mechanisms. & L & H & Strong access controls, cryptographic protection of all artifacts (PGP layer), regular security audits, secure software development practices for ACGS components. [Details on specific cryptographic methods to be added.] \\
     \addlinespace
-    Scalability & Computational demands of LLM inference, policy compilation, verification, and cryptographic operations become a bottleneck. & M & M & Optimized LLM models (distillation), efficient policy language design, caching of policy decisions, selective/batched processing for AC updates, hardware acceleration. \\
+    Scalability & Computational demands of LLM inference, policy compilation, verification, and cryptographic operations become a bottleneck. & M & M & Optimized LLM models (distillation), efficient policy language design, caching of policy decisions, selective/batched processing for AC updates, hardware acceleration. [Specific optimization targets to be detailed.] \\
     \addlinespace
-    Human Oversight Failure & Human reviewers become fatigued, biased, or lack expertise, leading to approval of flawed constitutional changes or policies. & M & H & Clear guidelines and training for reviewers, diverse oversight boards, AI-assisted review tools (e.g., highlighting risky changes), secondary review protocols for critical decisions. \\
+    Human Oversight Failure & Human reviewers become fatigued, biased, or lack expertise, leading to approval of flawed constitutional changes or policies. & M & H & Clear guidelines and training for reviewers, diverse oversight boards, AI-assisted review tools (e.g., highlighting risky changes), secondary review protocols for critical decisions. [Details on AI-assisted tools to be provided.] \\
     \addlinespace
-    Ethical Blind Spots & The AC or GS Engine fails to anticipate novel ethical dilemmas or its interpretation of principles leads to unethical outcomes. & M & H & Continuous monitoring of societal impact, mechanisms for rapid AC amendment in response to ethical incidents, external ethics board consultation, "red teaming" for ethical vulnerabilities. \\
+    Ethical Blind Spots & The AC or GS Engine fails to anticipate novel ethical dilemmas or its interpretation of principles leads to unethical outcomes. & M & H & Continuous monitoring of societal impact, mechanisms for rapid AC amendment in response to ethical incidents, external ethics board consultation, "red teaming" for ethical vulnerabilities. [Specific examples of red teaming exercises to be described.] \\
     \bottomrule
   \end{tabular}
-  \Description{A table outlining various risks associated with the ACGS-PGP framework, their likelihood and impact, and corresponding mitigation strategies. Categories include LLM reliability, AC definition, constitutional gaming, security, scalability, human oversight failure, and ethical blind spots.}
+  \Description{A table outlining various risks associated with the ACGS-PGP framework, their likelihood and impact, and corresponding mitigation strategies. Categories include LLM reliability, AC definition, constitutional gaming, security, scalability, human oversight failure, and ethical blind spots. Note: Likelihood and Impact assessments are illustrative placeholders and require expert evaluation.}
 \end{table*}
 The table would be populated with more risks and detailed mitigations, drawing from the limitations and ethical considerations discussed in the main text.
 

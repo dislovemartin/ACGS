@@ -257,7 +257,7 @@ _A Framework for Dynamic, Democratic, and Trustworthy AI Systems_
 
 **Join the Constitutional AI Revolution**
 
-- [Specific ask based on audience]
+- [Insert specific call to action relevant to the audience, e.g., "Collaborate on research," "Invest in development," "Adopt the framework," "Engage in policy discussions"]
 - Contact information and next steps
 
 ---

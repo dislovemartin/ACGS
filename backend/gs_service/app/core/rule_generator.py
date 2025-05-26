@@ -5,11 +5,15 @@ from ..schemas import (
     GeneratedRuleInfo, 
     LLMInterpretationInput, 
     LLMStructuredOutput,
-    LLMSuggestedRule, # Added from issue
-    LLMSuggestedAtom  # Added from issue
+    LLMSuggestedRule, 
+    LLMSuggestedAtom
 )
-from .llm_integration import query_llm_for_structured_output 
+from .llm_integration import query_llm_for_structured_output
+import logging # Import the logging module
+
 # Datalog templates are no longer used in this new approach based on issue description
+
+logger = logging.getLogger(__name__) # Get a logger instance for this module
 
 def _format_atom_to_datalog(atom: LLMSuggestedAtom) -> str:
     args_str = ", ".join(atom.arguments)
@@ -61,11 +65,16 @@ async def generate_rules_from_principles(
         
         llm_output: LLMStructuredOutput = await query_llm_for_structured_output(llm_input)
         
-        # TODO: Log LLM interaction details (input, raw_output, structured_output) for auditability
-        # This would typically involve calling another service (e.g., integrity_service) or a logging utility.
-        # print(f"LLM Input for P{principle.id}: {llm_input.model_dump_json(indent=2)}")
-        # print(f"LLM Output for P{principle.id}: {llm_output.model_dump_json(indent=2)}")
+        # Log LLM interaction details
+        logger.info(f"LLM Input for Principle ID {principle.id}: {llm_input.model_dump_json(indent=2)}")
+        # Log raw response at DEBUG level as it can be verbose
+        logger.debug(f"LLM Raw Output for Principle ID {principle.id}: {llm_output.raw_llm_response}")
+        logger.info(f"LLM Structured Output for Principle ID {principle.id} (Interpretations): {llm_output.model_dump_json(exclude={'raw_llm_response'}, indent=2)}")
+        logger.info(f"LLM generated {len(llm_output.interpretations)} interpretations for principle ID {principle.id}")
 
+        if not llm_output.interpretations and "Error" in llm_output.raw_llm_response: # Basic error check
+             logger.error(f"LLM processing failed for principle ID {principle.id}. Raw response: {llm_output.raw_llm_response}")
+             # Optionally, skip rule generation for this principle or handle error appropriately
 
         for suggested_rule_structure in llm_output.interpretations:
             # Deterministic assembly from structured suggestion
