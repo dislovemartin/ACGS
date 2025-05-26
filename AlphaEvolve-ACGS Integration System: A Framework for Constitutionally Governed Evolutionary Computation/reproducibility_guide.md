@@ -213,9 +213,9 @@ If you use this framework in your research, please cite:
 ```bibtex
 @article{alphaevolve2024,
   title={AlphaEvolve-ACGS Integration System: A Framework for Constitutionally Governed Evolutionary Computation},
-  author={[Authors]},
-  journal={[Journal]},
+  author={[Author Names To Be Added]},
+  journal={[Journal/Conference To Be Added]},
   year={2024},
-  doi={[DOI]}
+  doi={[DOI To Be Added]}
 }
 ```

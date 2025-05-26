@@ -15,7 +15,7 @@ As the project is under active development, we recommend always using the latest
 
 We take all security vulnerabilities seriously. If you discover a security issue, please report it to us privately to protect the project and its users.
 
-Please email us at `security@example.com` with a detailed description of the vulnerability, steps to reproduce it, and any potential impact. We aim to acknowledge receipt of your vulnerability report within 48 hours and will work with you to understand and address the issue.
+Please email us at `[Project Security Contact Email]` with a detailed description of the vulnerability, steps to reproduce it, and any potential impact. We aim to acknowledge receipt of your vulnerability report within 48 hours and will work with you to understand and address the issue.
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 

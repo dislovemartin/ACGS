@@ -80,17 +80,19 @@ This section allows you to generate new AI policies and customize them.
 5.  Click the **"Apply Customizations"** button.
 6.  The system will update the policy (this is a mock function for now). The policy in the list should reflect the changes or its status might be updated.
 
-## 8. (Future Features - Not Yet Implemented)
+## 8. Potential Future Directions
 
-The following features are planned for future development:
+The following areas represent potential future directions or advanced capabilities that are not part of the current system's core scope but could be considered for future development cycles:
 
-*   **Formal Verification:** Submit policies or system designs for formal verification against defined properties.
-*   **Governance Structure Mapping:** Link policies to specific roles and responsibilities within your organization's governance structure.
-*   **Audit Trail Viewing:** Detailed views of audit logs related to policy changes, user actions, and system events.
-*   **User Role Management:** Administrators will be able to manage user accounts and roles.
-*   **Advanced Policy Editing:** A rich text editor or more structured interface for policy editing.
-*   **Policy Versioning and History:** Track changes to policies over time.
-*   **Compliance Tracking:** Tools to assess and track compliance with implemented policies.
+*   **Advanced Formal Verification:** Capabilities to submit policies or system designs for formal verification against defined properties.
+*   **Detailed Governance Structure Mapping:** Tools to link policies to specific roles and responsibilities within an organization's governance structure.
+*   **Comprehensive Audit Trail Analysis:** Advanced interfaces for detailed views and analysis of audit logs related to policy changes, user actions, and system events.
+*   **Granular User Role Management:** Enhanced features for administrators to manage user accounts and roles with more specific permissions.
+*   **Sophisticated Policy Editing Tools:** A rich text editor or a more structured interface for advanced policy editing and lifecycle management.
+*   **Robust Policy Versioning and History:** Comprehensive tracking of changes to policies over time, including diffing and rollback capabilities.
+*   **Integrated Compliance Tracking:** Tools designed to help assess and track compliance with implemented policies against various regulatory frameworks.
+
+Further enhancements and features will be prioritized based on user feedback and evolving project goals.
 
 ## 9. Logging Out
 

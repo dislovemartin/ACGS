@@ -623,7 +623,7 @@ The operational policy structure includes the following key components:
         Context.patient_consent_status == 'ACTIVE' AND
         Context.authentication_strength == 'STRONG_MFA')
     THEN Action_Allowed = TRUE
-    ELSE ... (other conditions for clinicians, etc.)
+    ELSE Action_Allowed = FALSE; // Placeholder for other conditions for clinicians, etc.
     \end{verbatim}
     }
     \item \textbf{Action(s)\_Prescribed (Conceptual Snippet)}:
@@ -631,11 +631,11 @@ The operational policy structure includes the following key components:
     \begin{verbatim}
     IF Action_Allowed == TRUE THEN
         ALLOW_DATA_ACCESS;
-        LOG_EVENT(type: ACCESS_GRANTED, details: ...);
+        LOG_EVENT(type: ACCESS_GRANTED, details: "Patient PHI access granted via CareConnect");
     ELSE
         BLOCK_DATA_ACCESS;
-        LOG_EVENT(type: ACCESS_DENIED, reason: ...);
-        NOTIFY_USER(message: "Access restricted...");
+        LOG_EVENT(type: ACCESS_DENIED, reason: "Access conditions not met for PHI");
+        NOTIFY_USER(message: "Access restricted. Please verify your credentials or consent status.");
     END IF
     \end{verbatim}
     }
@@ -685,7 +685,7 @@ The operational policy structure includes the following key components:
     \begin{verbatim}
     IF Suggestion_Blocked == TRUE THEN
         BLOCK_DEPENDENCY_SUGGESTION;
-        LOG_EVENT(type: VULN_DEP_BLOCKED, details: ...);
+        LOG_EVENT(type: VULN_DEP_BLOCKED, details: "Blocked known vulnerable dependency");
         SUGGEST_ALTERNATIVE_LIBRARY(
             Context.requested_functionality);
     END IF
@@ -743,7 +743,7 @@ The operational policy structure includes the following key components:
     \begin{verbatim}
     IF Recommendation_Invalid == TRUE THEN
         BLOCK_RECOMMENDATION;
-        LOG_EVENT(type: SUITABILITY_FAIL, details: ...);
+        LOG_EVENT(type: SUITABILITY_FAIL, details: "Recommendation failed suitability checks");
         TRIGGER_HUMAN_REVIEW(Context.client_profile_vector,
                              Recommended_Portfolio);
     ELSE
@@ -754,7 +754,7 @@ The operational policy structure includes the following key components:
         STORE_SUITABILITY_STATEMENT(client_id,
                                    Rationale_Text);
         LOG_EVENT(type: RECOMMENDATION_MADE,
-                  details: ..., rationale_id: ...);
+                  details: "Investment recommendation provided", rationale_id: "[Generated Rationale ID]");
     END IF
     \end{verbatim}
     }

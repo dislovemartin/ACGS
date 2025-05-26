@@ -8,6 +8,6 @@ The ACGS project aims to develop a system capable of generating code based on de
 
 ## Architecture
 
-(Placeholder for architecture sketch)
+[Details of the ACGS core architecture will be added here. This section will include a high-level overview of the system components, their interactions, and the overall design philosophy.]
 
 Further details on philosophy, governance, and interface specifications will be added to their respective directories.

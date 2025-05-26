@@ -68,6 +68,7 @@ The system comprises the following core microservices, each running in its own D
     *   Services communicate with each other via RESTful APIs (HTTP/JSON).
     *   Synchronous communication is typical for direct requests.
     *   Asynchronous communication (e.g., via a message queue like RabbitMQ or Kafka) could be introduced for tasks like triggering formal verification or complex policy generation steps to improve responsiveness, but is not part of the initial core design.
+    <!-- TODO: Insert sequence diagram illustrating user registration and login flow, followed by a request to generate a policy, here. -->
 
 ## 5. Technology Stack Summary
 
