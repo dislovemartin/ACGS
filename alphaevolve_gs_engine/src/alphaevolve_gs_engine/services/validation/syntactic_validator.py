@@ -100,7 +100,7 @@ class SyntacticValidator:
 
         except FileNotFoundError:
             logger.error(f"OPA executable not found at '{self.opa_executable_path}'. Cannot validate policy '{policy_id}'.")
-            return False, f"OPA executable not found. Install OPA and ensure it's in PATH or configured."
+            return False, "OPA executable not found. Install OPA and ensure it's in PATH or configured."
         except subprocess.TimeoutExpired:
             logger.error(f"Timeout during syntactic validation of policy '{policy_id}'. It might be too complex or OPA is hanging.")
             return False, "Validation timed out. Policy might be too complex or OPA unresponsive."
