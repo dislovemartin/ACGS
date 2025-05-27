@@ -13,7 +13,7 @@ Classes:
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Tuple
 
 from alphaevolve_gs_engine.utils.logging_utils import setup_logger
 from alphaevolve_gs_engine.core.constitutional_principle import ConstitutionalPrinciple
