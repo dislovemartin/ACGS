@@ -153,3 +153,6 @@ yarn-error.log*
 # Other
 *.DS_Store
 Thumbs.db
+
+# Databases
+*.db
