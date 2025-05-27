@@ -85,7 +85,17 @@ class ConstitutionalPrinciple:
             self.policy_code = policy_code
         if metadata:
             self.metadata.update(metadata)
-        if dependencies is not None: # Allow clearing dependencies with []
+        if name is not None:
+            self.name = name
+        if description is not None:
+            self.description = description
+        if category is not None:
+            self.category = category
+        if policy_code is not None:
+            self.policy_code = policy_code
+        if metadata:
+            self.metadata.update(metadata)
+        if dependencies is not None:  # Allow clearing dependencies with []
             self.dependencies = dependencies
         
         self.version += 1
