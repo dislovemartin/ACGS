@@ -331,9 +331,9 @@ if __name__ == "__main__":
         }
     }
     """
-    temp_conflict_rego_file = tempfile.NamedTemporaryFile(mode="w", delete=False, suffix="_conflict_rules.rego")
-    temp_conflict_rego_file.write(conflict_rules_rego_content)
-    temp_conflict_rego_file.close() # Close it so OPA can read it
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix="_conflict_rules.rego") as temp_conflict_rego_file:
+        temp_conflict_rego_file.write(conflict_rules_rego_content)
+        temp_conflict_rego_file_name = temp_conflict_rego_file.name
 
     cd1 = ConflictDefinition(
         conflict_id="CD001",
