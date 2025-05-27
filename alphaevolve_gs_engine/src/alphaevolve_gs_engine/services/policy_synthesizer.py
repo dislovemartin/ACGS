@@ -224,7 +224,8 @@ class LLMPolicyGenerator(PolicySynthesizer):
             if not policy_code:
                 logger.error(f"LLM failed to generate policy code for goal: {s_input.synthesis_goal}. Raw response: {llm_raw_text_response[:500]}")
                 # Fallback to using the raw response as explanation if code is missing
-                if not explanation: explanation = f"LLM response did not yield parseable code: {llm_raw_text_response[:500]}"
+                if not explanation:
+                    explanation = f"LLM response did not yield parseable code: {llm_raw_text_response[:500]}"
                 return PolicySuggestion(
                     suggested_policy_code="", # Empty code
                     explanation=explanation,
