@@ -54,17 +54,35 @@ class SafetyAssertion:
     def _validate_configuration(self):
         if self.type == "pattern_match":
             if not ("regex_pattern" in self.configuration and "should_match" in self.configuration):
-                raise ValueError(f"Invalid configuration for pattern_match assertion '{self.assertion_id}': "
-                                 "must include 'regex_pattern' and 'should_match'.")
+                raise ValueError(
+                    f"Invalid configuration for pattern_match assertion '{self.assertion_id}': "
+                    "must include 'regex_pattern' and 'should_match'."
+                )
+            if not isinstance(self.configuration["regex_pattern"], str):
+                raise ValueError(
+                    f"'regex_pattern' must be a string for assertion '{self.assertion_id}'."
+                )
+            if not isinstance(self.configuration["should_match"], bool):
+                raise ValueError(
+                    f"'should_match' must be a boolean for assertion '{self.assertion_id}'."
+                )
         elif self.type == "simulation_check":
             # This might integrate with a scenario runner similar to SemanticValidator
-            if not ("scenario_input" in self.configuration and "expected_query_path" in self.configuration and "expected_query_result" in self.configuration):
-                raise ValueError(f"Invalid configuration for simulation_check assertion '{self.assertion_id}': "
-                                 "must include 'scenario_input', 'expected_query_path', and 'expected_query_result'.")
+            if not (
+                "scenario_input" in self.configuration
+                and "expected_query_path" in self.configuration
+                and "expected_query_result" in self.configuration
+            ):
+                raise ValueError(
+                    f"Invalid configuration for simulation_check assertion '{self.assertion_id}': "
+                    "must include 'scenario_input', 'expected_query_path', and 'expected_query_result'."
+                )
         # Add validation for other types as they are defined
         else:
-            logger.warning(f"No specific configuration validation for assertion type '{self.type}' on '{self.assertion_id}'.")
-
+            logger.warning(
+                f"No specific configuration validation for assertion type '{self.type}' "
+                f"on '{self.assertion_id}'."
+            )
 
     def __repr__(self) -> str:
         return (f"SafetyAssertion(id='{self.assertion_id}', type='{self.type}', "
