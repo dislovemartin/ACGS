@@ -162,7 +162,11 @@ class OpenAILLMService(LLMService):
             logger.debug(f"Sending structured output prompt to OpenAI model {selected_model}: {json_prompt[:200]}...")
             
             # For newer models that support JSON mode (e.g., gpt-3.5-turbo-1106, gpt-4-1106-preview)
-            if "1106" in selected_model or "gpt-4" in selected_model: # Heuristic for models supporting JSON mode
+            # Models known to support JSON mode - update this list as new models are released
+            json_mode_models = {"gpt-3.5-turbo-1106", "gpt-4-1106-preview", "gpt-4-turbo-preview"}
+            supports_json_mode = any(model in selected_model for model in json_mode_models)
+            
+            if supports_json_mode:
                 response = openai.chat.completions.create(
                     model=selected_model,
                     messages=[{"role": "user", "content": json_prompt}],
