@@ -13,15 +13,16 @@ Functions:
     hash_data: Hashes data using SHA-256.
 """
 
-import hashlib
-import os # For API keys or secure paths, if needed in future
+ import hashlib
+-from os import  # For API keys or secure paths, if needed in future
++from typing import Optional
 
-# For digital signatures - requires 'cryptography' library
-# Ensure 'cryptography' is in requirements.txt
-try:
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.hazmat.primitives.asymmetric import rsa, padding
-    from cryptography.hazmat.primitives import serialization
+ # For digital signatures - requires 'cryptography' library
+ # Ensure 'cryptography' is in requirements.txt
+ try:
+     from cryptography.hazmat.primitives import hashes
+     from cryptography.hazmat.primitives.asymmetric import rsa, padding
+     from cryptography.hazmat.primitives import serialization
     CRYPTOGRAPHY_AVAILABLE = True
 except ImportError:
     CRYPTOGRAPHY_AVAILABLE = False
