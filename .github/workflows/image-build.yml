@@ -1,4 +1,6 @@
 name: Docker images
+permissions:
+  contents: read
 
 on: [push, pull_request]
 
