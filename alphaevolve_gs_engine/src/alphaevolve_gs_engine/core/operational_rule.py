@@ -81,13 +81,13 @@ class OperationalRule:
         """
         Updates the attributes of the rule and increments its version.
         """
-        if name:
+        if name is not None:
             self.name = name
-        if description:
+        if description is not None:
             self.description = description
-        if policy_code:
+        if policy_code is not None:
             self.policy_code = policy_code
-        if derived_from_principles:
+        if derived_from_principles is not None:
             self.derived_from_principles = derived_from_principles
         if is_active is not None:
             self.is_active = is_active
