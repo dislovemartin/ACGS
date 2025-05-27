@@ -282,7 +282,15 @@ class LLMBiasReviewer(BiasValidator):
                 results.append((metric.metric_id, False, "LLM prompt template missing in metric configuration.", None))
                 continue
             
-            prompt = prompt_template.format(policy_code=policy_code, policy_id=policy_id, policy_language=policy_language)
+            try:
+                prompt = prompt_template.format(
+                    policy_code=policy_code,
+                    policy_id=policy_id,
+                    policy_language=policy_language
+                )
+            except KeyError as e:
+                results.append((metric.metric_id, False, f"Invalid prompt template: {e}", None))
+                continue
             
             # Mocked LLM Call
             logger.debug(f"Mocking LLM call for bias review of policy '{policy_id}', metric '{metric.metric_id}'. Prompt snippet: {prompt[:100]}...")
