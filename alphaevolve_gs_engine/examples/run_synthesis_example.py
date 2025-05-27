@@ -56,8 +56,10 @@ def run_example():
                             # Attempt to extract package name from prompt (very basic)
                             import re
                             match = re.search(r"package named '([^']*)'", prompt)
-                            if match: package_name = match.group(1)
-                        except: pass # Ignore if regex fails
+                            if match:
+                                package_name = match.group(1)
+                        except Exception:
+                            pass  # Ignore if regex fails
 
                     mock_rego_code = f"""
 POLICY_CODE_START
