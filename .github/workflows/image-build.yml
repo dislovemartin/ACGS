@@ -1,0 +1,31 @@
+name: Docker images
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: dev
+            file: .devcontainer/Dockerfile
+            context: .
+            image: ghcr.io/${{ github.repository }}/dev
+          - name: auth
+            file: auth_service/Dockerfile
+            context: auth_service
+            image: ghcr.io/${{ github.repository }}/auth
+          - name: backend
+            file: backend/ac_service/Dockerfile
+            context: backend/ac_service
+            image: ghcr.io/${{ github.repository }}/backend
+          - name: frontend
+            file: frontend/Dockerfile
+            context: frontend
+            image: ghcr.io/${{ github.repository }}/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - run: |
+          docker buildx build             -f ${{ matrix.file }}             -t ${{ matrix.image }}:pr-${{ github.sha }}             --load             ${{ matrix.context }}
