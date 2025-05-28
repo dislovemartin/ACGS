@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ac-service-deployment
+  labels:
+    app: ac-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ac-service
+  template:
+    metadata:
+      labels:
+        app: ac-service
+    spec:
+      containers:
+      - name: ac-service
+        image: yourdockerhubusername/ac-service:latest # Replace with your actual image path
+        ports:
+        - containerPort: 8001 # Port exposed by AC Service (see its Dockerfile)
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials # K8s secret holding DB connection string
+              key: database_url
+        - name: APP_NAME 
+          value: "Audit & Compliance Service"
+        # Add other necessary environment variables
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ac-service
+spec:
+  selector:
+    app: ac-service
+  ports:
+    - protocol: TCP
+      port: 8001 # Port the service will be available on within the K8s cluster
+      targetPort: 8001 # Port the container is listening on
+  type: ClusterIP # Use LoadBalancer if you need to expose it externally directly (less common for backend services)

@@ -1,0 +1,84 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: acgs_pgp_main_with_figures.aux
+The style file: ACM-Reference-Format.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: acgs_pgp_refs.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--no key, author in ISOIEC42001
+Warning--to sort, need author or key in ISOIEC42001
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Warning--no key, author in ISOIEC42001
+Warning--no key, author in ISOIEC42001
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--no key, author in ISOIEC42001
+Warning--empty author in ISOIEC42001
+Warning--no number and no volume in BaiConstitutionalAI22
+Warning--page numbers missing in both pages and numpages fields in BaiConstitutionalAI22
+Warning--no number and no volume in BarocasCalibrationFairnessML19
+Warning--page numbers missing in both pages and numpages fields in BarocasCalibrationFairnessML19
+Warning--empty address in BeauchampTomssPrinciplesEthics
+Warning--empty address in BrownSoftwareArchitectureC4
+Warning--empty address in BuolamwiniGebru18
+Warning--no number and no volume in ChakrabortiVeriPlan25
+Warning--page numbers missing in both pages and numpages fields in ChakrabortiVeriPlan25
+Warning--empty address in FishkinDeliberativePolling
+Warning--no number and no volume in AnthropicCollectiveConstitutionalAI23
+Warning--page numbers missing in both pages and numpages fields in AnthropicCollectiveConstitutionalAI23
+Warning--no number and no volume in HoepmanPrivacyDesignStrategies14
+Warning--no number and no volume in KatzCertifiedReliability17
+Warning--no number and no volume in LianProgent25
+Warning--page numbers missing in both pages and numpages fields in LianProgent25
+Warning--empty publisher in LiuPropertyGPT25
+Warning--empty address in LiuPropertyGPT25
+Warning--page numbers missing in both pages and numpages fields in LiuPropertyGPT25
+Warning--page numbers missing in both pages and numpages fields in MartinezComplianceByDesign19
+Warning--no number and no volume in WangAgentSpec25
+Warning--page numbers missing in both pages and numpages fields in WangAgentSpec25
+Warning--no number and no volume in WangFormalVerificationNeural21
+You've used 37 entries,
+            5981 wiz_defined-function locations,
+            1725 strings with 27709 characters,
+and the built_in function-call counts, 40655 in all, are:
+= -- 5422
+> -- 1622
+< -- 0
++ -- 543
+- -- 594
+* -- 3042
+:= -- 4197
+add.period$ -- 201
+call.type$ -- 37
+change.case$ -- 318
+chr.to.int$ -- 37
+cite$ -- 70
+duplicate$ -- 3228
+empty$ -- 2307
+format.name$ -- 670
+if$ -- 9819
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 101
+newline$ -- 399
+num.names$ -- 252
+pop$ -- 1270
+preamble$ -- 1
+purify$ -- 606
+quote$ -- 0
+skip$ -- 1135
+stack$ -- 0
+substring$ -- 2664
+swap$ -- 270
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 785
+warning$ -- 29
+while$ -- 241
+width$ -- 0
+write$ -- 792
+(There were 29 warnings)
