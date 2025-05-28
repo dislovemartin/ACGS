@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acgs-pgp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acgs-pgp
+  template:
+    metadata:
+      labels:
+        app: acgs-pgp
+    spec:
+      containers:
+      - name: ac-service
+        image: ac-service:latest # Replace with actual image
+        ports:
+        - containerPort: 8000
+      # Add other services here 

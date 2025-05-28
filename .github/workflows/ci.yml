@@ -1,0 +1,121 @@
+name: ACGS-PGP CI
+
+on:
+  push:
+    branches: [ main ] # Assuming 'main' is the primary branch
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    name: Build LaTeX PDF
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4 # Use latest major version
+
+      - name: Install texlive-full
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends texlive-full
+        # Note: texlive-full is very large and can make the CI slow.
+        # Consider a more minimal TeX Live installation if specific dependencies are known.
+
+      - name: Compile LaTeX document
+        run: |
+          # Acknowledgment: This step might fail if CI runners encounter the same
+          # file path limitations with colons/parentheses as the agent's tools.
+          # The path used here is based on the project structure.
+          FILE_PATH="Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems/acgs_pgp_main_with_figures.tex"
+          if [ -f "$FILE_PATH" ]; then
+            latexmk -pdf -interaction=nonstopmode "$FILE_PATH"
+          else
+            echo "File not found: $FILE_PATH"
+            # Attempt to find and compile any .tex file in that directory as a fallback
+            TARGET_DIR="Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems"
+            MAIN_TEX_FILE=$(find "$TARGET_DIR" -maxdepth 1 -name "*.tex" -print -quit)
+            if [ -n "$MAIN_TEX_FILE" ]; then
+              echo "Attempting to compile fallback file: $MAIN_TEX_FILE"
+              latexmk -pdf -interaction=nonstopmode "$MAIN_TEX_FILE"
+            else
+              echo "No .tex file found in $TARGET_DIR. Skipping compilation."
+              exit 1 # Or handle as a non-critical failure if preferred
+            fi
+          fi
+        working-directory: . # Ensure latexmk is run from the repo root if paths are relative
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4 # Use latest major version
+        with:
+          name: compiled-paper
+          # The path needs to correctly point to the generated PDF.
+          # latexmk usually creates the PDF in the same directory as the .tex file.
+          # If the compilation step changes directory, adjust this path.
+          path: |
+            Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems/*.pdf
+            !Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems/*_with_figures.pdf # Exclude if only the main one is desired
+          if-no-files-found: warn # 'warn' or 'error' or 'ignore'
+
+  markdown_lint:
+    runs-on: ubuntu-latest
+    name: Lint Markdown Files
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Markdown Lint
+        uses: avto-dev/markdown-lint@v1
+        with:
+          # Optional: specify a config file, or rules, or ignore paths
+          # config: '.markdownlint.json'
+          # rules: 'MD013,MD029'
+          # ignore: 'docs/old_stuff/*.md'
+          args: '**/*.md' # Lint all markdown files in the repository
+
+  trufflehog_scan:
+    runs-on: ubuntu-latest
+    name: Scan for Secrets (Trufflehog)
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for Trufflehog to scan effectively
+
+      - name: Run Trufflehog Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          # Scan the entire repository history up to the current commit.
+          # --fail: Exit with non-zero status if secrets are found.
+          # --since-commit HEAD: Scans only the latest commit (less thorough for PRs on existing repos)
+          # For PRs, scanning the entire branch history or comparing with 'main' might be better.
+          # Using `path: .` to scan the whole repo.
+          # `extra_args: --fail --json` for machine-readable output if needed later.
+          # The default behavior of the action might be to scan the whole repo.
+          # Let's use a common setting for scanning recent changes in PRs vs. full scan on main.
+          # This example scans the whole repo:
+          path: .
+          extra_args: --fail --only-verified # Only fail for verified secrets, reduce noise
+          # To scan only changes relative to the target branch (e.g., main) in a PR:
+          # run: |
+          #   git fetch origin ${{ github.base_ref }} --depth=1
+          #   trufflehog --fail --only-verified --since-commit origin/${{ github.base_ref }} .
+          # This is more complex to set up correctly with the action directly.
+          # The action's default behavior is often sufficient for a general scan.
+          # For now, keeping it simple to scan the current state.
+          # A more robust approach for PRs would be:
+          # `trufflehog filesystem . --since-commit ${{ github.event.pull_request.base.sha }}`
+          # However, the action might handle this implicitly or require specific args.
+          # The default trufflehog@main action scans the full history of the repo.
+          # Adding --since-commit HEAD will only scan the current commit, which is not what we want.
+          # The action's documentation should be consulted for best practices on PRs.
+          # For now, a full scan is acceptable. The `--only-verified` flag will help.
+          # To scan only the latest commit (not recommended for comprehensive security):
+          # extra_args: --fail --only-verified --since-commit HEAD
+
+          # To scan the entire repo history (can be slow on large repos):
+          # No specific args needed for path, action defaults to current directory.
+          # `fetch-depth: 0` is important for this.
+          # `extra_args: --fail --only-verified` is a good default.

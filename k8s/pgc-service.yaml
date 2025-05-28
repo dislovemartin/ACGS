@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgc-service-deployment
+  labels:
+    app: pgc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgc-service
+  template:
+    metadata:
+      labels:
+        app: pgc-service
+    spec:
+      containers:
+      - name: pgc-service
+        image: yourdockerhubusername/pgc-service:latest # Replace with your actual image path
+        ports:
+        - containerPort: 8005 # Port exposed by PGC Service
+        env:
+        - name: LLM_API_ENDPOINT 
+          value: "http://ollama-service:11434/api/generate" # Example, if Ollama runs as a K8s service
+        # Add other necessary environment variables
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgc-service
+spec:
+  selector:
+    app: pgc-service
+  ports:
+    - protocol: TCP
+      port: 8005
+      targetPort: 8005
+  type: ClusterIP

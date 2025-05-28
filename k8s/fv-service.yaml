@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fv-service-deployment
+  labels:
+    app: fv-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fv-service
+  template:
+    metadata:
+      labels:
+        app: fv-service
+    spec:
+      containers:
+      - name: fv-service
+        image: yourdockerhubusername/fv-service:latest # Replace with your actual image path
+        ports:
+        - containerPort: 8003 # Port exposed by FV Service
+        env:
+        - name: VERIFICATION_TOOL_ENDPOINT 
+          value: "http://some-verification-tool:8080/verify" # Adjust as needed
+        # Add other necessary environment variables
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fv-service
+spec:
+  selector:
+    app: fv-service
+  ports:
+    - protocol: TCP
+      port: 8003
+      targetPort: 8003
+  type: ClusterIP
