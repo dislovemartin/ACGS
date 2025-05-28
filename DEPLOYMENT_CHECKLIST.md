@@ -146,62 +146,144 @@ curl -X POST http://localhost:8000/ac/meta-rules \
 echo "✅ Meta-rules component implemented"
 ```
 
-#### 1.1.4 Implement Conflict Resolution Mapping (M)
+#### 1.1.4 ✅ Conflict Resolution Mapping (M) - COMPLETED
+**Status: IMPLEMENTED** - Principle conflict detection and resolution strategies
+
+**Test Conflict Resolution Functionality:**
 ```bash
-# Test principle conflict detection
-curl -X POST http://localhost:8000/ac/conflict-analysis \
+# Test conflict resolution creation
+curl -X POST http://localhost:8000/api/v1/constitutional-council/conflict-resolutions \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "principle_ids": ["principle_1", "principle_2"],
-    "context": "data_retention_vs_privacy"
+    "conflict_type": "principle_contradiction",
+    "principle_ids": [1, 2],
+    "context": "data_retention_vs_privacy",
+    "conflict_description": "Data retention requirements conflict with privacy deletion rights",
+    "severity": "high",
+    "resolution_strategy": "principle_priority_based",
+    "resolution_details": {
+      "primary_principle": 1,
+      "secondary_principle": 2,
+      "balancing_criteria": ["user_consent", "legal_requirement", "business_necessity"]
+    },
+    "precedence_order": [1, 2]
   }'
 
-echo "✅ Conflict resolution mapping implemented"
+# Test conflict resolution listing and filtering
+curl -X GET http://localhost:8000/api/v1/constitutional-council/conflict-resolutions?severity=high \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Test conflict resolution retrieval
+curl -X GET http://localhost:8000/api/v1/constitutional-council/conflict-resolutions/1 \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+echo "✅ Conflict resolution mapping implemented with full CRUD operations"
 ```
 
 ### 1.2 Democratic Legitimacy Framework
 
-#### 1.2.1 Constitutional Council Setup
-```bash
-# Create Constitutional Council roles and permissions
-curl -X POST http://localhost:8000/auth/roles \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "constitutional_council",
-    "description": "Members of the Constitutional Council with AC amendment authority",
-    "permissions": ["ac:amend", "ac:vote", "ac:propose"]
-  }'
+#### 1.2.1 ✅ Constitutional Council Setup - COMPLETED
+**Status: IMPLEMENTED** - Amendment proposal workflow, voting mechanisms, and democratic governance
 
+**Test Constitutional Council Functionality:**
+```bash
 # Test amendment proposal workflow
-curl -X POST http://localhost:8000/ac/amendments/propose \
+curl -X POST http://localhost:8001/api/v1/constitutional-council/amendments \
   -H "Authorization: Bearer $COUNCIL_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "principle_id": "principle_1",
-    "proposed_changes": "Updated privacy requirements for AI systems",
-    "justification": "Alignment with emerging AI governance standards"
-  }'
-
-echo "✅ Constitutional Council framework implemented"
-```
-
-#### 1.2.2 Public Consultation Mechanisms
-```bash
-# Test public consultation interface
-curl -X POST http://localhost:8000/ac/consultations \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amendment_id": "amendment_1",
+    "principle_id": 1,
+    "amendment_type": "modify",
+    "proposed_changes": "Update privacy principle to include AI-specific requirements",
+    "justification": "Emerging AI technologies require enhanced privacy protections",
+    "proposed_content": "Enhanced privacy principle with AI governance requirements",
     "consultation_period_days": 30,
     "public_comment_enabled": true,
     "stakeholder_groups": ["citizens", "experts", "affected_parties"]
   }'
 
-echo "✅ Public consultation mechanisms implemented"
+# Test amendment listing and filtering
+curl -X GET http://localhost:8001/api/v1/constitutional-council/amendments?status=proposed \
+  -H "Authorization: Bearer $USER_TOKEN"
+
+# Test voting mechanism
+curl -X POST http://localhost:8001/api/v1/constitutional-council/amendments/1/votes \
+  -H "Authorization: Bearer $COUNCIL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vote": "for",
+    "reasoning": "This amendment improves AI transparency and aligns with democratic values"
+  }'
+
+# Test public comment system
+curl -X POST http://localhost:8001/api/v1/constitutional-council/amendments/1/comments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "comment_text": "I support this amendment as it enhances privacy protection",
+    "sentiment": "support",
+    "stakeholder_group": "citizen"
+  }'
+
+# Test meta-rules framework
+curl -X POST http://localhost:8001/api/v1/constitutional-council/meta-rules \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rule_type": "amendment_procedure",
+    "name": "Constitutional Amendment Procedure",
+    "description": "Defines how AC principles can be modified",
+    "rule_definition": {
+      "threshold": 0.67,
+      "stakeholder_roles": ["admin", "constitutional_council"],
+      "decision_mechanism": "supermajority_vote"
+    },
+    "threshold": "0.67",
+    "stakeholder_roles": ["admin", "constitutional_council"],
+    "decision_mechanism": "supermajority_vote"
+  }'
+
+echo "✅ Constitutional Council framework implemented with full democratic governance"
 ```
+
+#### 1.2.2 🔄 Public Consultation Mechanisms - IN PROGRESS
+**Status: PARTIALLY IMPLEMENTED** - Basic public comment system exists, needs enhanced consultation workflows
+
+**Current Implementation Status:**
+- ✅ Public comment system for amendments (via Constitutional Council)
+- ✅ Stakeholder group categorization
+- ✅ Comment sentiment tracking
+- ⚠️  Dedicated consultation endpoints need implementation
+- ⚠️  Consultation period management needs enhancement
+- ⚠️  Public notification mechanisms need development
+
+**Test Current Public Consultation Features:**
+```bash
+# Test public comment submission (currently working)
+curl -X POST http://localhost:8001/api/v1/constitutional-council/amendments/1/comments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "comment_text": "I support this amendment as it enhances privacy protection for citizens",
+    "sentiment": "support",
+    "stakeholder_group": "citizen"
+  }'
+
+# Test comment retrieval with public filtering
+curl -X GET http://localhost:8001/api/v1/constitutional-council/amendments/1/comments?is_public=true
+
+# Test amendment consultation features
+curl -X GET http://localhost:8001/api/v1/constitutional-council/amendments?public_comment_enabled=true
+
+echo "✅ Basic public consultation features working"
+echo "⚠️  Enhanced consultation workflows need implementation"
+```
+
+**Next Implementation Steps:**
+1. Create dedicated consultation management endpoints
+2. Implement consultation period automation
+3. Add public notification mechanisms
+4. Enhance stakeholder engagement features
+5. Add consultation analytics and reporting
 
 ### 1.3 ✅ Enhanced Governance Synthesis (GS) Engine - COMPLETED
 
