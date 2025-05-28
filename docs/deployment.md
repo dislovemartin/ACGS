@@ -86,7 +86,7 @@ Refer to the `acgs-pgp/k8s/README.md` file for detailed instructions on deployin
     *   Ensure DNS resolution is working within the cluster.
 *   **Migration Errors:**
     *   Ensure the `DATABASE_URL` is correct and the database server is accessible from where Alembic is run (either `alembic-runner` container or your local environment if running directly).
-    *   Check that `backend.shared.models.Base` is correctly imported in `db/env.py` so Alembic can detect model changes for autogeneration.
+    *   Check that `Base` from `shared.models` (or `shared.database`) is correctly imported in `alembic/env.py` so Alembic can detect model changes for autogeneration.
 *   **Image Pull Errors (Kubernetes):**
     *   Ensure image names and tags are correct in deployment YAMLs.
     *   Verify the Kubernetes cluster has permissions to pull from your container registry (e.g., using `imagePullSecrets`).
