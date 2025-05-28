@@ -85,6 +85,12 @@ async def analyze_constitutional_context_endpoint(
             auth_token=auth_token
         )
         
+        if "error" in constitutional_context:
+            return {
+                "context": context,
+                "constitutional_context": None,
+                "error": constitutional_context["error"]
+            }
         return {
             "context": context,
             "constitutional_context": constitutional_context,
