@@ -19,24 +19,27 @@ The system comprises the following core microservices, each running in its own D
     *   Provides endpoints for retrieving principles and their associated guidelines.
 
 *   **Policy Generation & Customization Service (`pgc_service`):**
-    *   Core engine for generating new AI policies based on user requirements, existing templates, and selected principles.
-    *   Leverages Large Language Models (LLMs) or other template-based generation techniques.
-    *   Allows users to customize generated policies.
+    *   Core engine for *evaluating* AI policies based on user requirements, existing templates, and selected principles using its Datalog engine.
+    *   Allows users to customize generated policies (customization input is manual in Phase 1).
+    *   In Phase 1, PGC Service focuses on evaluating policies using its Datalog engine; advanced policy generation is handled by GS Service.
 
 *   **Formal Verification Service (`fv_service`):**
     *   Integrates with formal verification tools (e.g., TLA+, Z3, custom model checkers) to mathematically verify properties of AI policies or system designs against specifications.
     *   Accepts policy definitions/models and properties to check.
     *   Returns verification results.
+    *   Currently, the Formal Verification Service provides a foundational interface (mock implementation). Integration with specific formal verification tools is planned for Phase 2.
 
 *   **Governance Structure Service (`gs_service`):**
     *   Manages the organizational governance structure related to AI.
     *   Defines roles, responsibilities, decision-making processes, and escalation paths.
     *   Helps map policies to accountable parties.
+    *   Currently, this service defines the framework for governance structures. LLM-driven policy synthesis and advanced generation capabilities are planned for Phase 2.
 
 *   **Data Integrity Service (`integrity_service`):**
     *   Provides mechanisms for ensuring the integrity of critical data, such as policies, audit logs, and verification results.
     *   May involve cryptographic hashing, digital signatures, or blockchain-based logging.
     *   Manages audit logs from all services.
+    *   In its current phase, the Data Integrity Service establishes the groundwork for managing audit logs. Advanced mechanisms like cryptographic hashing/signatures for all artifacts or blockchain logging are future enhancements.
 
 *   **Frontend Service:**
     *   A React-based single-page application (SPA) providing the user interface for interacting with all backend services.
@@ -68,7 +71,7 @@ The system comprises the following core microservices, each running in its own D
     *   Services communicate with each other via RESTful APIs (HTTP/JSON).
     *   Synchronous communication is typical for direct requests.
     *   Asynchronous communication (e.g., via a message queue like RabbitMQ or Kafka) could be introduced for tasks like triggering formal verification or complex policy generation steps to improve responsiveness, but is not part of the initial core design.
-    <!-- TODO: Insert sequence diagram illustrating user registration and login flow, followed by a request to generate a policy, here. -->
+    (Future Enhancement: A detailed sequence diagram illustrating key interaction flows will be added in a future update.)
 
 ## 5. Technology Stack Summary
 

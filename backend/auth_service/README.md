@@ -30,4 +30,8 @@ Key endpoints typically include:
 -   Passlib for password hashing
 -   Python-JOSE for JWTs
 
-Refer to `requirements.txt` for specific package versions.
+Refer to `requirements.txt` for specific package versions. Core shared models and schemas are typically in `shared/models.py` and `shared/schemas.py`.
+
+## Local Development
+
+For general setup, refer to the main project `README.md` and `docs/developer_guide.md`. This service can be run using Uvicorn: `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
