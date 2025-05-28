@@ -78,7 +78,7 @@ CONSTITUTIONAL COMPLIANCE REQUIREMENTS:
                 "category": category,
                 "principles": [],
                 "principle_count": 0,
-                "error": str(e)
+                "error": "An internal error occurred while building the constitutional context."
             }
 
     async def _fetch_relevant_principles(
