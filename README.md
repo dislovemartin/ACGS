@@ -19,7 +19,7 @@ This project implements the core components of the ACGS-PGP framework, including
 -   **Frontend:** JavaScript (React)
 -   **Database:** PostgreSQL
 -   **Containerization:** Docker
--   **Orchestration (Optional):** Kubernetes
+-   **Orchestration:** Docker Compose (for local development and service management); Kubernetes manifests are provided in `k8s/` for future deployment strategies (see `k8s/README.md`).
 -   **Database Migrations:** Alembic
 -   **API Gateway (Docker Compose):** Nginx
 

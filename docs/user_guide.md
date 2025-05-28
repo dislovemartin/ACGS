@@ -27,8 +27,7 @@ ACGS-PGP is a web-based platform designed to help organizations:
 ## 4. Dashboard
 
 The Dashboard is your main landing page after logging in. It provides:
--   An overview of system activity (e.g., number of active policies, compliance status - placeholders for now).
--   Quick links to different sections of the platform.
+-   An overview of system activity and quick links to different sections of the platform. (Note: Specific widgets and detailed analytics on the dashboard are currently placeholders and will be populated in future development iterations.)
 
 ## 5. Navigating the Platform
 
