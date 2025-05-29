@@ -1,0 +1,186 @@
+name: Build and Validate AlphaEvolve-ACGS Paper
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'AlphaEvolve-ACGS_Integration_System/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'AlphaEvolve-ACGS_Integration_System/**'
+
+jobs:
+  build-paper:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install TeX Live
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y texlive-full
+        sudo apt-get install -y python3-pip
+        pip3 install matplotlib numpy
+        
+    - name: Generate missing figures
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        python3 create_missing_figures.py
+        
+    - name: Build PDF
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        # First pass
+        pdflatex -interaction=nonstopmode main.tex
+        # Bibliography
+        bibtex main
+        # Second pass for references
+        pdflatex -interaction=nonstopmode main.tex
+        # Final pass for cross-references
+        pdflatex -interaction=nonstopmode main.tex
+        
+    - name: Check for compilation errors
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        if grep -q "! " main.log; then
+          echo "LaTeX compilation errors found:"
+          grep "! " main.log
+          exit 1
+        fi
+        
+    - name: Validate PDF metadata
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        # Check if PDF was created
+        if [ ! -f main.pdf ]; then
+          echo "PDF was not generated"
+          exit 1
+        fi
+        
+        # Check PDF metadata using pdfinfo
+        sudo apt-get install -y poppler-utils
+        pdfinfo main.pdf > pdf_metadata.txt
+        
+        # Verify title is set
+        if ! grep -q "Title:" pdf_metadata.txt; then
+          echo "PDF title metadata is missing"
+          exit 1
+        fi
+        
+        # Verify subject is set
+        if ! grep -q "Subject:" pdf_metadata.txt; then
+          echo "PDF subject metadata is missing"
+          exit 1
+        fi
+        
+        echo "PDF metadata validation passed"
+        cat pdf_metadata.txt
+        
+    - name: Check bibliography integrity
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        # Check for undefined references
+        if grep -q "Warning.*undefined" main.log; then
+          echo "Undefined references found:"
+          grep "Warning.*undefined" main.log
+          exit 1
+        fi
+        
+        # Check for missing citations
+        if grep -q "Warning.*Citation.*undefined" main.log; then
+          echo "Undefined citations found:"
+          grep "Warning.*Citation.*undefined" main.log
+          exit 1
+        fi
+        
+        echo "Bibliography validation passed"
+        
+    - name: Validate cross-references
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        # Check for undefined labels
+        if grep -q "Warning.*reference.*undefined" main.log; then
+          echo "Undefined cross-references found:"
+          grep "Warning.*reference.*undefined" main.log
+          exit 1
+        fi
+        
+        echo "Cross-reference validation passed"
+        
+    - name: Generate build report
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        echo "# Build Report" > build_report.md
+        echo "## PDF Information" >> build_report.md
+        echo "\`\`\`" >> build_report.md
+        pdfinfo main.pdf >> build_report.md
+        echo "\`\`\`" >> build_report.md
+        
+        echo "## Page Count" >> build_report.md
+        pages=$(pdfinfo main.pdf | grep "Pages:" | awk '{print $2}')
+        echo "Total pages: $pages" >> build_report.md
+        
+        echo "## File Size" >> build_report.md
+        size=$(ls -lh main.pdf | awk '{print $5}')
+        echo "PDF size: $size" >> build_report.md
+        
+        echo "## Compilation Warnings" >> build_report.md
+        echo "\`\`\`" >> build_report.md
+        grep "Warning" main.log | head -20 >> build_report.md || echo "No warnings found" >> build_report.md
+        echo "\`\`\`" >> build_report.md
+        
+    - name: Upload PDF artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: alphaevolve-acgs-paper
+        path: |
+          AlphaEvolve-ACGS_Integration_System/main.pdf
+          AlphaEvolve-ACGS_Integration_System/build_report.md
+          AlphaEvolve-ACGS_Integration_System/pdf_metadata.txt
+        retention-days: 30
+        
+    - name: Upload build logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          AlphaEvolve-ACGS_Integration_System/main.log
+          AlphaEvolve-ACGS_Integration_System/main.blg
+        retention-days: 7
+
+  lint-latex:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install ChkTeX
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chktex
+        
+    - name: Lint LaTeX files
+      working-directory: AlphaEvolve-ACGS_Integration_System
+      run: |
+        # Run ChkTeX with custom configuration
+        chktex -v0 -q main.tex > chktex_report.txt || true
+        
+        # Display results
+        if [ -s chktex_report.txt ]; then
+          echo "ChkTeX found potential issues:"
+          cat chktex_report.txt
+        else
+          echo "No ChkTeX issues found"
+        fi
+        
+    - name: Upload lint report
+      uses: actions/upload-artifact@v4
+      with:
+        name: latex-lint-report
+        path: AlphaEvolve-ACGS_Integration_System/chktex_report.txt
+        retention-days: 7
