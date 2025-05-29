@@ -15,7 +15,7 @@ The research is primarily anchored by two interconnected bodies of work:
     *   **Primary Document:** For a comprehensive understanding, refer to the main research paper:
         *   [ACGS-PGP: Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems](../ACGS-pgp.md)
     *   **Supporting Materials:** Detailed manuscript and figures can be found in:
-        *   [Artificial Constitutionalism Directory](../Artificial%20Constitutionalism%3A%20A%20Self-Synthesizing%20Prompt%20Governance%20Compiler%20(ACGS-PGP)%20Framework%20for%20Advanced%20AI%20Systems/)
+        *   [ACGS-PGP Framework Directory](../ACGS-PGP_Framework/)
 
 2.  **AlphaEvolve-ACGS Integration System**
     *   **Focus:** This work applies and extends the constitutional governance concepts to the domain of Evolutionary Computation (EC). It proposes a co-evolutionary framework where governance mechanisms dynamically adapt alongside evolving AI systems.
@@ -25,7 +25,7 @@ The research is primarily anchored by two interconnected bodies of work:
         *   Real-time constitutional enforcement within evolutionary loops.
         *   Mechanisms for democratic governance and oversight in evolving AI.
     *   **Primary Document & Supporting Materials:** Details, including a reproducibility guide, are available in:
-        *   [AlphaEvolve-ACGS Directory](../AlphaEvolve-ACGS%20Integration%20System%3A%20A%20Framework%20for%20Constitutionally%20Governed%20Evolutionary%20Computation/)
+        *   [AlphaEvolve-ACGS Integration System Directory](../AlphaEvolve-ACGS_Integration_System/)
         *   (Specifically, the main paper is likely `main.pdf` or a similar named PDF within this directory, though `ACGS-pgp.md` also contains a version of this research.)
 
 ## Key Research Themes
@@ -43,11 +43,11 @@ This project explores several critical themes in AI governance and safety:
 ## Getting Started for Researchers
 
 1.  **Core Reading:** Begin with the [ACGS-PGP Framework Paper](../ACGS-pgp.md) for a foundational understanding. This single file currently contains material for both the general framework and the AlphaEvolve application.
-2.  **Evolutionary Governance Focus:** For specific details on the Evolutionary Computation application, refer to the latter sections of [ACGS-pgp.md](../ACGS-pgp.md) and the materials within the [AlphaEvolve-ACGS Directory](../AlphaEvolve-ACGS%20Integration%20System%3A%20A%20Framework%20for%20Constitutionally%20Governed%20Evolutionary%20Computation/).
+2.  **Evolutionary Governance Focus:** For specific details on the Evolutionary Computation application, refer to the latter sections of [ACGS-pgp.md](../ACGS-pgp.md) and the materials within the [AlphaEvolve-ACGS Integration System Directory](../AlphaEvolve-ACGS_Integration_System/).
 3.  **Core Engine:** To understand a key technical component used in the research for policy synthesis and validation, review the documentation for the `alphaevolve_gs_engine`:
     *   [alphaevolve_gs_engine README](../alphaevolve_gs_engine/README.md)
 4.  **Reproducibility:** For reproducing experiments related to AlphaEvolve, consult its specific:
-    *   [Reproducibility Guide](../AlphaEvolve-ACGS%20Integration%20System%3A%20A%20Framework%20for%20Constitutionally%20Governed%20Evolutionary%20Computation/reproducibility_guide.md) (Note: This guide will be enhanced as part of this documentation update).
+    *   [Reproducibility Guide](../AlphaEvolve-ACGS_Integration_System/reproducibility_guide.md) (Note: This guide will be enhanced as part of this documentation update).
 5.  **System Architecture:** For the broader software system implementing these concepts, see:
     *   [System Architecture Document](./architecture.md)
     *   [Developer Guide](./developer_guide.md)

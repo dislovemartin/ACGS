@@ -29,13 +29,13 @@ jobs:
           # Acknowledgment: This step might fail if CI runners encounter the same
           # file path limitations with colons/parentheses as the agent's tools.
           # The path used here is based on the project structure.
-          FILE_PATH="Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems/acgs_pgp_main_with_figures.tex"
+          FILE_PATH="ACGS-PGP_Framework/acgs_pgp_main_with_figures.tex"
           if [ -f "$FILE_PATH" ]; then
             latexmk -pdf -interaction=nonstopmode "$FILE_PATH"
           else
             echo "File not found: $FILE_PATH"
             # Attempt to find and compile any .tex file in that directory as a fallback
-            TARGET_DIR="Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems"
+            TARGET_DIR="ACGS-PGP_Framework"
             MAIN_TEX_FILE=$(find "$TARGET_DIR" -maxdepth 1 -name "*.tex" -print -quit)
             if [ -n "$MAIN_TEX_FILE" ]; then
               echo "Attempting to compile fallback file: $MAIN_TEX_FILE"
@@ -55,8 +55,8 @@ jobs:
           # latexmk usually creates the PDF in the same directory as the .tex file.
           # If the compilation step changes directory, adjust this path.
           path: |
-            Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems/*.pdf
-            !Artificial Constitutionalism: A Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) Framework for Advanced AI Systems/*_with_figures.pdf # Exclude if only the main one is desired
+            ACGS-PGP_Framework/*.pdf
+            !ACGS-PGP_Framework/*_with_figures.pdf # Exclude if only the main one is desired
           if-no-files-found: warn # 'warn' or 'error' or 'ignore'
 
   markdown_lint:
