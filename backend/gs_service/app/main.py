@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.api.v1.synthesize import router as synthesize_router
 from app.api.v1.policy_management import router as policy_management_router # Added
 from app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router # Added Phase 1
+from app.api.v1.alphaevolve_integration import router as alphaevolve_router # Added Phase 2
 from app.services.ac_client import ac_service_client
 from app.services.integrity_client import integrity_service_client
 from app.services.fv_client import fv_service_client # Added FV client for shutdown
@@ -16,6 +17,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.include_router(synthesize_router, prefix="/api/v1/synthesize", tags=["Governance Synthesis"])
 app.include_router(policy_management_router, prefix="/api/v1/policy-management", tags=["Policy and Template Management"]) # Added
 app.include_router(constitutional_synthesis_router, prefix="/api/v1/constitutional", tags=["Constitutional Synthesis"]) # Added Phase 1
+app.include_router(alphaevolve_router, prefix="/api/v1/alphaevolve", tags=["AlphaEvolve Integration"]) # Added Phase 2
 
 @app.on_event("startup")
 async def on_startup():

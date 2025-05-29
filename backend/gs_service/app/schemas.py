@@ -235,3 +235,59 @@ class FVVerificationResponse(BaseModel):
     summary_message: Optional[str] = None
 
 # End of added schemas
+
+# Phase 2: AlphaEvolve Integration Schemas
+
+class ECProposal(BaseModel):
+    """Evolutionary Computation proposal for governance evaluation"""
+    proposal_id: str = Field(..., description="Unique identifier for the EC proposal")
+    solution_code: str = Field(..., description="Generated solution code to evaluate")
+    generation: int = Field(..., description="Generation number in EC process")
+    parent_ids: List[str] = Field(default_factory=list, description="Parent solution IDs")
+    fitness_context: Dict[str, Any] = Field(..., description="Context for fitness evaluation")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional EC metadata")
+
+class ECGovernanceDecision(BaseModel):
+    """Governance decision for an EC proposal"""
+    proposal_id: str = Field(..., description="ID of the evaluated proposal")
+    decision: str = Field(..., description="Governance decision (allow/deny/modify)")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence in the decision")
+    violated_principles: List[str] = Field(default_factory=list, description="IDs of violated principles")
+    governance_penalty: float = Field(0.0, description="Penalty score for fitness function")
+    explanation: str = Field(..., description="Human-readable explanation of decision")
+    enforcement_actions: List[str] = Field(default_factory=list, description="Required enforcement actions")
+    timestamp: datetime = Field(..., description="Decision timestamp")
+
+class ECConstitutionalPromptingInput(BaseModel):
+    """Input for constitutional prompting in EC context"""
+    ec_context: str = Field(..., description="Evolutionary computation context")
+    current_population: List[ECProposal] = Field(..., description="Current EC population")
+    optimization_objective: str = Field(..., description="EC optimization objective")
+    constitutional_constraints: List[str] = Field(..., description="Constitutional constraints to apply")
+    generation_guidance: bool = Field(True, description="Whether to provide generation guidance")
+
+class ECConstitutionalPromptingOutput(BaseModel):
+    """Output from constitutional prompting for EC"""
+    prompting_id: str = Field(..., description="Unique identifier for this prompting session")
+    constitutional_guidance: str = Field(..., description="Constitutional guidance for EC system")
+    fitness_modifications: Dict[str, Any] = Field(..., description="Suggested fitness function modifications")
+    operator_constraints: List[str] = Field(..., description="Constraints for EC operators")
+    population_filters: List[str] = Field(..., description="Population filtering rules")
+    synthesis_metadata: Dict[str, Any] = Field(..., description="Metadata about the prompting process")
+
+class ECGovernanceRequest(BaseModel):
+    """Request for EC governance evaluation"""
+    proposals: List[ECProposal] = Field(..., description="EC proposals to evaluate")
+    context: str = Field(..., description="Governance context")
+    real_time: bool = Field(True, description="Whether this is a real-time evaluation")
+    batch_size: Optional[int] = Field(None, description="Batch size for processing")
+    priority: str = Field("normal", description="Processing priority (low/normal/high/critical)")
+
+class ECGovernanceResponse(BaseModel):
+    """Response from EC governance evaluation"""
+    evaluation_id: str = Field(..., description="Unique identifier for this evaluation")
+    decisions: List[ECGovernanceDecision] = Field(..., description="Governance decisions for each proposal")
+    batch_summary: Dict[str, Any] = Field(..., description="Summary statistics for the batch")
+    processing_time_ms: float = Field(..., description="Processing time in milliseconds")
+    constitutional_compliance_rate: float = Field(..., description="Overall compliance rate")
+    recommendations: List[str] = Field(default_factory=list, description="Recommendations for EC system")

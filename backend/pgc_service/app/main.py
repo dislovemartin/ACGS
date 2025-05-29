@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pgc_service.app.api.v1.enforcement import router as enforcement_router
+from pgc_service.app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement_router # Added Phase 2
 from pgc_service.app.core.policy_manager import policy_manager
 from pgc_service.app.services.integrity_client import integrity_service_client
 from shared.security_middleware import add_security_headers # Import the shared middleware
@@ -11,6 +12,7 @@ app.middleware("http")(add_security_headers)
 
 # Include the API router for policy enforcement
 app.include_router(enforcement_router, prefix="/api/v1/enforcement", tags=["Policy Enforcement"])
+app.include_router(alphaevolve_enforcement_router, prefix="/api/v1/alphaevolve", tags=["AlphaEvolve Enforcement"]) # Added Phase 2
 
 @app.on_event("startup")
 async def on_startup():

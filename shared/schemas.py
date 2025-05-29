@@ -102,6 +102,14 @@ class PolicyRuleBase(BaseSchema):
     verification_status: Optional[str] = Field("not_verified", max_length=50)
     verification_feedback: Optional[Dict[str, Any]] = None
 
+    # Enhanced fields for audit findings
+    framework: Optional[str] = Field("Datalog", max_length=50, description="Policy framework: Datalog, Rego, JSON, YAML")
+    principle_text: Optional[str] = Field(None, description="Human-readable principle description")
+    pgp_signature: Optional[str] = Field(None, description="PGP signature for integrity verification")
+    source_file: Optional[str] = Field(None, max_length=500, description="Source file path for provenance")
+    content_hash: Optional[str] = Field(None, max_length=128, description="SHA-256 hash of rule content")
+    import_dependencies: Optional[List[str]] = Field(None, description="List of external modules/imports required")
+
 class PolicyRuleCreate(PolicyRuleBase):
     datalog_content: str = Field(...) # Make mandatory for creation
 

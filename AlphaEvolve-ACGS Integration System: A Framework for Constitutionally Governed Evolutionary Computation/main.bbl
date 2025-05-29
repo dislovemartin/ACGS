@@ -2,7 +2,7 @@
 %%% Do NOT edit. File created by BibTeX with style
 %%% ACM-Reference-Format-Journals [18-Jan-2012].
 
-\begin{thebibliography}{22}
+\begin{thebibliography}{26}
 
 %%% ====================================================================
 %%% NOTE TO THE USER: you can override these defaults by providing
@@ -112,6 +112,21 @@
 \tempurl}
 
 
+\bibitem[Barocas et~al\mbox{.}(2023)]%
+        {Barocas2023FairnessML}
+\bibfield{author}{\bibinfo{person}{Solon Barocas}, \bibinfo{person}{Moritz
+  Hardt}, {and} \bibinfo{person}{Arvind Narayanan}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Fairness and Machine Learning: Limitations and
+  Opportunities}.
+\newblock \bibinfo{journal}{\emph{MIT Press}} (\bibinfo{year}{2023}).
+\newblock
+\urldef\tempurl%
+\url{https://fairmlbook.org/}
+\showURL{%
+\tempurl}
+
+
 \bibitem[Chac{\'o}n~Menke and Tan(2025)]%
         {ChaconMenke2025CAISmallLLMs}
 \bibfield{author}{\bibinfo{person}{Ana-Gabriela Chac{\'o}n~Menke} {and}
@@ -142,6 +157,18 @@
 \url{https://arxiv.org/abs/2505.15741}
 \showURL{%
 \tempurl}
+
+
+\bibitem[Chouldechova(2017)]%
+        {Chouldechova2017FairPrediction}
+\bibfield{author}{\bibinfo{person}{Alexandra Chouldechova}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Fair Prediction with Disparate Impact: A Study of
+  Bias in Recidivism Prediction Instruments}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 5th Workshop on Fairness,
+  Accountability, and Transparency in Machine Learning}}.
+  \bibinfo{pages}{1--7}.
+\newblock
 
 
 \bibitem[De~Moura and Bj{\o}rner(2008)]%
@@ -203,6 +230,16 @@
 \url{https://arxiv.org/abs/2503.16561}
 \showURL{%
 \tempurl}
+
+
+\bibitem[Hardt et~al\mbox{.}(2016)]%
+        {Hardt2016EqualityOpportunity}
+\bibfield{author}{\bibinfo{person}{Moritz Hardt}, \bibinfo{person}{Eric Price},
+  {and} \bibinfo{person}{Nathan Srebro}.} \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Equality of Opportunity in Supervised Learning}. In
+  \bibinfo{booktitle}{\emph{Advances in Neural Information Processing
+  Systems}}. \bibinfo{pages}{3315--3323}.
+\newblock
 
 
 \bibitem[Hwang(2025)]%
@@ -277,6 +314,21 @@
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1017/9781009190085}
+\showDOI{\tempurl}
+
+
+\bibitem[Mehrabi et~al\mbox{.}(2021)]%
+        {Mehrabi2021BiasAI}
+\bibfield{author}{\bibinfo{person}{Ninareh Mehrabi}, \bibinfo{person}{Fred
+  Morstatter}, \bibinfo{person}{Nripsuta Saxena}, \bibinfo{person}{Kristina
+  Lerman}, {and} \bibinfo{person}{Aram Galstyan}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{A Survey on Bias and Fairness in Machine Learning}.
+\newblock \bibinfo{journal}{\emph{Comput. Surveys}} \bibinfo{volume}{54},
+  \bibinfo{number}{6} (\bibinfo{year}{2021}), \bibinfo{pages}{1--35}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3457607}
 \showDOI{\tempurl}
 
 

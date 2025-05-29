@@ -1165,7 +1165,7 @@ where `α = 0.6, β = 0.25, γ = 0.15` are empirically determined system paramet
 
 **Therefore:** `L ≤ 0.6·0.7+0.25·0.3+0.15·0.2 = 0.42+0.075+0.03 = 0.525 < 1`.
 
-Through empirical analysis (Section 4.2.2), we measure `L ≈ 0.73` under typical operating conditions, confirming theoretical bounds and ensuring contraction.
+**Note:** Empirical analysis (Section 4.2.2) measures `L ≈ 0.73` under typical operating conditions. This indicates our theoretical bound requires revision. The empirical bound L ≈ 0.73 < 1 still ensures contraction, but suggests component-wise Lipschitz constants need re-estimation with confidence intervals.
 
 **Step 4: Convergence to Fixed Point.** By the Banach Fixed Point Theorem, there exists a unique fixed point `c* ∈ C` such that `T(c*) = c*`. The sequence `{ct}∞t=0` defined by `ct+1 = T(ct)` converges to `c*` with exponential rate:
 

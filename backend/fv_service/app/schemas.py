@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
+from datetime import datetime
+from enum import Enum
 
 # --- Schemas for FV Service's own API ---
 
@@ -67,6 +69,121 @@ class PolicyRule(BaseModel): # Matches Integrity Service's PolicyRule response
 class PolicyRuleStatusUpdate(BaseModel): # For updating status in Integrity Service
     verification_status: str # "verified", "failed", "pending"
     # verified_at: Optional[datetime] # Integrity service might set this automatically
+
+
+# --- Enhanced Schemas for Tiered Validation Pipeline (Phase 3) ---
+
+class ValidationTier(str, Enum):
+    """Validation tiers for formal verification."""
+    AUTOMATED = "automated"
+    HITL = "human_in_the_loop"
+    RIGOROUS = "rigorous"
+
+class ValidationLevel(str, Enum):
+    """Validation levels within each tier."""
+    BASELINE = "baseline"
+    STANDARD = "standard"
+    COMPREHENSIVE = "comprehensive"
+    CRITICAL = "critical"
+
+class SafetyProperty(BaseModel):
+    """Safety property for formal verification."""
+    property_id: str
+    property_type: str  # "safety", "liveness", "security", "fairness"
+    property_description: str
+    formal_specification: str
+    criticality_level: str  # "low", "medium", "high", "critical"
+
+class TieredVerificationRequest(BaseModel):
+    """Request for tiered formal verification."""
+    policy_rule_refs: List[PolicyRuleRef]
+    validation_tier: ValidationTier
+    validation_level: ValidationLevel = ValidationLevel.STANDARD
+    safety_properties: Optional[List[SafetyProperty]] = None
+    timeout_seconds: Optional[int] = 300
+    require_proof: bool = False
+    human_reviewer_id: Optional[str] = None  # For HITL validation
+
+class TieredVerificationResult(BaseModel):
+    """Result from tiered formal verification."""
+    policy_rule_id: int
+    validation_tier: ValidationTier
+    validation_level: ValidationLevel
+    status: str  # "verified", "failed", "inconclusive", "timeout"
+    confidence_score: float  # 0.0 to 1.0
+    verification_method: str
+    proof_trace: Optional[str] = None
+    counter_example: Optional[str] = None
+    safety_violations: Optional[List[str]] = None
+    human_review_notes: Optional[str] = None
+    verification_time_ms: Optional[int] = None
+
+class TieredVerificationResponse(BaseModel):
+    """Response from tiered formal verification."""
+    results: List[TieredVerificationResult]
+    overall_status: str
+    overall_confidence: float
+    summary_message: Optional[str] = None
+    escalation_required: bool = False
+    next_tier_recommendation: Optional[ValidationTier] = None
+
+# --- Schemas for Safety and Conflict Checking ---
+
+class ConflictType(str, Enum):
+    """Types of conflicts that can be detected."""
+    LOGICAL_CONTRADICTION = "logical_contradiction"
+    PRACTICAL_INCOMPATIBILITY = "practical_incompatibility"
+    PRIORITY_CONFLICT = "priority_conflict"
+    RESOURCE_CONFLICT = "resource_conflict"
+
+class ConflictCheckRequest(BaseModel):
+    """Request for conflict detection between rules."""
+    rule_sets: List[str]  # Names or IDs of rule sets to check
+    conflict_types: List[ConflictType]
+    resolution_strategy: Optional[str] = "principle_priority_based"
+    include_suggestions: bool = True
+
+class ConflictDetectionResult(BaseModel):
+    """Result of conflict detection."""
+    conflict_id: str
+    conflict_type: ConflictType
+    conflicting_rules: List[int]  # Rule IDs
+    conflict_description: str
+    severity: str  # "low", "medium", "high", "critical"
+    resolution_suggestion: Optional[str] = None
+    affected_principles: Optional[List[int]] = None
+
+class ConflictCheckResponse(BaseModel):
+    """Response from conflict checking."""
+    conflicts: List[ConflictDetectionResult]
+    total_conflicts: int
+    critical_conflicts: int
+    resolution_required: bool
+    summary: str
+
+class SafetyCheckRequest(BaseModel):
+    """Request for safety property validation."""
+    system_model: str
+    safety_properties: List[SafetyProperty]
+    verification_method: str = "bounded_model_checking"
+    depth_limit: Optional[int] = 100
+    time_limit_seconds: Optional[int] = 600
+
+class SafetyCheckResult(BaseModel):
+    """Result of safety property checking."""
+    property_id: str
+    status: str  # "satisfied", "violated", "unknown"
+    witness_trace: Optional[str] = None
+    counter_example_trace: Optional[str] = None
+    verification_depth: Optional[int] = None
+    verification_time_ms: Optional[int] = None
+
+class SafetyCheckResponse(BaseModel):
+    """Response from safety property checking."""
+    results: List[SafetyCheckResult]
+    overall_safety_status: str
+    critical_violations: List[str]
+    summary: str
 
 # Placeholder for User (if FV Service needs to be auth-aware for its own endpoints)
 class User(BaseModel):
