@@ -16,7 +16,15 @@ class PolicyRule(Base):
     
     verification_status = Column(String, default="pending", nullable=False, index=True) # "pending", "verified", "failed"
     verified_at = Column(DateTime, nullable=True)
-    
+
+    # Enhanced fields for audit findings
+    framework = Column(String(50), nullable=True, default="Datalog", index=True)
+    principle_text = Column(Text, nullable=True)
+    pgp_signature = Column(Text, nullable=True)
+    source_file = Column(String(500), nullable=True, index=True)
+    content_hash = Column(String(128), nullable=True, index=True)
+    import_dependencies = Column(ARRAY(String), nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

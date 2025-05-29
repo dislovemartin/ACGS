@@ -1,0 +1,363 @@
+{
+  "safety_properties": [
+    {
+      "property_id": "SP001",
+      "property_type": "safety",
+      "property_description": "No unauthorized access to sensitive data",
+      "formal_specification": "forall(user, data): access(user, data) -> authorized(user, data)",
+      "criticality_level": "critical"
+    },
+    {
+      "property_id": "SP002",
+      "property_type": "security",
+      "property_description": "All data transmissions must be encrypted",
+      "formal_specification": "forall(transmission): data_transmission(transmission) -> encrypted(transmission)",
+      "criticality_level": "high"
+    },
+    {
+      "property_id": "SP003",
+      "property_type": "fairness",
+      "property_description": "Resource allocation must be fair across user groups",
+      "formal_specification": "forall(group1, group2): resource_allocation(group1) ~= resource_allocation(group2)",
+      "criticality_level": "medium"
+    },
+    {
+      "property_id": "SP004",
+      "property_type": "liveness",
+      "property_description": "System must eventually respond to all requests",
+      "formal_specification": "forall(request): eventually(response(request))",
+      "criticality_level": "high"
+    },
+    {
+      "property_id": "SP005",
+      "property_type": "safety",
+      "property_description": "No buffer overflow vulnerabilities",
+      "formal_specification": "forall(buffer, input): write(buffer, input) -> size(input) <= capacity(buffer)",
+      "criticality_level": "critical"
+    }
+  ],
+  "tiered_verification_test_cases": [
+    {
+      "test_name": "automated_tier_basic_verification",
+      "validation_tier": "automated",
+      "validation_level": "baseline",
+      "policy_rule_refs": [{"id": 1}, {"id": 2}],
+      "expected_status": "verified",
+      "expected_confidence_range": [0.7, 0.8]
+    },
+    {
+      "test_name": "hitl_tier_complex_verification",
+      "validation_tier": "human_in_the_loop",
+      "validation_level": "standard",
+      "policy_rule_refs": [{"id": 3}, {"id": 4}],
+      "human_reviewer_id": "reviewer_001",
+      "expected_status": "verified",
+      "expected_confidence_range": [0.8, 0.9]
+    },
+    {
+      "test_name": "rigorous_tier_critical_verification",
+      "validation_tier": "rigorous",
+      "validation_level": "critical",
+      "policy_rule_refs": [{"id": 5}],
+      "safety_properties": [
+        {
+          "property_id": "SP001",
+          "property_type": "safety",
+          "property_description": "Critical safety verification",
+          "formal_specification": "safety_critical_property",
+          "criticality_level": "critical"
+        }
+      ],
+      "timeout_seconds": 600,
+      "require_proof": true,
+      "expected_status": "verified",
+      "expected_confidence_range": [0.9, 0.95]
+    }
+  ],
+  "safety_check_test_cases": [
+    {
+      "test_name": "basic_safety_property_check",
+      "system_model": "access_control_model",
+      "safety_properties": [
+        {
+          "property_id": "SP001",
+          "property_type": "safety",
+          "property_description": "No unauthorized access",
+          "formal_specification": "unauthorized_access_prevention",
+          "criticality_level": "critical"
+        }
+      ],
+      "verification_method": "bounded_model_checking",
+      "depth_limit": 50,
+      "time_limit_seconds": 300,
+      "expected_overall_status": "safe"
+    },
+    {
+      "test_name": "security_property_verification",
+      "system_model": "encryption_model",
+      "safety_properties": [
+        {
+          "property_id": "SP002",
+          "property_type": "security",
+          "property_description": "Encryption requirement",
+          "formal_specification": "encryption_mandatory",
+          "criticality_level": "high"
+        }
+      ],
+      "verification_method": "symbolic_execution",
+      "time_limit_seconds": 600,
+      "expected_overall_status": "safe"
+    },
+    {
+      "test_name": "fairness_property_check",
+      "system_model": "resource_allocation_model",
+      "safety_properties": [
+        {
+          "property_id": "SP003",
+          "property_type": "fairness",
+          "property_description": "Fair resource allocation",
+          "formal_specification": "fairness_constraint",
+          "criticality_level": "medium"
+        }
+      ],
+      "verification_method": "abstract_interpretation",
+      "expected_overall_status": "safe"
+    }
+  ],
+  "conflict_detection_test_cases": [
+    {
+      "test_name": "logical_contradiction_detection",
+      "rule_sets": ["access_control_rules", "security_rules"],
+      "conflict_types": ["logical_contradiction"],
+      "resolution_strategy": "principle_priority_based",
+      "include_suggestions": true,
+      "expected_conflicts": [
+        {
+          "conflict_type": "logical_contradiction",
+          "severity": "high",
+          "description": "Rule allows access while another denies it"
+        }
+      ]
+    },
+    {
+      "test_name": "practical_incompatibility_check",
+      "rule_sets": ["encryption_rules", "performance_rules"],
+      "conflict_types": ["practical_incompatibility"],
+      "resolution_strategy": "performance_priority",
+      "include_suggestions": true,
+      "expected_conflicts": [
+        {
+          "conflict_type": "practical_incompatibility",
+          "severity": "medium",
+          "description": "Encryption requirements conflict with performance constraints"
+        }
+      ]
+    },
+    {
+      "test_name": "priority_conflict_analysis",
+      "rule_sets": ["admin_rules", "user_rules"],
+      "conflict_types": ["priority_conflict"],
+      "resolution_strategy": "role_hierarchy_based",
+      "include_suggestions": true,
+      "expected_conflicts": [
+        {
+          "conflict_type": "priority_conflict",
+          "severity": "medium",
+          "description": "Overlapping admin and user permissions"
+        }
+      ]
+    },
+    {
+      "test_name": "resource_conflict_detection",
+      "rule_sets": ["database_rules", "cache_rules"],
+      "conflict_types": ["resource_conflict"],
+      "resolution_strategy": "resource_scheduling",
+      "include_suggestions": true,
+      "expected_conflicts": [
+        {
+          "conflict_type": "resource_conflict",
+          "severity": "high",
+          "description": "Exclusive resource access requirements conflict"
+        }
+      ]
+    }
+  ],
+  "z3_solver_test_cases": [
+    {
+      "test_name": "simple_role_based_access",
+      "datalog_rules": [
+        "access_allowed(User, Resource) :- has_role(User, admin).",
+        "has_role(alice, admin)."
+      ],
+      "proof_obligations": [
+        "ensure_role_based_access_for_principle_1"
+      ],
+      "expected_result": {
+        "is_satisfiable": false,
+        "is_unsatisfiable": true,
+        "status": "verified"
+      }
+    },
+    {
+      "test_name": "data_protection_verification",
+      "datalog_rules": [
+        "data_protected(Data) :- is_sensitive(Data), has_encryption(Data).",
+        "is_sensitive(user_data).",
+        "has_encryption(user_data)."
+      ],
+      "proof_obligations": [
+        "protect_sensitive_data_for_principle_2"
+      ],
+      "expected_result": {
+        "is_satisfiable": false,
+        "is_unsatisfiable": true,
+        "status": "verified"
+      }
+    },
+    {
+      "test_name": "contradiction_detection",
+      "datalog_rules": [
+        "access_denied(User, Resource) :- true."
+      ],
+      "proof_obligations": [
+        "ensure_role_based_access_for_principle_1"
+      ],
+      "expected_result": {
+        "is_satisfiable": true,
+        "is_unsatisfiable": false,
+        "status": "failed",
+        "counter_example_expected": true
+      }
+    },
+    {
+      "test_name": "complex_policy_verification",
+      "datalog_rules": [
+        "access_allowed(User, Resource) :- has_role(User, admin), resource_type(Resource, sensitive).",
+        "access_allowed(User, Resource) :- has_role(User, manager), resource_type(Resource, normal), department_match(User, Resource).",
+        "has_role(alice, admin).",
+        "has_role(bob, manager).",
+        "resource_type(sensitive_data, sensitive).",
+        "resource_type(normal_data, normal).",
+        "department_match(bob, normal_data)."
+      ],
+      "proof_obligations": [
+        "ensure_role_based_access_for_principle_1",
+        "protect_sensitive_data_for_principle_2",
+        "department_isolation_for_principle_3"
+      ],
+      "expected_result": {
+        "is_satisfiable": false,
+        "is_unsatisfiable": true,
+        "status": "verified"
+      }
+    }
+  ],
+  "performance_benchmarks": [
+    {
+      "benchmark_name": "z3_solver_performance",
+      "test_cases": [
+        {
+          "name": "small_ruleset",
+          "rule_count": 10,
+          "obligation_count": 5,
+          "expected_time_ms": 100
+        },
+        {
+          "name": "medium_ruleset",
+          "rule_count": 50,
+          "obligation_count": 20,
+          "expected_time_ms": 500
+        },
+        {
+          "name": "large_ruleset",
+          "rule_count": 200,
+          "obligation_count": 50,
+          "expected_time_ms": 2000
+        }
+      ]
+    },
+    {
+      "benchmark_name": "tiered_validation_performance",
+      "test_cases": [
+        {
+          "tier": "automated",
+          "rule_count": 10,
+          "expected_time_ms": 200
+        },
+        {
+          "tier": "human_in_the_loop",
+          "rule_count": 10,
+          "expected_time_ms": 300
+        },
+        {
+          "tier": "rigorous",
+          "rule_count": 10,
+          "expected_time_ms": 1000
+        }
+      ]
+    }
+  ],
+  "integration_test_scenarios": [
+    {
+      "scenario_name": "end_to_end_phase3_verification",
+      "description": "Complete Phase 3 verification workflow",
+      "steps": [
+        {
+          "step": 1,
+          "action": "create_safety_properties",
+          "data": "safety_properties"
+        },
+        {
+          "step": 2,
+          "action": "run_tiered_verification",
+          "tier": "automated",
+          "policy_rules": [1, 2, 3]
+        },
+        {
+          "step": 3,
+          "action": "run_safety_check",
+          "properties": ["SP001", "SP002"]
+        },
+        {
+          "step": 4,
+          "action": "run_conflict_detection",
+          "rule_sets": ["access_control_rules", "security_rules"]
+        },
+        {
+          "step": 5,
+          "action": "verify_results",
+          "expected_overall_status": "verified"
+        }
+      ]
+    },
+    {
+      "scenario_name": "escalation_workflow",
+      "description": "Test escalation from automated to rigorous validation",
+      "steps": [
+        {
+          "step": 1,
+          "action": "run_automated_verification",
+          "policy_rules": [5],
+          "expected_confidence": 0.6
+        },
+        {
+          "step": 2,
+          "action": "check_escalation_required",
+          "expected": true
+        },
+        {
+          "step": 3,
+          "action": "run_hitl_verification",
+          "policy_rules": [5],
+          "expected_confidence": 0.75
+        },
+        {
+          "step": 4,
+          "action": "run_rigorous_verification",
+          "policy_rules": [5],
+          "expected_confidence": 0.95
+        }
+      ]
+    }
+  ]
+}

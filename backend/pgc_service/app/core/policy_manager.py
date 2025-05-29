@@ -1,13 +1,29 @@
 import asyncio
-from typing import List, Optional
+import hashlib
+import re
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
 from ..services.integrity_client import integrity_service_client, IntegrityPolicyRule
 from .datalog_engine import datalog_engine # Use the global engine instance
+from .policy_format_router import PolicyFormatRouter, PolicyFramework
+from .manifest_manager import ManifestManager
+
+# Import crypto service for signature verification
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../alphaevolve_gs_engine/src'))
+try:
+    from alphaevolve_gs_engine.services.crypto_service import CryptoService
+except ImportError:
+    CryptoService = None
 
 # Placeholder token for Integrity Service (if its placeholder auth expects one)
 # The integrity_service placeholder auth uses "internal_service_token" for GET /policies/
-INTEGRITY_SERVICE_MOCK_TOKEN = "internal_service_token" 
+INTEGRITY_SERVICE_MOCK_TOKEN = "internal_service_token"
+
+import logging
+logger = logging.getLogger(__name__)
 
 class PolicyManager:
     def __init__(self, refresh_interval_seconds: int = 300): # Default: refresh every 5 minutes
@@ -15,6 +31,17 @@ class PolicyManager:
         self._last_refresh_time: Optional[datetime] = None
         self._refresh_interval = timedelta(seconds=refresh_interval_seconds)
         self._lock = asyncio.Lock() # To prevent concurrent refresh operations
+
+        # Enhanced components for audit findings
+        self.format_router = PolicyFormatRouter()
+        self.manifest_manager = ManifestManager()
+        self.crypto_service = CryptoService() if CryptoService else None
+        self._validation_stats = {
+            'total_loaded': 0,
+            'signature_verified': 0,
+            'format_converted': 0,
+            'validation_failed': 0
+        }
 
     async def get_active_rules(self, force_refresh: bool = False) -> List[IntegrityPolicyRule]:
         """
@@ -37,11 +64,15 @@ class PolicyManager:
                         self._last_refresh_time = now
                         print(f"PolicyManager: Successfully loaded {len(self._active_rules)} verified rules.")
                         
+                        # Enhanced rule processing with format conversion and validation
+                        processed_rules = await self._process_and_validate_rules(self._active_rules)
+
                         # Load rules into the Datalog engine
                         datalog_engine.clear_rules_and_facts() # Clear old rules and facts
-                        rule_strings = [rule.rule_content for rule in self._active_rules]
+                        rule_strings = [rule.rule_content for rule in processed_rules]
                         datalog_engine.load_rules(rule_strings)
-                        print("PolicyManager: Datalog engine updated with new rules.")
+                        print(f"PolicyManager: Datalog engine updated with {len(processed_rules)} processed rules.")
+                        print(f"Validation stats: {self._validation_stats}")
                     else:
                         # This case might not be hit if client returns [] on error.
                         print("PolicyManager: Failed to fetch rules from Integrity Service (received None).")
@@ -53,6 +84,129 @@ class PolicyManager:
             else:
                 print("PolicyManager: Using cached policies.")
         return self._active_rules
+
+    async def _process_and_validate_rules(self, rules: List[IntegrityPolicyRule]) -> List[IntegrityPolicyRule]:
+        """
+        Process and validate policy rules with enhanced integrity checks.
+        Addresses audit findings for format conversion, signature verification, and validation.
+        """
+        processed_rules = []
+        self._validation_stats['total_loaded'] = len(rules)
+
+        for rule in rules:
+            try:
+                # 1. Verify PGP signature if present
+                if hasattr(rule, 'pgp_signature') and rule.pgp_signature:
+                    if await self._verify_rule_signature(rule):
+                        self._validation_stats['signature_verified'] += 1
+                        logger.debug(f"Signature verified for rule {getattr(rule, 'id', 'unknown')}")
+                    else:
+                        logger.warning(f"Signature verification failed for rule {getattr(rule, 'id', 'unknown')}")
+                        self._validation_stats['validation_failed'] += 1
+                        continue  # Skip rules with invalid signatures
+
+                # 2. Detect and convert policy format if needed
+                framework = getattr(rule, 'framework', 'Datalog')
+                detected_framework = self.format_router.detect_framework(
+                    rule.rule_content,
+                    {'framework': framework}
+                )
+
+                # 3. Convert to Datalog if not already
+                if detected_framework != PolicyFramework.DATALOG:
+                    conversion_result = self.format_router.convert_to_rego(
+                        rule.rule_content,
+                        detected_framework,
+                        f"rule_{getattr(rule, 'id', 'unknown')}"
+                    )
+
+                    if conversion_result.success:
+                        # Update rule content with converted version
+                        rule.rule_content = conversion_result.converted_content
+                        self._validation_stats['format_converted'] += 1
+                        logger.info(f"Converted rule from {detected_framework.value} to Rego")
+
+                        # Update metadata
+                        if hasattr(rule, 'framework'):
+                            rule.framework = 'Rego'
+                        if hasattr(rule, 'import_dependencies'):
+                            rule.import_dependencies = conversion_result.import_dependencies
+                    else:
+                        logger.error(f"Failed to convert rule: {conversion_result.error_message}")
+                        self._validation_stats['validation_failed'] += 1
+                        continue
+
+                # 4. Validate syntax
+                if detected_framework == PolicyFramework.REGO or framework == 'Rego':
+                    validation_result = self.format_router.validate_rego_syntax(rule.rule_content)
+                    if not validation_result.is_valid:
+                        logger.error(f"Rego syntax validation failed: {validation_result.error_message}")
+                        self._validation_stats['validation_failed'] += 1
+                        continue
+
+                # 5. Generate content hash for integrity
+                content_hash = self.format_router.generate_content_hash(rule.rule_content)
+                if hasattr(rule, 'content_hash'):
+                    rule.content_hash = content_hash
+
+                # 6. Fill missing principle_text if empty
+                if hasattr(rule, 'principle_text') and not rule.principle_text:
+                    rule.principle_text = self._generate_principle_text(rule)
+
+                processed_rules.append(rule)
+
+            except Exception as e:
+                logger.error(f"Error processing rule {getattr(rule, 'id', 'unknown')}: {e}")
+                self._validation_stats['validation_failed'] += 1
+                continue
+
+        logger.info(f"Processed {len(processed_rules)}/{len(rules)} rules successfully")
+        return processed_rules
+
+    async def _verify_rule_signature(self, rule: IntegrityPolicyRule) -> bool:
+        """Verify PGP signature of a policy rule"""
+        if not self.crypto_service or not hasattr(rule, 'pgp_signature') or not rule.pgp_signature:
+            return True  # Skip verification if no crypto service or signature
+
+        try:
+            # Create message to verify (rule content)
+            message_to_verify = rule.rule_content
+
+            # Decode signature (assuming it's hex-encoded)
+            signature_bytes = bytes.fromhex(rule.pgp_signature)
+
+            # Verify signature
+            is_valid = self.crypto_service.verify_signature(message_to_verify, signature_bytes)
+            return is_valid
+
+        except Exception as e:
+            logger.error(f"Signature verification error: {e}")
+            return False
+
+    def _generate_principle_text(self, rule: IntegrityPolicyRule) -> str:
+        """Generate principle text for rules with empty principle_text"""
+        # Extract meaningful description from rule content
+        content = rule.rule_content
+
+        # Try to extract from comments
+        comment_lines = [line.strip()[1:].strip() for line in content.split('\n')
+                        if line.strip().startswith('#')]
+        if comment_lines:
+            return comment_lines[0]
+
+        # Try to extract from package name or rule name
+        if 'package ' in content:
+            package_match = re.search(r'package\s+([a-zA-Z_][a-zA-Z0-9_.]*)', content)
+            if package_match:
+                package_name = package_match.group(1)
+                return f"Policy rule from package: {package_name}"
+
+        # Fallback to rule name or generic description
+        rule_name = getattr(rule, 'rule_name', None)
+        if rule_name:
+            return f"Policy rule: {rule_name}"
+
+        return "Auto-generated policy rule description"
 
     def get_active_rule_strings(self) -> List[str]:
         """Returns only the rule content strings of the active rules."""

@@ -1,0 +1,69 @@
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/**'
+      - 'oscal'
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+name: Process Content Artifacts
+env:
+  HOME_REPO: usnistgov/oscal-content
+  # With the default GEN_CONTENT_DIR, the resulting catalogs, profiles, and
+  # other example content will end up in the build/generated directory. For
+  # checking in finalized content, it goes into build/.., the top-level
+  # directory of this project.
+  GEN_CONTENT_DIR: ..
+jobs:
+  validate-and-publish-content:
+    name: Check, Convert and Validate Content
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        if: github.repository != env.HOME_REPO || github.ref != 'refs/heads/main'
+        with:
+          submodules: recursive
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        if: github.repository == env.HOME_REPO && github.ref == 'refs/heads/main'
+        with:
+          submodules: recursive
+          token: ${{ secrets.COMMIT_TOKEN }}
+      - name: Install xmllint
+        run: sudo apt-get install -y libxml2-utils          
+      - name: Cache generated content for OSCAL build artifacts
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2
+        with:
+          path: |
+            build/oscal/build/node_modules
+            build/oscal/build/generated
+          # See https://github.com/actions/cache/blob/main/tips-and-workarounds.md#update-a-cache            
+          key: |
+            ${{ hashFiles('build/oscal/build/**') }}
+      - name: Copy and convert content
+        run: |
+          make -j2 -C build all GEN_CONTENT_DIR=${{env.GEN_CONTENT_DIR}}
+        id: copy-convert
+      - name: Zip Artifacts for Upload
+        if: always()
+        run: |
+          zip ${{ runner.temp }}/generated-content.zip -r README.md examples/ nist.gov/
+        working-directory: ${{ github.workspace }}
+      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
+        if: always()
+        with:
+          name: generated-content
+          path: |
+            ${{ runner.temp }}/generated-content.zip
+          retention-days: 5
+      - name: Publish Artifacts
+        if: github.repository == env.HOME_REPO && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d
+        with:
+          push_options: --force
+          commit_message: Publishing auto-converted artifacts [skip ci]
+          commit_user_name: OSCAL GitHub Actions Bot
+          commit_user_email: oscal@nist.gov
+          commit_author: OSCAL GitHub Actions Bot <oscal@nist.gov>
