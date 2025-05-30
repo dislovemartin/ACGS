@@ -1,19 +1,62 @@
 # ACGS-PGP Developer Guide
 
-This guide provides instructions and best practices for developers contributing to the AI Compliance Governance System - Policy Generation Platform (ACGS-PGP).
+This comprehensive guide provides instructions and best practices for developers contributing to the AI Compliance Governance System - Policy Generation Platform (ACGS-PGP) with all Phase 1-3 features including Constitutional Council, AlphaEvolve integration, Z3 formal verification, and PGP cryptographic integrity.
 
-## 1. Project Setup
+## 1. Development Environment Setup
 
-Refer to the `README.md` in the root directory and the `docs/deployment.md` for initial project setup using Docker Compose for local development.
+### **Prerequisites**
+- Docker 20.10+ with Docker Compose v2
+- Python 3.9+ for local development
+- Node.js 16+ for frontend development
+- Git with proper SSH/HTTPS configuration
+- OpenAI API key for LLM integration
+- Basic understanding of constitutional AI governance principles
 
-### Key Steps:
-1.  **Clone the repository.**
-2.  **Set up environment variables:** Create `.env` files from `.env.example` in the root and `frontend` directories. Pay special attention to `DATABASE_URL`, `SECRET_KEY` (for `auth_service`), and any external API keys (e.g., for LLMs used by `pgc_service`).
-3.  **Install dependencies (if working outside Docker for specific tasks):**
-    *   Root: `pip install -r requirements.txt` (for Alembic, shared tools)
-    *   Each backend service: `pip install -r backend/<service_name>/requirements.txt`
-    *   Frontend: `cd frontend && npm install`
-4.  **Run services using Docker Compose:** `docker-compose up --build -d` (from root).
+### **Initial Setup**
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/dislovemartin/ACGS.git
+    cd ACGS-master
+    ```
+
+2.  **Environment Configuration:**
+    ```bash
+    # Copy environment templates
+    cp config/env/.env.example .env
+    cd src/frontend && cp .env.example .env && cd ../..
+
+    # Configure critical variables in .env
+    # - DATABASE_URL: PostgreSQL connection string
+    # - OPENAI_API_KEY: Required for constitutional prompting
+    # - JWT_SECRET_KEY: Authentication security
+    # - PGP_KEY_ID: Cryptographic integrity
+    ```
+
+3.  **Development Dependencies (Optional for local work):**
+    ```bash
+    # Python virtual environment
+    python -m venv venv
+    source venv/bin/activate  # Linux/Mac
+    # venv\Scripts\activate   # Windows
+
+    # Install development tools
+    pip install -r tools/requirements.txt
+
+    # Frontend dependencies
+    cd src/frontend && npm install && cd ../..
+    ```
+
+4.  **Start Development Environment:**
+    ```bash
+    # Build and start all services
+    docker-compose -f config/docker/docker-compose.yml up --build -d
+
+    # Load constitutional test data
+    python scripts/load_test_data.py
+
+    # Verify deployment
+    python scripts/verify_acgs_deployment.sh
+    ```
 
 ## 2. Development Workflow
 

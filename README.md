@@ -5,23 +5,28 @@ The ACGS-PGP framework is a microservices-based system designed to facilitate th
 ## Overview
 
 This project implements the core components of the ACGS-PGP framework, including:
--   **Authentication Service (`auth_service`):** Manages user authentication and authorization.
--   **Audit & Compliance Service (`ac_service`):** Manages AI governance principles and guidelines.
--   **Governance Synthesis Service (`gs_service`):** Generates policies (e.g., Datalog rules) from principles, potentially using LLMs.
--   **Formal Verification Service (`fv_service`):** Verifies synthesized policies against principles.
--   **Integrity & Verifiability Service (`integrity_service`):** Stores policies, verification results, and manages audit logs.
--   **Protective Governance Controls Service (`pgc_service`):** Enforces policies at runtime.
--   **Frontend Service:** A React-based SPA for user interaction.
+-   **Authentication Service (`auth_service`):** Manages user authentication, authorization, and RBAC (Admin/Policy Manager/Auditor roles).
+-   **Audit & Compliance Service (`ac_service`):** Manages AI governance principles with enhanced constitutional features, meta-rules, Constitutional Council, and conflict resolution mechanisms.
+-   **Governance Synthesis Service (`gs_service`):** Generates policies using LLM integration with constitutional prompting, contextual analysis, and AlphaEvolve integration for evolutionary computation governance.
+-   **Formal Verification Service (`fv_service`):** Verifies synthesized policies against principles using Z3 SMT solver integration, tiered validation (Automated/HITL/Rigorous), and safety property checking.
+-   **Integrity & Verifiability Service (`integrity_service`):** Stores policies, verification results, audit logs, and implements PGP Assurance with cryptographic integrity (digital signatures, SHA3-256 hashing, Merkle trees).
+-   **Protective Governance Controls Service (`pgc_service`):** Enforces policies at runtime with real-time governance decisions, AlphaEvolve enforcement, and performance optimization for sub-20ms latency.
+-   **Frontend Service:** A React-based SPA for user interaction with Constitutional Council workflows, policy management, and governance dashboards.
 
 ## Technology Stack
 
--   **Backend:** Python (FastAPI)
--   **Frontend:** JavaScript (React)
--   **Database:** PostgreSQL
--   **Containerization:** Docker
--   **Orchestration:** Docker Compose (for local development and service management); Kubernetes manifests are provided in `k8s/` for future deployment strategies (see `k8s/README.md`).
--   **Database Migrations:** Alembic
--   **API Gateway (Docker Compose):** Nginx
+-   **Backend:** Python (FastAPI) with async/await patterns
+-   **Frontend:** JavaScript (React) with governance dashboards
+-   **Database:** PostgreSQL with JSONB support for constitutional data
+-   **LLM Integration:** OpenAI GPT-4 for constitutional prompting and policy synthesis
+-   **Formal Verification:** Z3 SMT solver for mathematical verification
+-   **Cryptography:** PGP/GPG for digital signatures, SHA3-256 for hashing, Merkle trees for integrity
+-   **Containerization:** Docker with multi-stage builds
+-   **Orchestration:** Docker Compose (local development), Kubernetes (production deployment)
+-   **Database Migrations:** Alembic with constitutional schema enhancements
+-   **API Gateway:** Nginx with service routing and load balancing
+-   **Monitoring:** Prometheus and Grafana integration
+-   **Authentication:** JWT tokens with RBAC (Role-Based Access Control)
 
 ## Project Structure
 
