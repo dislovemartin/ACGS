@@ -1,0 +1,16 @@
+global:
+  smtp_from: alerts@acgs-pgp.com
+  smtp_smarthost: localhost:587
+receivers:
+- email_configs:
+  - body: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    subject: 'ACGS-PGP Alert: {{ .GroupLabels.alertname }}'
+    to: admin@acgs-pgp.com
+  name: web.hook
+route:
+  group_by:
+  - alertname
+  group_interval: 10s
+  group_wait: 10s
+  receiver: web.hook
+  repeat_interval: 1h

@@ -1,0 +1,29 @@
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+global:
+  evaluation_interval: 15s
+  scrape_interval: 15s
+rule_files:
+- acgs_pgp_rules.yml
+scrape_configs:
+- job_name: acgs-pgp-services
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - ac_service:8001
+    - integrity_service:8002
+    - fv_service:8003
+    - gs_service:8004
+    - pgc_service:8005
+- job_name: postgres
+  static_configs:
+  - targets:
+    - postgres_exporter:9187
+- job_name: node-exporter
+  static_configs:
+  - targets:
+    - node_exporter:9100

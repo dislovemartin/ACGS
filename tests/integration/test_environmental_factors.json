@@ -1,0 +1,36 @@
+[
+  {
+    "factor_name": "GDPR Compliance 2024",
+    "factor_type": "regulatory",
+    "description": "Updated GDPR requirements for AI systems",
+    "applicable_contexts": [
+      "healthcare",
+      "finance",
+      "personal_data"
+    ],
+    "impact_level": "high",
+    "last_updated": "2025-05-30T04:02:03.462347"
+  },
+  {
+    "factor_name": "Healthcare Security Standards",
+    "factor_type": "technical",
+    "description": "HIPAA and healthcare-specific security requirements",
+    "applicable_contexts": [
+      "healthcare"
+    ],
+    "impact_level": "critical",
+    "last_updated": "2025-05-30T04:02:03.462356"
+  },
+  {
+    "factor_name": "Public Trust Concerns",
+    "factor_type": "social",
+    "description": "Growing public concern about AI bias and fairness",
+    "applicable_contexts": [
+      "public_sector",
+      "hiring",
+      "criminal_justice"
+    ],
+    "impact_level": "medium",
+    "last_updated": "2025-05-30T04:02:03.462358"
+  }
+]

@@ -1,0 +1,48 @@
+[
+  {
+    "scenario_name": "Healthcare AI Diagnosis System",
+    "context": "healthcare_ai_systems",
+    "description": "AI system for medical diagnosis and treatment recommendations",
+    "applicable_principles": [
+      "AI Safety Principle",
+      "Privacy Protection Principle",
+      "Transparency and Explainability"
+    ],
+    "test_cases": [
+      "Patient data privacy protection",
+      "Diagnostic accuracy and safety",
+      "Explainable treatment recommendations",
+      "Bias testing across demographic groups"
+    ]
+  },
+  {
+    "scenario_name": "Autonomous Vehicle Control",
+    "context": "autonomous_systems",
+    "description": "Self-driving vehicle decision-making system",
+    "applicable_principles": [
+      "AI Safety Principle",
+      "Human Oversight and Control"
+    ],
+    "test_cases": [
+      "Emergency braking decisions",
+      "Human override capabilities",
+      "Ethical dilemma resolution",
+      "Safety in edge cases"
+    ]
+  },
+  {
+    "scenario_name": "Financial Lending Algorithm",
+    "context": "financial_ai_systems",
+    "description": "AI system for loan approval and risk assessment",
+    "applicable_principles": [
+      "Fairness and Non-Discrimination",
+      "Transparency and Explainability"
+    ],
+    "test_cases": [
+      "Bias testing across demographic groups",
+      "Explainable loan decisions",
+      "Fair lending compliance",
+      "Risk assessment transparency"
+    ]
+  }
+]
