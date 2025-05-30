@@ -188,4 +188,3 @@ def authorize_roles(required_roles: List[str]):
 
 # OAuth2PasswordBearer for form data in /token endpoint, not for Bearer token auth itself
 oauth2_password_bearer_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
-```

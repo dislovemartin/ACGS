@@ -40,9 +40,8 @@ async def update_principle(db: AsyncSession, principle_id: int, principle_update
         
         # Simple version increment if content changes, or could be more complex
         if "content" in update_data and update_data["content"] != db_principle.content:
-            # Using models.Principle.version + 1 for potential ORM-level handling or complex scenarios,
-            # though db_principle.version += 1 would often suffice for simple increments.
-            db_principle.version = models.Principle.version + 1 
+            # Increment version using instance attribute, not class attribute
+            db_principle.version = db_principle.version + 1
             # Optionally, reset status to 'draft' or handle as per business logic
             # db_principle.status = "draft"
 

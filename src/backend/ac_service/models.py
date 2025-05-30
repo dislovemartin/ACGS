@@ -1,3 +1,21 @@
-# ac_service currently has no database models.
-# This file exists to satisfy the import in backend.shared.models.py.
-pass
+# Import models from shared module to maintain consistency across services
+from shared.models import (
+    Principle,
+    ACMetaRule,
+    ACAmendment,
+    ACAmendmentVote,
+    ACAmendmentComment,
+    ACConflictResolution,
+    User
+)
+
+# Re-export models for use in this service
+__all__ = [
+    "Principle",
+    "ACMetaRule",
+    "ACAmendment",
+    "ACAmendmentVote",
+    "ACAmendmentComment",
+    "ACConflictResolution",
+    "User"
+]

@@ -8,8 +8,7 @@ Classes:
     SyntacticValidator: Validates policy syntax.
 """
 
--from typing import Tuple, Dict, Any, Optional
-+from typing import Tuple, Optional
+from typing import Tuple, Optional
 import subprocess # For calling external linters/parsers like 'opa parse'
 
 from alphaevolve_gs_engine.utils.logging_utils import setup_logger

@@ -42,10 +42,15 @@ async def update_policy_template(db: AsyncSession, template_id: int, update_data
     update_data.pop('created_by_user_id', None)
     update_data.pop('created_at', None)
     
+    # Get current template to access instance version
+    current_template = await get_policy_template(db, template_id)
+    if not current_template:
+        return None
+
     stmt = (
         update(PolicyTemplate)
         .where(PolicyTemplate.id == template_id)
-        .values(**update_data, updated_at=datetime.now(timezone.utc), version=PolicyTemplate.version + 1)
+        .values(**update_data, updated_at=datetime.now(timezone.utc), version=current_template.version + 1)
         .returning(PolicyTemplate)
     )
     result = await db.execute(stmt)
@@ -137,10 +142,15 @@ async def update_policy(db: AsyncSession, policy_id: int, update_data: Dict[str,
     update_data.pop('created_at', None)
     update_data.pop('template_id', None) # template_id should not be changed after creation
 
+    # Get current policy to access instance version
+    current_policy = await get_policy(db, policy_id)
+    if not current_policy:
+        return None
+
     stmt = (
         update(Policy)
         .where(Policy.id == policy_id)
-        .values(**update_data, updated_at=datetime.now(timezone.utc), version=Policy.version + 1)
+        .values(**update_data, updated_at=datetime.now(timezone.utc), version=current_policy.version + 1)
         .returning(Policy)
     )
     result = await db.execute(stmt)

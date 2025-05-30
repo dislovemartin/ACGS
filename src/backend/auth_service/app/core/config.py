@@ -2,7 +2,7 @@
 import os
 from typing import Any, Dict, List, Optional
 
-from pydantic import AnyHttpUrl, root_validator
+from pydantic import AnyHttpUrl, root_field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     @classmethod
     def assemble_db_connection(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         # Prioritize TEST_ASYNC_DATABASE_URL if set (e.g., during testing)
-        test_db_url = values.get("TEST_ASYNC_DATABASE_URL")
+        test_db_url = info.data.get("TEST_ASYNC_DATABASE_URL")
         if test_db_url:
             values["SQLALCHEMY_DATABASE_URI"] = test_db_url
         # Otherwise, SQLALCHEMY_DATABASE_URI (from DATABASE_URL) is used.

@@ -28,7 +28,7 @@ class RefreshToken(RefreshTokenCreate):
     revoked: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Base User schema for common attributes
 class UserBase(BaseModel):
@@ -49,7 +49,7 @@ class UserResponse(UserBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True # For SQLAlchemy model compatibility
+        from_attributes = True # For SQLAlchemy model compatibility
 
 # Schema for user in database (internal, includes hashed_password)
 class UserInDB(UserBase):
@@ -62,4 +62,4 @@ class UserInDB(UserBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

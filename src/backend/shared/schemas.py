@@ -7,7 +7,7 @@ from uuid import UUID # For UUID validation if used in models
 # Base Pydantic model for common settings
 class BaseSchema(BaseModel):
     class Config:
-        # orm_mode = True # Replaced by from_attributes = True in Pydantic V2
+        # from_attributes = True # Replaced by from_attributes = True in Pydantic V2
         from_attributes = True # Use this for Pydantic V2
 
 # Token Schemas (originally from auth_service/app/schemas/token.py)

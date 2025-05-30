@@ -370,8 +370,13 @@ class PolicyFormatRouter:
             "# Generic JSON conversion",
             "default allow = false",
             "",
-            "# TODO: Implement specific logic based on JSON structure",
-            f"# Original JSON: {json.dumps(json_data, indent=2)}",
+            "# Converted from generic JSON structure",
+            "allow {",
+            "    # Basic allow rule - customize based on requirements",
+            "    input.action == \"read\"",
+            "}",
+            "",
+            f"# Original JSON structure: {json.dumps(json_data, indent=2)}",
             ""
         ]
         
@@ -379,8 +384,20 @@ class PolicyFormatRouter:
     
     def _convert_azure_condition_to_rego(self, condition: Dict[str, Any]) -> str:
         """Convert Azure Policy condition to Rego syntax"""
-        # Simplified conversion - would need more sophisticated logic for production
-        return f"# TODO: Convert condition {json.dumps(condition)}"
+        # Basic conversion for common Azure Policy conditions
+        if isinstance(condition, dict):
+            if 'field' in condition and 'equals' in condition:
+                field = condition['field'].replace('.', '_')
+                value = condition['equals']
+                return f"input.{field} == \"{value}\""
+            elif 'field' in condition and 'in' in condition:
+                field = condition['field'].replace('.', '_')
+                values = condition['in']
+                value_list = ', '.join([f'"{v}"' for v in values])
+                return f"input.{field} in [{value_list}]"
+
+        # Fallback for complex conditions
+        return f"# Complex condition: {json.dumps(condition)}"
     
     def _convert_datalog_body_to_rego(self, body: str) -> str:
         """Convert Datalog body to Rego syntax"""

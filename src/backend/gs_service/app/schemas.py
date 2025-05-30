@@ -1,6 +1,6 @@
 # backend/gs_service/app/schemas.py
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_field_validator
 from datetime import datetime
 
 # Schemas for Policy Templates
@@ -53,14 +53,16 @@ class GSPolicyCreate(GSPolicyBase):
     # Or content can be provided directly if not using a template
     content: Optional[str] = None # Make content optional if template_id is provided
 
-    @validator('content', always=True)
-    def check_content_or_template(cls, v, values):
-        if values.get('template_id') is None and v is None:
+    @field_validator('content')
+    @classmethod
+    def check_content_or_template(cls, v, info):
+        values = info.data if hasattr(info, 'data') else {}
+        if (info.data if hasattr(info, "data") else {}).get('template_id') is None and v is None:
             raise ValueError('Either template_id or content must be provided')
         # If template_id is provided, content might be generated, so it can be None initially.
         # If content is provided, it implies direct policy creation.
         # Deciding on precedence or error if both are given:
-        # if values.get('template_id') is not None and v is not None:
+        # if (info.data if hasattr(info, "data") else {}).get('template_id') is not None and v is not None:
         #     raise ValueError('Provide either template_id (with parameters) or direct content, not both.')
         return v
 
@@ -98,9 +100,11 @@ class SynthesisRequest(BaseModel): # This was already in gs_service/app/schemas.
     principles: Optional[List[Dict[str, int]]] = Field(None, description="List of principles (e.g., [{'id': 1}]) to synthesize rules from, if not using a policy_id.")
     target_context: Optional[str] = Field(None, description="Optional context for synthesis") # Added from issue
 
-    @validator('principles', always=True)
-    def check_policy_id_or_principles(cls, v, values):
-        if values.get('policy_id') is None and v is None:
+    @field_validator('principles')
+    @classmethod
+    def check_policy_id_or_principles(cls, v, info):
+        values = info.data if hasattr(info, 'data') else {}
+        if (info.data if hasattr(info, "data") else {}).get('policy_id') is None and v is None:
             raise ValueError('Either policy_id or principles must be provided for synthesis')
         return v
 
@@ -213,7 +217,7 @@ class PolicyRule(PolicyRuleBase): # For API responses
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # FV Service Integration Schemas
 
