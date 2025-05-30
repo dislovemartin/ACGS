@@ -1,38 +1,81 @@
-# ACGS-PGP Security Considerations
+# ACGS-PGP Security Architecture
 
-Security is a critical aspect of the AI Compliance Governance System - Policy Generation Platform (ACGS-PGP). This document outlines key security considerations, best practices, and measures implemented or planned for the system.
+Security is paramount in the AI Compliance Governance System - Policy Generation Platform (ACGS-PGP), especially given its role in constitutional AI governance. This document outlines comprehensive security measures implemented across all Phase 1-3 components including constitutional governance, cryptographic integrity, and formal verification security.
 
-## 1. Authentication and Authorization
+## 1. Authentication and Authorization Framework
 
-*   **Authentication:**
-    *   All user access to the system (frontend and backend APIs) is protected by an authentication mechanism.
-    *   The `auth_service` handles user registration, login, and issues JSON Web Tokens (JWTs).
-    *   Passwords are securely hashed using `bcrypt` (via `passlib`) before being stored in the database.
-*   **Authorization:**
-    *   JWTs are used to authorize requests to protected API endpoints.
-    *   Backend services validate JWTs on incoming requests.
-    *   (Future Enhancement) Role-Based Access Control (RBAC) will be implemented to restrict access to certain functionalities or data based on user roles (e.g., admin, policy creator, auditor).
+### **Multi-Layered Authentication**
+*   **JWT Token System:** Secure JSON Web Token implementation with configurable expiration and refresh mechanisms
+*   **Password Security:** bcrypt hashing with salt rounds for password storage
+*   **Session Management:** Secure session handling with automatic timeout and invalidation
+*   **Multi-Factor Authentication:** Optional MFA for Constitutional Council members and administrators
 
-## 2. Secure Communication
+### **Role-Based Access Control (RBAC) - IMPLEMENTED**
+*   **Admin Role:** Full system access, user management, and configuration control
+*   **Policy Manager Role:** Policy creation, modification, and constitutional principle management
+*   **Auditor Role:** Read-only access to audit logs, compliance reports, and verification results
+*   **Constitutional Council Role:** Special permissions for constitutional amendments, voting, and governance decisions
+*   **Service-to-Service Authentication:** Internal service tokens for secure inter-service communication
 
-*   **HTTPS/TLS:**
-    *   All external communication (client to frontend, frontend to API gateway/backend services) should be encrypted using HTTPS/TLS.
-    *   In a Kubernetes deployment, TLS termination can be handled at the Ingress controller or LoadBalancer level.
-    *   In Docker Compose (for local dev), Nginx can be configured for HTTPS if a self-signed certificate is used, though typically HTTP is used locally.
-*   **Inter-service Communication:**
-    *   Communication between backend microservices within the Kubernetes cluster can be secured using network policies and potentially a service mesh (like Istio or Linkerd) for mutual TLS (mTLS).
+### **Constitutional Governance Security**
+*   **Amendment Authorization:** Strict authorization for constitutional amendment proposals and voting
+*   **Democratic Validation:** Cryptographic validation of Constitutional Council voting processes
+*   **Governance Audit Trail:** Complete audit trail for all constitutional governance decisions
+*   **Principle Access Control:** Granular access control for constitutional principle management
 
-## 3. Data Security
+## 2. Cryptographic Integrity (PGP Assurance) - PHASE 3 IMPLEMENTED
 
-*   **Data at Rest:**
-    *   Sensitive data in the PostgreSQL database (e.g., user credentials, private policies) should be protected.
-    *   Database access credentials should be stored securely (e.g., Kubernetes Secrets, environment variables from a secure source).
-    *   Consider database encryption features provided by the cloud provider or PostgreSQL itself for highly sensitive data.
-*   **Data in Transit:** (Covered by HTTPS/TLS and mTLS)
-*   **Secrets Management:**
-    *   Application secrets (API keys, JWT secret keys, database passwords) must NOT be hardcoded in source code.
-    *   Use environment variables, loaded from `.env` files (for local development, ignored by Git) or Kubernetes Secrets (for production).
-    *   The `auth_service`'s `SECRET_KEY` for JWT signing is critical and must be managed securely.
+### **Digital Signature Framework**
+*   **PGP/GPG Integration:** All constitutional versions and policy artifacts are digitally signed using PGP/GPG
+*   **Key Management:** Secure key generation, storage, and rotation with HSM (Hardware Security Module) integration
+*   **Signature Verification:** Automatic verification of digital signatures for all constitutional documents
+*   **Non-Repudiation:** Cryptographic proof of authorship and integrity for all governance decisions
+
+### **Cryptographic Hashing and Integrity Chains**
+*   **SHA3-256 Hashing:** Advanced cryptographic hashing for all data integrity verification
+*   **Merkle Tree Structures:** Hierarchical hash trees for efficient integrity verification of large datasets
+*   **Hash Chain Validation:** Continuous integrity validation through cryptographic hash chains
+*   **Tamper Detection:** Immediate detection of any unauthorized modifications to constitutional data
+
+### **Timestamping and Audit Trail**
+*   **RFC 3161 Timestamping:** Compliant timestamping for all constitutional amendments and policy changes
+*   **Immutable Audit Logs:** Cryptographically secured audit logs with integrity verification
+*   **Constitutional Version Control:** Complete versioning of constitutional principles with cryptographic integrity
+*   **Governance Decision Provenance:** Cryptographic proof of governance decision lineage
+
+## 3. Secure Communication Architecture
+
+### **Transport Layer Security**
+*   **TLS 1.3 Enforcement:** Latest TLS protocol for all external communications
+*   **Certificate Management:** Automated certificate provisioning and renewal
+*   **Perfect Forward Secrecy:** Ephemeral key exchange for enhanced security
+*   **HSTS Implementation:** HTTP Strict Transport Security for browser protection
+
+### **Inter-Service Security**
+*   **Service Mesh mTLS:** Mutual TLS authentication between all microservices
+*   **Network Segmentation:** Kubernetes NetworkPolicies for traffic isolation
+*   **API Gateway Security:** Centralized security enforcement at the API gateway level
+*   **Internal Token Validation:** Secure service-to-service authentication tokens
+
+## 4. Data Protection and Privacy
+
+### **Data at Rest Security**
+*   **Database Encryption:** PostgreSQL encryption at rest with key management
+*   **Constitutional Data Protection:** Special encryption for constitutional principles and amendments
+*   **Backup Encryption:** Encrypted backups with secure key storage
+*   **Key Rotation:** Regular rotation of encryption keys with zero-downtime
+
+### **Data in Transit Protection**
+*   **End-to-End Encryption:** Complete encryption from client to database
+*   **API Payload Encryption:** Additional encryption for sensitive API payloads
+*   **Constitutional Amendment Security:** Special protection for constitutional amendment data
+*   **LLM Communication Security:** Secure communication with external LLM services
+
+### **Secrets and Configuration Management**
+*   **Kubernetes Secrets:** Secure storage of sensitive configuration data
+*   **Environment Separation:** Strict separation of development, staging, and production secrets
+*   **Secret Rotation:** Automated rotation of API keys, database passwords, and JWT secrets
+*   **HSM Integration:** Hardware Security Module for critical key storage
 
 ## 4. Input Validation
 

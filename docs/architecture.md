@@ -2,60 +2,89 @@
 
 ## 1. Overview
 
-The AI Compliance Governance System - Policy Generation Platform (ACGS-PGP) is designed as a microservices-based architecture to ensure modularity, scalability, and maintainability. The system facilitates the creation, management, verification, and audit of AI governance policies.
+The AI Compliance Governance System - Policy Generation Platform (ACGS-PGP) is a comprehensive microservices-based architecture implementing constitutional AI governance through three development phases. The system facilitates the creation, management, verification, and audit of AI governance policies with constitutional grounding, formal verification, and cryptographic integrity.
+
+### Implementation Status
+- **Phase 1 (COMPLETED):** Enhanced Principle Management, Constitutional Prompting, Meta-Rules, Conflict Resolution, Constitutional Council
+- **Phase 2 (COMPLETED):** AlphaEvolve Integration, Evolutionary Computation Governance
+- **Phase 3 (COMPLETED):** Z3 Formal Verification, Algorithmic Fairness, PGP Cryptographic Integrity
 
 ## 2. Core Components (Microservices)
 
 The system comprises the following core microservices, each running in its own Docker container and managed by Kubernetes:
 
-*   **Authentication Service (`auth_service`):**
-    *   Handles user registration, login, and session management.
-    *   Issues JWT tokens for authenticating API requests.
-    *   Manages user roles and permissions (future enhancement).
+### **Authentication Service (`auth_service`)**
+*   **Core Functions:** User registration, login, session management, and JWT token issuance
+*   **RBAC Implementation:** Role-Based Access Control with three primary roles:
+    *   **Admin:** Full system access and configuration
+    *   **Policy Manager:** Policy creation and management permissions
+    *   **Auditor:** Read-only access to audit data and compliance reports
+    *   **Constitutional Council:** Special permissions for constitutional amendments and voting
+*   **Security Features:** JWT token validation, password hashing, session management, rate limiting
 
-*   **Audit & Compliance Service (`ac_service`):**
-    *   Manages AI governance principles and guidelines.
-    *   Allows users to browse and understand the core tenets of AI governance.
-    *   Provides endpoints for retrieving principles and their associated guidelines.
+### **Audit & Compliance Service (`ac_service`)**
+*   **Enhanced Principle Management (Phase 1):** Constitutional principles with priority weights, scope definitions, normative statements, constraints, and rationale
+*   **Meta-Rules Engine:** Governance rules that define principle interactions and conflict resolution strategies
+*   **Constitutional Council:** Democratic governance framework for constitutional amendments with voting mechanisms
+*   **Conflict Resolution:** Automated detection and resolution of principle conflicts with contextual analysis
+*   **Guidelines Management:** Governance guidelines linked to constitutional principles
 
-*   **Policy Generation & Customization Service (`pgc_service`):**
-    *   Core engine for *evaluating* AI policies based on user requirements, existing templates, and selected principles using its Datalog engine.
-    *   Allows users to customize generated policies (customization input is manual in Phase 1).
-    *   In Phase 1, PGC Service focuses on evaluating policies using its Datalog engine; advanced policy generation is handled by GS Service.
+### **Governance Synthesis Service (`gs_service`)**
+*   **Constitutional Prompting (Phase 1):** LLM integration with constitutional guidance for policy generation
+*   **Contextual Analysis:** Environmental factor processing for context-aware policy synthesis
+*   **AlphaEvolve Integration (Phase 2):** Evolutionary computation governance with constitutional constraints
+*   **LLM Integration:** OpenAI GPT-4 integration for intelligent policy synthesis
+*   **Policy Templates:** Reusable policy templates for common governance scenarios
 
-*   **Formal Verification Service (`fv_service`):**
-    *   Integrates with formal verification tools (e.g., TLA+, Z3, custom model checkers) to mathematically verify properties of AI policies or system designs against specifications.
-    *   Accepts policy definitions/models and properties to check.
-    *   Returns verification results.
-    *   Currently, the Formal Verification Service provides a foundational interface (mock implementation). Integration with specific formal verification tools is planned for Phase 2.
+### **Formal Verification Service (`fv_service`)**
+*   **Z3 SMT Solver Integration (Phase 3):** Mathematical verification of policies against constitutional principles
+*   **Tiered Validation:** Three-tier validation system (Automated, Human-in-the-Loop, Rigorous)
+*   **Safety Property Checking:** Verification of safety-critical properties in AI systems
+*   **Bias Detection:** Algorithmic fairness verification and bias detection mechanisms
+*   **Conflict Detection:** Formal verification of policy conflicts and inconsistencies
 
-*   **Governance Structure Service (`gs_service`):**
-    *   Manages the organizational governance structure related to AI.
-    *   Defines roles, responsibilities, decision-making processes, and escalation paths.
-    *   Helps map policies to accountable parties.
-    *   Currently, this service defines the framework for governance structures. LLM-driven policy synthesis and advanced generation capabilities are planned for Phase 2.
+### **Integrity & Verifiability Service (`integrity_service`)**
+*   **PGP Assurance (Phase 3):** Cryptographic integrity with digital signatures for all constitutional versions
+*   **Audit Logging:** Comprehensive audit trails for all system operations
+*   **Cryptographic Hashing:** SHA3-256 hashing with Merkle tree structures for data integrity
+*   **Key Management:** HSM integration for secure key storage and management
+*   **Timestamping:** RFC 3161 compliant timestamping for non-repudiation
 
-*   **Data Integrity Service (`integrity_service`):**
-    *   Provides mechanisms for ensuring the integrity of critical data, such as policies, audit logs, and verification results.
-    *   May involve cryptographic hashing, digital signatures, or blockchain-based logging.
-    *   Manages audit logs from all services.
-    *   In its current phase, the Data Integrity Service establishes the groundwork for managing audit logs. Advanced mechanisms like cryptographic hashing/signatures for all artifacts or blockchain logging are future enhancements.
+### **Protective Governance Controls Service (`pgc_service`)**
+*   **Runtime Policy Enforcement:** Real-time governance decision making with sub-20ms latency targets
+*   **AlphaEvolve Enforcement (Phase 2):** Specialized enforcement for evolutionary computation systems
+*   **Policy Evaluation Engine:** High-performance policy evaluation with caching and optimization
+*   **Governance Penalties:** Dynamic penalty calculation for policy violations
+*   **Performance Monitoring:** Real-time performance metrics and optimization
 
-*   **Frontend Service:**
-    *   A React-based single-page application (SPA) providing the user interface for interacting with all backend services.
-    *   Served via Nginx.
+### **Frontend Service**
+*   **Constitutional Dashboard:** React-based interface for constitutional governance workflows
+*   **Policy Management Interface:** User-friendly policy creation and management tools
+*   **Constitutional Council Portal:** Voting interface for constitutional amendments
+*   **Audit Visualization:** Comprehensive audit trail and compliance reporting
+*   **Real-time Monitoring:** Live system status and governance metrics
 
 ## 3. Data Storage
 
-*   **PostgreSQL Database:**
-    *   A central relational database (e.g., PostgreSQL) is used to store:
-        *   User credentials (hashed).
-        *   AI principles and guidelines.
-        *   Generated policies and their versions.
-        *   Audit logs.
-        *   Governance structure definitions.
-        *   Formal verification requests and results.
-    *   Each service may have its own schema within this database or access a shared schema as appropriate. Alembic is used for database schema migrations.
+### **PostgreSQL Database with Constitutional Enhancements**
+*   **Enhanced Schema Design:** Optimized for constitutional governance with JSONB support for flexible constitutional data
+*   **Core Data Models:**
+    *   **Users:** Authentication, roles, and Constitutional Council membership
+    *   **Constitutional Principles:** Enhanced with priority weights, scope, normative statements, constraints, rationale, and keywords
+    *   **Meta-Rules:** Governance rules defining principle interactions and conflict resolution
+    *   **Constitutional Amendments:** Amendment proposals, voting records, and discussion threads
+    *   **Conflict Resolutions:** Automated conflict detection and resolution records
+    *   **Policies:** Generated policies with constitutional basis and verification status
+    *   **Audit Logs:** Comprehensive audit trails with cryptographic integrity
+    *   **Verification Results:** Formal verification outcomes with Z3 solver results
+    *   **Cryptographic Signatures:** PGP signatures and hash chains for data integrity
+
+### **Database Features**
+*   **JSONB Support:** Flexible storage for constitutional constraints, environmental factors, and metadata
+*   **Indexing Strategy:** Optimized indexes for constitutional queries and real-time governance decisions
+*   **Alembic Migrations:** Version-controlled schema evolution with constitutional enhancements
+*   **Performance Optimization:** Query optimization for sub-20ms governance decision latency
+*   **Backup and Recovery:** Automated backup with cryptographic integrity verification
 
 ## 4. Communication Flow
 
@@ -75,50 +104,161 @@ The system comprises the following core microservices, each running in its own D
 
 ## 5. Technology Stack Summary
 
-*   **Backend:** Python (FastAPI)
-*   **Frontend:** JavaScript (React)
-*   **Database:** PostgreSQL
-*   **Containerization:** Docker
-*   **Orchestration:** Kubernetes
-*   **Database Migrations:** Alembic
-*   **API Specification (Implied):** OpenAPI (FastAPI automatically generates this)
+### **Backend Technologies**
+*   **Framework:** Python (FastAPI) with async/await patterns for high-performance governance decisions
+*   **LLM Integration:** OpenAI GPT-4 for constitutional prompting and policy synthesis
+*   **Formal Verification:** Z3 SMT solver for mathematical verification of constitutional compliance
+*   **Cryptography:** PGP/GPG for digital signatures, SHA3-256 for hashing, Merkle trees for integrity chains
+*   **Authentication:** JWT tokens with RBAC (Role-Based Access Control)
+*   **API Documentation:** OpenAPI/Swagger with interactive documentation
 
-## 6. High-Level Diagram
+### **Frontend Technologies**
+*   **Framework:** JavaScript (React) with modern hooks and state management
+*   **UI Components:** Constitutional governance dashboards and policy management interfaces
+*   **Real-time Updates:** WebSocket integration for live governance monitoring
+*   **Visualization:** Charts and graphs for audit trails and compliance metrics
+
+### **Infrastructure Technologies**
+*   **Database:** PostgreSQL with JSONB support for constitutional data structures
+*   **Containerization:** Docker with multi-stage builds for optimized images
+*   **Orchestration:** Kubernetes for production deployment with auto-scaling
+*   **Service Mesh:** Nginx for API gateway and load balancing
+*   **Monitoring:** Prometheus and Grafana for system metrics and alerting
+
+### **Development and Operations**
+*   **Database Migrations:** Alembic with constitutional schema enhancements
+*   **Testing:** Pytest with comprehensive unit, integration, and end-to-end tests
+*   **CI/CD:** GitHub Actions for automated testing and deployment
+*   **Security:** HTTPS enforcement, input validation, rate limiting, audit logging
+
+## 6. High-Level Architecture Diagram
 
 ```
-[Client Browser (React Frontend)] <--> [API Gateway (Nginx in K8s Ingress / Docker Compose routing)]
-                                    |
-                                    +--> [Auth Service] <--> [PostgreSQL]
-                                    |
-                                    +--> [AC Service] <--> [PostgreSQL]
-                                    |
-                                    +--> [PGC Service] <--> [PostgreSQL] (+ LLM/External Tools)
-                                    |
-                                    +--> [FV Service] <--> [PostgreSQL] (+ Formal Verification Tools)
-                                    |
-                                    +--> [GS Service] <--> [PostgreSQL]
-                                    |
-                                    +--> [Integrity Service] <--> [PostgreSQL]
+[Constitutional Dashboard (React)] <--> [Nginx API Gateway]
+                                         |
+                                         +--> [Auth Service] <--> [PostgreSQL]
+                                         |    (JWT + RBAC)
+                                         |
+                                         +--> [AC Service] <--> [PostgreSQL]
+                                         |    (Principles + Constitutional Council)
+                                         |
+                                         +--> [GS Service] <--> [PostgreSQL] + [OpenAI GPT-4]
+                                         |    (Constitutional Prompting + AlphaEvolve)
+                                         |
+                                         +--> [FV Service] <--> [PostgreSQL] + [Z3 SMT Solver]
+                                         |    (Formal Verification + Bias Detection)
+                                         |
+                                         +--> [Integrity Service] <--> [PostgreSQL] + [PGP/HSM]
+                                         |    (Cryptographic Integrity + Audit Logs)
+                                         |
+                                         +--> [PGC Service] <--> [PostgreSQL]
+                                              (Runtime Enforcement + AlphaEvolve)
 ```
 
-## 7. Scalability and Availability
+## 7. Constitutional Governance Workflow
 
-*   **Scalability:** Microservices can be scaled independently by increasing the number of replicas in Kubernetes.
-*   **Availability:** Kubernetes provides self-healing and rolling updates to ensure high availability. Database replication and failover would be configured for production databases.
+### **Phase 1: Constitutional Foundation**
+1. **Principle Definition** (AC Service): Define constitutional principles with enhanced metadata
+2. **Meta-Rules Configuration** (AC Service): Establish governance rules for principle interactions
+3. **Constitutional Council Setup** (AC Service): Configure democratic governance framework
 
-## 8. Security Considerations
+### **Phase 2: Policy Synthesis**
+1. **Constitutional Prompting** (GS Service): Generate policies with constitutional guidance using LLM
+2. **Contextual Analysis** (GS Service): Process environmental factors for context-aware synthesis
+3. **AlphaEvolve Integration** (GS Service): Apply constitutional constraints to evolutionary computation
 
-*   Authentication and Authorization using JWT.
-*   HTTPS for all external communication (managed by Ingress or LoadBalancer in K8s).
-*   Secrets management for sensitive data (e.g., DB passwords, API keys) using Kubernetes Secrets.
-*   Input validation in all services.
-*   Regular security audits and dependency scanning.
-*   (Refer to `security.md` for more details).
+### **Phase 3: Verification and Enforcement**
+1. **Formal Verification** (FV Service): Verify policies against constitutional principles using Z3
+2. **Cryptographic Integrity** (Integrity Service): Sign and hash policies with PGP assurance
+3. **Runtime Enforcement** (PGC Service): Enforce policies in real-time with governance penalties
 
-## 9. Future Enhancements
+### **Constitutional Amendment Process**
+1. **Amendment Proposal** (AC Service): Constitutional Council members propose amendments
+2. **Public Discussion** (AC Service): Community discussion and comment period
+3. **Voting Process** (AC Service): Democratic voting by Constitutional Council
+4. **Implementation** (All Services): Approved amendments update system configuration
 
-*   **Dedicated API Gateway:** Implement a full-fledged API Gateway.
-*   **Message Queue:** Introduce asynchronous communication for long-running tasks.
-*   **Service Mesh:** Consider a service mesh (e.g., Istio, Linkerd) for advanced traffic management, observability, and security in inter-service communication.
-*   **CI/CD:** Robust CI/CD pipeline for automated testing and deployment (initial setup in GitHub Actions).
-*   **Monitoring and Logging:** Centralized logging (e.g., ELK stack, Grafana Loki) and monitoring (e.g., Prometheus, Grafana).
+## 8. Scalability and Availability
+
+### **Horizontal Scaling**
+*   **Microservice Independence:** Each service can be scaled independently based on load patterns
+*   **Kubernetes Auto-scaling:** HPA (Horizontal Pod Autoscaler) for automatic scaling based on CPU/memory usage
+*   **Load Balancing:** Nginx-based load balancing with health checks and failover
+*   **Database Scaling:** Read replicas for query optimization, connection pooling for efficiency
+
+### **High Availability**
+*   **Multi-Zone Deployment:** Kubernetes deployment across multiple availability zones
+*   **Self-Healing:** Automatic pod restart and replacement on failure
+*   **Rolling Updates:** Zero-downtime deployments with gradual service updates
+*   **Database Failover:** PostgreSQL clustering with automatic failover capabilities
+
+### **Performance Optimization**
+*   **Caching Strategy:** Redis caching for frequently accessed constitutional principles and policies
+*   **Database Optimization:** Optimized indexes for sub-20ms governance decision latency
+*   **Connection Pooling:** Efficient database connection management
+*   **Async Processing:** Non-blocking I/O for high-throughput governance operations
+
+## 9. Security Architecture
+
+### **Authentication and Authorization**
+*   **JWT Tokens:** Secure token-based authentication with configurable expiration
+*   **RBAC Implementation:** Role-Based Access Control with granular permissions
+*   **Multi-Factor Authentication:** Optional MFA for Constitutional Council members
+*   **Session Management:** Secure session handling with automatic timeout
+
+### **Cryptographic Security**
+*   **PGP Assurance:** Digital signatures for all constitutional versions and policy artifacts
+*   **SHA3-256 Hashing:** Cryptographic hashing with Merkle tree integrity chains
+*   **HSM Integration:** Hardware Security Module for secure key storage
+*   **TLS/HTTPS:** End-to-end encryption for all communications
+
+### **Application Security**
+*   **Input Validation:** Comprehensive validation and sanitization of all inputs
+*   **Rate Limiting:** API rate limiting to prevent abuse and DoS attacks
+*   **CORS Configuration:** Proper Cross-Origin Resource Sharing policies
+*   **Security Headers:** Implementation of security headers (HSTS, CSP, etc.)
+
+### **Audit and Compliance**
+*   **Comprehensive Logging:** All operations logged with cryptographic integrity
+*   **Constitutional Audit Trail:** Complete audit trail for constitutional changes
+*   **Compliance Monitoring:** Real-time monitoring of constitutional compliance
+*   **Incident Response:** Automated incident detection and response procedures
+
+## 10. Monitoring and Observability
+
+### **System Metrics**
+*   **Prometheus Integration:** Comprehensive metrics collection for all services
+*   **Grafana Dashboards:** Real-time visualization of system health and performance
+*   **Custom Metrics:** Constitutional compliance rates, governance decision latency
+*   **Alerting:** Automated alerts for system anomalies and constitutional violations
+
+### **Application Monitoring**
+*   **Health Checks:** Comprehensive health endpoints for all services
+*   **Performance Tracking:** Response time monitoring with SLA tracking
+*   **Error Tracking:** Centralized error logging and analysis
+*   **Constitutional Metrics:** Tracking of constitutional principle usage and effectiveness
+
+### **Audit and Governance Monitoring**
+*   **Constitutional Dashboard:** Real-time constitutional governance metrics
+*   **Amendment Tracking:** Monitoring of constitutional amendment processes
+*   **Compliance Reporting:** Automated compliance reports and trend analysis
+*   **Governance Analytics:** Analysis of governance decision patterns and effectiveness
+
+## 11. Deployment Architecture
+
+### **Development Environment**
+*   **Docker Compose:** Local development with all services and dependencies
+*   **Hot Reloading:** Development-time code reloading for rapid iteration
+*   **Test Data:** Comprehensive test datasets for all constitutional scenarios
+
+### **Production Environment**
+*   **Kubernetes Deployment:** Production-grade orchestration with auto-scaling
+*   **Blue-Green Deployment:** Zero-downtime deployment strategy
+*   **Environment Separation:** Strict separation between development, staging, and production
+*   **Configuration Management:** Environment-specific configuration with secrets management
+
+### **CI/CD Pipeline**
+*   **Automated Testing:** Comprehensive test suite including constitutional compliance tests
+*   **Security Scanning:** Automated vulnerability scanning and dependency checks
+*   **Deployment Automation:** Automated deployment with rollback capabilities
+*   **Quality Gates:** Code quality and constitutional compliance gates before deployment

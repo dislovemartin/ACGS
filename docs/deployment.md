@@ -1,47 +1,122 @@
-# Deployment Guide for ACGS-PGP
+# ACGS-PGP Deployment Guide
 
-This guide provides instructions for deploying the AI Compliance Governance System - Policy Generation Platform (ACGS-PGP) using Docker Compose (for local development/testing) and Kubernetes (for staging/production).
+This comprehensive guide provides instructions for deploying the AI Compliance Governance System - Policy Generation Platform (ACGS-PGP) with all Phase 1-3 features including Constitutional Council, AlphaEvolve integration, Z3 formal verification, and PGP cryptographic integrity.
 
 ## Prerequisites
 
-*   **Docker:** Installed and running (for both Docker Compose and Kubernetes).
-*   **Docker Compose:** Installed (for local deployment).
-*   **Kubernetes Cluster:** Access to a running Kubernetes cluster (e.g., Minikube, Kind, Docker Desktop K8s, or a cloud provider's K8s service like GKE, EKS, AKS).
-*   **`kubectl`:** Configured to interact with your Kubernetes cluster.
-*   **Container Registry:** Access to a container registry (e.g., Docker Hub, GCR, ECR) where your service images are pushed.
-*   **Git:** For cloning the repository.
-*   **Environment Configuration:** Prepare `.env` files as needed (see `.env.example` files in the root and frontend directories).
+### **System Requirements**
+*   **Docker:** Version 20.10+ with Docker Compose v2
+*   **Kubernetes:** Version 1.21+ for production deployment
+*   **kubectl:** Configured to interact with your Kubernetes cluster
+*   **Git:** For cloning the repository
+*   **Python:** 3.9+ for local development and testing
+
+### **External Dependencies**
+*   **OpenAI API Key:** Required for constitutional prompting and LLM integration
+*   **Z3 SMT Solver:** Automatically installed in containers for formal verification
+*   **PGP/GPG Keys:** For cryptographic integrity (can be generated during setup)
+*   **Container Registry:** Access to Docker Hub, GCR, ECR, or similar for production
+
+### **Hardware Requirements**
+*   **Development:** 8GB RAM, 4 CPU cores, 20GB disk space
+*   **Production:** 16GB RAM, 8 CPU cores, 100GB disk space (minimum)
+*   **Database:** SSD storage recommended for sub-20ms governance decision latency
 
 ## Part 1: Docker Compose Deployment (Local Development)
 
-This setup is ideal for local development and testing.
+This setup provides a complete ACGS-PGP environment with all Phase 1-3 features for local development and testing.
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone <repository_url>
-    cd acgs-pgp
-    ```
+### **Step 1: Repository Setup**
+```bash
+git clone https://github.com/dislovemartin/ACGS.git
+cd ACGS-master
+```
 
-2.  **Configure Environment Variables:**
-    *   Copy `acgs-pgp/.env.example` to `acgs-pgp/.env`.
-    *   Review and update variables in `.env`, especially `DATABASE_URL`, `SECRET_KEY` (for `auth_service`), and any API keys for LLMs if `pgc_service` uses them.
-    *   Copy `acgs-pgp/frontend/.env.example` to `acgs-pgp/frontend/.env`.
-    *   Update `REACT_APP_API_BASE_URL` in `frontend/.env` if your services will be exposed on a different base path by Docker Compose (though the default proxy setup in `frontend/package.json` and Nginx config in `docker-compose.yml` usually handles `http://localhost:8000` for the backend).
+### **Step 2: Environment Configuration**
 
-3.  **Build and Run Services:**
-    From the `acgs-pgp` root directory:
-    ```bash
-    docker-compose up --build -d
-    ```
-    This command will:
-    *   Build Docker images for all services defined in `docker-compose.yml`.
-    *   Start containers for each service.
-    *   Run database migrations using the `alembic-runner` service.
+#### **Core Environment Variables**
+Copy and configure the main environment file:
+```bash
+cp config/env/.env.example .env
+```
 
-4.  **Accessing Services:**
-    *   **Frontend:** `http://localhost:3000` (served by React development server via Docker Compose)
-    *   **Backend Services (example `auth_service`):** `http://localhost:8000/auth/` (as routed by Nginx in Docker Compose)
-    *   Other backend services will be available under `http://localhost:8000/<service_prefix>/`. Check `nginx.conf` in `docker-compose.yml` for routing rules.
+Edit `.env` with the following required variables:
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://acgs_user:acgs_password@postgres:5432/acgs_db
+
+# Authentication
+AUTH_SERVICE_SECRET_KEY=your-secret-key-here
+JWT_SECRET_KEY=your-jwt-secret-here
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=30
+
+# LLM Integration (Required for Constitutional Prompting)
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-4
+
+# Z3 Formal Verification
+Z3_TIMEOUT_SECONDS=30
+Z3_MAX_MEMORY_MB=1024
+
+# PGP Cryptographic Integrity
+PGP_KEY_ID=your-pgp-key-id
+PGP_PASSPHRASE=your-pgp-passphrase
+
+# Service Configuration
+ENVIRONMENT=development
+DEBUG=true
+LOG_LEVEL=INFO
+```
+
+#### **Frontend Configuration**
+```bash
+cd src/frontend
+cp .env.example .env
+```
+
+Edit `src/frontend/.env`:
+```bash
+REACT_APP_API_BASE_URL=/api
+REACT_APP_ENVIRONMENT=development
+REACT_APP_ENABLE_CONSTITUTIONAL_COUNCIL=true
+REACT_APP_ENABLE_ALPHAEVOLVE=true
+```
+
+### **Step 3: Build and Deploy**
+From the project root directory:
+```bash
+# Build and start all services
+docker-compose -f config/docker/docker-compose.yml up --build -d
+
+# Verify all services are running
+docker-compose -f config/docker/docker-compose.yml ps
+```
+
+### **Step 4: Initialize Constitutional Framework**
+```bash
+# Load test data including constitutional principles
+python scripts/load_test_data.py
+
+# Verify constitutional setup
+python scripts/verify_acgs_deployment.sh
+```
+
+### **Step 5: Access Services**
+
+#### **Frontend Applications**
+*   **Constitutional Dashboard:** `http://localhost:3000`
+*   **Policy Management Interface:** `http://localhost:3000/policies`
+*   **Constitutional Council Portal:** `http://localhost:3000/council`
+
+#### **Backend API Services**
+*   **API Gateway:** `http://localhost:8000`
+*   **Auth Service:** `http://localhost:8000/api/auth/` ([docs](http://localhost:8000/api/auth/docs))
+*   **AC Service:** `http://localhost:8000/api/ac/` ([docs](http://localhost:8000/api/ac/docs))
+*   **GS Service:** `http://localhost:8000/api/gs/` ([docs](http://localhost:8000/api/gs/docs))
+*   **FV Service:** `http://localhost:8000/api/fv/` ([docs](http://localhost:8000/api/fv/docs))
+*   **Integrity Service:** `http://localhost:8000/api/integrity/` ([docs](http://localhost:8000/api/integrity/docs))
+*   **PGC Service:** `http://localhost:8000/api/pgc/` ([docs](http://localhost:8000/api/pgc/docs))
 
 5.  **Database Migrations (Manual, if needed):**
     The `alembic-runner` service in `docker-compose.yml` is configured to run migrations on startup. If you need to run migrations manually:
