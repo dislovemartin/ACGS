@@ -392,6 +392,182 @@ class AdaptiveThresholdManager:
         
         return domain_factors.get(domain, 1.0)
 
+class IntersectionalBiasDetectionEngine:
+    """
+    Enhanced bias detection engine that analyzes intersectional bias
+    across multiple protected attributes and temporal evolution.
+    """
+
+    def __init__(self):
+        self.protected_attributes = ['race', 'gender', 'age', 'disability', 'religion']
+        self.fairness_metrics = ['demographic_parity', 'equalized_odds', 'predictive_parity']
+        self.bias_history = []
+
+    def detect_bias(self, policy_text: str, principle: Dict[str, Any],
+                   threshold: float = 0.7) -> ValidationResult:
+        """
+        Comprehensive bias detection including intersectional analysis.
+
+        Args:
+            policy_text: Generated Rego policy code
+            principle: Constitutional principle specification
+            threshold: Bias detection threshold
+
+        Returns:
+            ValidationResult with bias analysis
+        """
+        errors = []
+        warnings = []
+        bias_score = 1.0  # Start with no bias detected
+
+        # Individual attribute bias analysis
+        individual_bias = self._analyze_individual_bias(policy_text, principle)
+
+        # Intersectional bias analysis
+        intersectional_bias = self._analyze_intersectional_bias(policy_text, principle)
+
+        # Temporal bias evolution analysis
+        temporal_bias = self._analyze_temporal_bias_evolution(policy_text, principle)
+
+        # Counterfactual fairness analysis
+        counterfactual_bias = self._analyze_counterfactual_fairness(policy_text, principle)
+
+        # Aggregate bias scores
+        bias_components = {
+            'individual': individual_bias,
+            'intersectional': intersectional_bias,
+            'temporal': temporal_bias,
+            'counterfactual': counterfactual_bias
+        }
+
+        # Calculate weighted bias score
+        weights = {'individual': 0.3, 'intersectional': 0.4, 'temporal': 0.2, 'counterfactual': 0.1}
+        bias_score = sum(weights[k] * v for k, v in bias_components.items())
+
+        # Generate warnings and errors based on bias levels
+        if bias_score < threshold:
+            if intersectional_bias < 0.6:
+                errors.append("Significant intersectional bias detected")
+            if temporal_bias < 0.7:
+                warnings.append("Potential temporal bias evolution detected")
+            if counterfactual_bias < 0.8:
+                warnings.append("Counterfactual fairness concerns identified")
+
+        return ValidationResult(
+            level=ValidationLevel.SEMANTIC,  # Bias is part of semantic validation
+            score=bias_score,
+            confidence=0.85,
+            errors=errors,
+            warnings=warnings,
+            metadata={
+                'bias_components': bias_components,
+                'protected_attributes_analyzed': self.protected_attributes,
+                'fairness_metrics_used': self.fairness_metrics
+            }
+        )
+
+    def _analyze_individual_bias(self, policy_text: str, principle: Dict[str, Any]) -> float:
+        """Analyze bias for individual protected attributes."""
+        # Simplified implementation - would use actual fairness metrics
+        bias_indicators = []
+
+        for attribute in self.protected_attributes:
+            if attribute.lower() in policy_text.lower():
+                # Check if attribute is used in discriminatory context
+                bias_indicators.append(self._check_discriminatory_usage(policy_text, attribute))
+
+        return 1.0 - (sum(bias_indicators) / len(self.protected_attributes))
+
+    def _analyze_intersectional_bias(self, policy_text: str, principle: Dict[str, Any]) -> float:
+        """Analyze bias across intersections of protected attributes."""
+        intersectional_scores = []
+
+        # Check all pairs of protected attributes
+        for i, attr1 in enumerate(self.protected_attributes):
+            for attr2 in self.protected_attributes[i+1:]:
+                intersection_score = self._check_intersection_bias(policy_text, attr1, attr2)
+                intersectional_scores.append(intersection_score)
+
+        return np.mean(intersectional_scores) if intersectional_scores else 1.0
+
+    def _analyze_temporal_bias_evolution(self, policy_text: str, principle: Dict[str, Any]) -> float:
+        """Analyze how bias might evolve over time in evolutionary systems."""
+        # Check if policy has temporal components that could lead to bias drift
+        temporal_keywords = ['generation', 'evolution', 'time', 'iteration', 'adaptive']
+
+        has_temporal_component = any(keyword in policy_text.lower() for keyword in temporal_keywords)
+
+        if has_temporal_component:
+            # Analyze potential for bias amplification over time
+            return self._assess_bias_amplification_risk(policy_text)
+
+        return 1.0  # No temporal bias risk if no temporal components
+
+    def _analyze_counterfactual_fairness(self, policy_text: str, principle: Dict[str, Any]) -> float:
+        """Analyze counterfactual fairness - would decisions change if protected attributes were different."""
+        # Simplified implementation - would require causal analysis
+        causal_keywords = ['because', 'due to', 'caused by', 'results from']
+
+        has_causal_language = any(keyword in policy_text.lower() for keyword in causal_keywords)
+
+        if has_causal_language:
+            return self._assess_causal_fairness(policy_text)
+
+        return 0.9  # Slight concern if no explicit causal reasoning
+
+    def _check_discriminatory_usage(self, policy_text: str, attribute: str) -> float:
+        """Check if protected attribute is used in potentially discriminatory way."""
+        # Simplified heuristic - would use more sophisticated NLP
+        discriminatory_patterns = [
+            f"{attribute} == ",
+            f"{attribute} != ",
+            f"not {attribute}",
+            f"exclude {attribute}"
+        ]
+
+        for pattern in discriminatory_patterns:
+            if pattern in policy_text.lower():
+                return 0.8  # High bias indicator
+
+        return 0.0  # No obvious discriminatory usage
+
+    def _check_intersection_bias(self, policy_text: str, attr1: str, attr2: str) -> float:
+        """Check for bias at intersection of two protected attributes."""
+        # Look for compound conditions involving both attributes
+        intersection_patterns = [
+            f"{attr1}.*{attr2}",
+            f"{attr2}.*{attr1}",
+            f"({attr1}.*and.*{attr2})",
+            f"({attr2}.*and.*{attr1})"
+        ]
+
+        for pattern in intersection_patterns:
+            if re.search(pattern, policy_text.lower()):
+                return 0.7  # Potential intersectional bias
+
+        return 1.0  # No intersectional bias detected
+
+    def _assess_bias_amplification_risk(self, policy_text: str) -> float:
+        """Assess risk of bias amplification over evolutionary generations."""
+        # Check for feedback loops that could amplify bias
+        amplification_indicators = [
+            'feedback',
+            'reinforcement',
+            'accumulate',
+            'compound',
+            'amplify'
+        ]
+
+        risk_score = sum(1 for indicator in amplification_indicators
+                        if indicator in policy_text.lower())
+
+        return max(0.3, 1.0 - (risk_score * 0.2))
+
+    def _assess_causal_fairness(self, policy_text: str) -> float:
+        """Assess causal fairness in policy decisions."""
+        # Simplified assessment - would require causal graph analysis
+        return 0.8  # Placeholder for sophisticated causal analysis
+
 # Example usage and testing
 if __name__ == "__main__":
     # Example policy validation
