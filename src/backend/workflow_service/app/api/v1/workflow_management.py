@@ -356,8 +356,8 @@ async def execute_recovery_plan(
 @router.post("/testing/suites/{suite_id}/run")
 async def run_test_suite(
     suite_id: str,
-    context: Dict[str, Any] = None,
     background_tasks: BackgroundTasks,
+    context: Dict[str, Any] = None,
     current_user: User = Depends(get_current_active_user)
 ):
     """Run a test suite"""

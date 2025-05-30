@@ -26,12 +26,13 @@ class Amendment:
         timestamp (datetime): Timestamp of the proposal.
         proposer_id (Optional[str]): Identifier of the entity proposing the amendment.
     """
-    def __init__(self, 
-                 amendment_id: str, 
-                 target_rule_id: str, 
-                 proposed_change: Dict[str, Any], 
+    def __init__(self,
+                 amendment_id: str,
+                 target_rule_id: str,
+                 proposed_change: Dict[str, Any],
                  justification: str,
-                 proposer_id: Optional[str] = None):
+                 proposer_id: Optional[str] = None,
+                 timestamp: Optional[datetime] = None):
         """
         Initializes an Amendment instance.
         """
@@ -40,23 +41,7 @@ class Amendment:
         self.proposed_change = proposed_change
         self.justification = justification
         self.status = 'proposed'  # Initial status
-def __init__(self, 
-             amendment_id: str, 
-             target_rule_id: str, 
-             proposed_change: Dict[str, Any], 
-             justification: str,
-             proposer_id: Optional[str] = None,
-             timestamp: Optional[datetime] = None):
-    """
-    Initializes an Amendment instance.
-    """
-    self.amendment_id = amendment_id
-    self.target_rule_id = target_rule_id
-    self.proposed_change = proposed_change
-    self.justification = justification
-    self.status = 'proposed'  # Initial status
-    self.timestamp = timestamp or datetime.now()
-    self.proposer_id = proposer_id
+        self.timestamp = timestamp or datetime.now()
         self.proposer_id = proposer_id
 
     def __repr__(self) -> str:

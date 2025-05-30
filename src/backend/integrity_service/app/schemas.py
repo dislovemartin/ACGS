@@ -36,7 +36,7 @@ class PolicyRule(PolicyRuleBase): # For API responses
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class PolicyRuleList(BaseModel):
     rules: List[PolicyRule]
@@ -59,7 +59,7 @@ class AuditLog(AuditLogBase): # For API responses
     timestamp: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AuditLogList(BaseModel):
     logs: List[AuditLog]
@@ -93,7 +93,7 @@ class Appeal(AppealBase):
     escalation_level: int = 1  # 1=ombudsperson, 2=technical, 3=council_subcommittee, 4=full_council
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AppealList(BaseModel):
     appeals: List[Appeal]
@@ -125,7 +125,7 @@ class DisputeResolution(DisputeResolutionBase):
     panel_members: Optional[List[str]] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class DisputeResolutionList(BaseModel):
     resolutions: List[DisputeResolution]
@@ -182,7 +182,7 @@ class CryptoKey(CryptoKeyBase):
     hsm_key_reference: Optional[str] = Field(None, description="HSM key reference")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CryptoKeyList(BaseModel):
     keys: List[CryptoKey]
@@ -220,7 +220,7 @@ class MerkleTreeNode(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MerkleTreeBuild(BaseModel):
     data_hashes: List[str] = Field(..., description="List of SHA3-256 hashes to build tree from")

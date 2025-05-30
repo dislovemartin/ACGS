@@ -23,7 +23,18 @@ class PrincipleBase(BaseModel):
 class PrincipleCreate(PrincipleBase):
     # version and status will have default values in the model
     # created_by_user_id will be passed from the request context (e.g., authenticated user)
-    pass
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Data Privacy Protection",
+                "description": "Ensure user data privacy and protection",
+                "content": "All user data must be encrypted and access logged",
+                "priority_weight": 0.8,
+                "scope": ["data_processing", "user_management"],
+                "category": "Privacy"
+            }
+        }
 
 # Schema for updating an existing principle
 # All fields are optional for updates
@@ -82,7 +93,18 @@ class ACMetaRuleBase(BaseModel):
     decision_mechanism: Optional[str] = Field(None, description="Decision mechanism (e.g., supermajority_vote)")
 
 class ACMetaRuleCreate(ACMetaRuleBase):
-    pass
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "rule_type": "voting_threshold",
+                "name": "Constitutional Amendment Threshold",
+                "description": "Defines voting threshold for constitutional amendments",
+                "threshold": "0.67",
+                "stakeholder_roles": ["admin", "policy_manager"],
+                "decision_mechanism": "supermajority_vote"
+            }
+        }
 
 class ACMetaRuleUpdate(BaseModel):
     rule_type: Optional[str] = None
@@ -102,7 +124,7 @@ class ACMetaRule(ACMetaRuleBase):
     created_by_user_id: Optional[int] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Amendment schemas
 class ACAmendmentBase(BaseModel):
@@ -146,7 +168,7 @@ class ACAmendment(ACAmendmentBase):
     proposed_by_user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Amendment vote schemas
 class ACAmendmentVoteBase(BaseModel):
@@ -163,7 +185,7 @@ class ACAmendmentVote(ACAmendmentVoteBase):
     voted_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Amendment comment schemas
 class ACAmendmentCommentBase(BaseModel):
@@ -187,7 +209,7 @@ class ACAmendmentComment(ACAmendmentCommentBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Conflict resolution schemas
 class ACConflictResolutionBase(BaseModel):
@@ -201,7 +223,18 @@ class ACConflictResolutionBase(BaseModel):
     precedence_order: Optional[List[int]] = Field(None, description="Priority order of principles")
 
 class ACConflictResolutionCreate(ACConflictResolutionBase):
-    pass
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "conflict_type": "priority_conflict",
+                "principle_ids": [1, 2],
+                "context": "Privacy vs Security conflict in user authentication",
+                "resolution_strategy": "weighted_priority",
+                "resolution_details": {"weights": {"privacy": 0.6, "security": 0.4}},
+                "precedence_order": [1, 2]
+            }
+        }
 
 class ACConflictResolutionUpdate(BaseModel):
     conflict_type: Optional[str] = None
@@ -223,4 +256,4 @@ class ACConflictResolution(ACConflictResolutionBase):
     identified_by_user_id: Optional[int] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
