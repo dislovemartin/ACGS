@@ -1,0 +1,94 @@
+{
+  "results": {
+    "database": {
+      "ac_principles_list": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 20
+      },
+      "ac_principles_search": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 20
+      },
+      "integrity_audit_logs": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 20
+      },
+      "integrity_policy_rules": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 20
+      }
+    },
+    "llm": {
+      "constitutional_synthesis": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 5
+      },
+      "contextual_analysis": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 5
+      }
+    },
+    "z3": {
+      "simple_verification": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 10
+      },
+      "complex_verification": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 10
+      }
+    },
+    "crypto": {
+      "signature_creation": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 15
+      },
+      "hash_generation": {
+        "avg_response_time": 0,
+        "min_response_time": 0,
+        "max_response_time": 0,
+        "median_response_time": 0,
+        "success_rate": 0,
+        "total_requests": 15
+      }
+    }
+  },
+  "recommendations": [],
+  "timestamp": "2025-05-30T09:23:01.508017"
+}

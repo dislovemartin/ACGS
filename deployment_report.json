@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-05-30T09:02:54.274380",
+  "status": {
+    "docker_available": true,
+    "docker-compose_available": true,
+    "python3_available": true,
+    "pip_available": true,
+    "directories_created": true
+  },
+  "issues": [
+    "Alembic not configured"
+  ]
+}
