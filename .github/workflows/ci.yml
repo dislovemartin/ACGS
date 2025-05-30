@@ -1,121 +1,479 @@
-name: ACGS-PGP CI
+name: ACGS-PGP Enhanced CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ] # Assuming 'main' is the primary branch
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM for comprehensive testing
 
 permissions:
   contents: read
+  packages: write
+  security-events: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build_latex:
+  # Pre-flight checks
+  preflight:
     runs-on: ubuntu-latest
-    name: Build LaTeX PDF
+    name: Pre-flight Checks
+    outputs:
+      should_run_tests: ${{ steps.changes.outputs.should_run }}
+      changed_services: ${{ steps.changes.outputs.services }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4 # Use latest major version
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install texlive-full
+      - name: Detect changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "services=all" >> $GITHUB_OUTPUT
+          else
+            # Detect changed files and determine affected services
+            changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            echo "Changed files: $changed_files"
+
+            if echo "$changed_files" | grep -E "(src/|tests/|scripts/|\.github/)" > /dev/null; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+
+              services=""
+              if echo "$changed_files" | grep "src/backend/ac_service" > /dev/null; then
+                services="$services ac_service"
+              fi
+              if echo "$changed_files" | grep "src/backend/gs_service" > /dev/null; then
+                services="$services gs_service"
+              fi
+              if echo "$changed_files" | grep "src/backend/workflow_service" > /dev/null; then
+                services="$services workflow_service"
+              fi
+
+              echo "services=${services:-all}" >> $GITHUB_OUTPUT
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  # Security scanning
+  security_scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+    needs: preflight
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Code quality checks
+  code_quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Analysis
+    needs: preflight
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy pytest-cov bandit safety
+
+      - name: Code formatting check
+        run: |
+          black --check --diff src/ tests/
+          isort --check-only --diff src/ tests/
+
+      - name: Linting
+        run: |
+          flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503
+
+      - name: Type checking
+        run: |
+          mypy src/ --ignore-missing-imports
+
+      - name: Security analysis
+        run: |
+          bandit -r src/ -f json -o bandit-report.json
+          safety check --json --output safety-report.json
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  # Unit tests
+  unit_tests:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+    needs: [preflight, code_quality]
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+        service: ['ac_service', 'gs_service', 'workflow_service']
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/backend/${{ matrix.service }}/requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Run unit tests
+        run: |
+          cd src/backend/${{ matrix.service }}
+          python -m pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=html
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: src/backend/${{ matrix.service }}/coverage.xml
+          flags: ${{ matrix.service }}
+          name: ${{ matrix.service }}-${{ matrix.python-version }}
+
+  # Build and test Docker images
+  build_images:
+    runs-on: ubuntu-latest
+    name: Build Docker Images
+    needs: [preflight, unit_tests]
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    strategy:
+      matrix:
+        service: ['ac_service', 'gs_service', 'workflow_service', 'auth_service']
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: src/backend/${{ matrix.service }}
+          file: src/backend/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build_latex:
+    runs-on: ubuntu-latest
+    name: Build LaTeX Documentation
+    needs: preflight
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install TeX Live
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends texlive-full
-        # Note: texlive-full is very large and can make the CI slow.
-        # Consider a more minimal TeX Live installation if specific dependencies are known.
+          sudo apt-get install -y --no-install-recommends texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
 
       - name: Compile LaTeX document
         run: |
-          # Acknowledgment: This step might fail if CI runners encounter the same
-          # file path limitations with colons/parentheses as the agent's tools.
-          # The path used here is based on the project structure.
-          FILE_PATH="ACGS-PGP_Framework/acgs_pgp_main_with_figures.tex"
-          if [ -f "$FILE_PATH" ]; then
-            latexmk -pdf -interaction=nonstopmode "$FILE_PATH"
-          else
-            echo "File not found: $FILE_PATH"
-            # Attempt to find and compile any .tex file in that directory as a fallback
-            TARGET_DIR="ACGS-PGP_Framework"
-            MAIN_TEX_FILE=$(find "$TARGET_DIR" -maxdepth 1 -name "*.tex" -print -quit)
-            if [ -n "$MAIN_TEX_FILE" ]; then
-              echo "Attempting to compile fallback file: $MAIN_TEX_FILE"
-              latexmk -pdf -interaction=nonstopmode "$MAIN_TEX_FILE"
-            else
-              echo "No .tex file found in $TARGET_DIR. Skipping compilation."
-              exit 1 # Or handle as a non-critical failure if preferred
-            fi
+          # Build ACGS-PGP Framework documentation
+          cd ACGS-PGP_Framework
+          if [ -f "acgs_pgp_main.tex" ]; then
+            pdflatex -interaction=nonstopmode acgs_pgp_main.tex
+            bibtex acgs_pgp_main || true
+            pdflatex -interaction=nonstopmode acgs_pgp_main.tex
+            pdflatex -interaction=nonstopmode acgs_pgp_main.tex
           fi
-        working-directory: . # Ensure latexmk is run from the repo root if paths are relative
 
-      - name: Upload PDF artifact
-        uses: actions/upload-artifact@v4 # Use latest major version
+      - name: Upload PDF artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: compiled-paper
-          # The path needs to correctly point to the generated PDF.
-          # latexmk usually creates the PDF in the same directory as the .tex file.
-          # If the compilation step changes directory, adjust this path.
+          name: documentation-pdf
           path: |
             ACGS-PGP_Framework/*.pdf
-            !ACGS-PGP_Framework/*_with_figures.pdf # Exclude if only the main one is desired
-          if-no-files-found: warn # 'warn' or 'error' or 'ignore'
+            AlphaEvolve-ACGS_Integration_System/*.pdf
+          if-no-files-found: warn
 
-  markdown_lint:
+  # Integration tests
+  integration_tests:
     runs-on: ubuntu-latest
-    name: Lint Markdown Files
+    name: Integration Tests
+    needs: [preflight, build_images]
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_USER: testuser
+          POSTGRES_DB: acgs_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Run Markdown Lint
-        uses: avto-dev/markdown-lint@v1
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          # Optional: specify a config file, or rules, or ignore paths
-          # config: '.markdownlint.json'
-          # rules: 'MD013,MD029'
-          # ignore: 'docs/old_stuff/*.md'
-          args: '**/*.md' # Lint all markdown files in the repository
+          python-version: '3.11'
 
-  trufflehog_scan:
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Set up test environment
+        run: |
+          export DATABASE_URL="postgresql://testuser:testpass@localhost:5432/acgs_test"
+          export TESTING=true
+
+          # Run database migrations
+          python scripts/run_migrations.py
+
+      - name: Run integration tests
+        run: |
+          export DATABASE_URL="postgresql://testuser:testpass@localhost:5432/acgs_test"
+          export TESTING=true
+
+          # Run comprehensive integration tests
+          python -m pytest tests/integration/ -v --tb=short
+
+          # Run workflow tests
+          python tests/integration/test_comprehensive_workflow.sh
+
+      - name: Run constitutional compliance tests
+        run: |
+          export DATABASE_URL="postgresql://testuser:testpass@localhost:5432/acgs_test"
+          export TESTING=true
+
+          # Test constitutional council functionality
+          python -m pytest tests/integration/test_constitutional_council_implementation.py -v
+
+          # Test conflict resolution
+          python -m pytest tests/integration/test_conflict_resolution_implementation.py -v
+
+  # End-to-end tests
+  e2e_tests:
     runs-on: ubuntu-latest
-    name: Scan for Secrets (Trufflehog)
+    name: End-to-End Tests
+    needs: [preflight, integration_tests]
+    if: needs.preflight.outputs.should_run_tests == 'true'
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for Trufflehog to scan effectively
 
-      - name: Run Trufflehog Scan
-        uses: trufflesecurity/trufflehog@main
-        with:
-          # Scan the entire repository history up to the current commit.
-          # --fail: Exit with non-zero status if secrets are found.
-          # --since-commit HEAD: Scans only the latest commit (less thorough for PRs on existing repos)
-          # For PRs, scanning the entire branch history or comparing with 'main' might be better.
-          # Using `path: .` to scan the whole repo.
-          # `extra_args: --fail --json` for machine-readable output if needed later.
-          # The default behavior of the action might be to scan the whole repo.
-          # Let's use a common setting for scanning recent changes in PRs vs. full scan on main.
-          # This example scans the whole repo:
-          path: .
-          extra_args: --fail --only-verified # Only fail for verified secrets, reduce noise
-          # To scan only changes relative to the target branch (e.g., main) in a PR:
-          # run: |
-          #   git fetch origin ${{ github.base_ref }} --depth=1
-          #   trufflehog --fail --only-verified --since-commit origin/${{ github.base_ref }} .
-          # This is more complex to set up correctly with the action directly.
-          # The action's default behavior is often sufficient for a general scan.
-          # For now, keeping it simple to scan the current state.
-          # A more robust approach for PRs would be:
-          # `trufflehog filesystem . --since-commit ${{ github.event.pull_request.base.sha }}`
-          # However, the action might handle this implicitly or require specific args.
-          # The default trufflehog@main action scans the full history of the repo.
-          # Adding --since-commit HEAD will only scan the current commit, which is not what we want.
-          # The action's documentation should be consulted for best practices on PRs.
-          # For now, a full scan is acceptable. The `--only-verified` flag will help.
-          # To scan only the latest commit (not recommended for comprehensive security):
-          # extra_args: --fail --only-verified --since-commit HEAD
+      - name: Set up Docker Compose
+        run: |
+          # Start full ACGS-PGP stack
+          docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
 
-          # To scan the entire repo history (can be slow on large repos):
-          # No specific args needed for path, action defaults to current directory.
-          # `fetch-depth: 0` is important for this.
-          # `extra_args: --fail --only-verified` is a good default.
+          # Wait for services to be ready
+          sleep 60
+
+      - name: Run E2E tests
+        run: |
+          # Run comprehensive end-to-end tests
+          python tests/e2e/comprehensive_acgs_test.py
+
+          # Test workflow orchestration
+          python -m pytest tests/e2e/ -v
+
+      - name: Collect service logs
+        if: failure()
+        run: |
+          docker-compose logs > e2e-logs.txt
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs
+          path: e2e-logs.txt
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose down -v
+
+  # Performance tests
+  performance_tests:
+    runs-on: ubuntu-latest
+    name: Performance Tests
+    needs: [preflight, integration_tests]
+    if: needs.preflight.outputs.should_run_tests == 'true' && github.event_name == 'schedule'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install locust pytest-benchmark
+
+      - name: Run performance tests
+        run: |
+          # Run policy synthesis performance tests
+          python -m pytest tests/integration/test_phase3_z3_integration.py::test_performance -v
+
+          # Run load tests
+          locust -f tests/performance/load_test.py --headless -u 10 -r 2 -t 60s --host http://localhost:8000
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: |
+            performance-*.json
+            locust-*.html
+
+  # Deployment validation
+  deployment_validation:
+    runs-on: ubuntu-latest
+    name: Deployment Validation
+    needs: [preflight, e2e_tests, performance_tests]
+    if: needs.preflight.outputs.should_run_tests == 'true' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Kubernetes manifests
+        run: |
+          # Install kubeval
+          wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval-linux-amd64.tar.gz
+          sudo mv kubeval /usr/local/bin
+
+          # Validate K8s manifests
+          find config/k8s -name "*.yaml" -exec kubeval {} \;
+
+      - name: Validate Docker Compose
+        run: |
+          docker-compose config
+
+      - name: Run deployment verification
+        run: |
+          python scripts/verify_acgs_deployment.sh
+
+  # Security compliance
+  security_compliance:
+    runs-on: ubuntu-latest
+    name: Security Compliance Check
+    needs: [preflight, code_quality]
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run OWASP ZAP security scan
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: 'http://localhost:8000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Run compliance validation
+        run: |
+          python scripts/audit_compliance_validator.py
+
+  # Notification and reporting
+  notify_results:
+    runs-on: ubuntu-latest
+    name: Notify Results
+    needs: [unit_tests, integration_tests, e2e_tests, security_compliance, deployment_validation]
+    if: always()
+    steps:
+      - name: Notify on success
+        if: needs.unit_tests.result == 'success' && needs.integration_tests.result == 'success'
+        run: |
+          echo "✅ All tests passed successfully!"
+          # Add Slack/email notification here
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Some tests failed. Check the logs for details."
+          # Add failure notification here
+
+      - name: Generate test report
+        run: |
+          echo "# ACGS-PGP CI/CD Test Report" > test-report.md
+          echo "Generated: $(date)" >> test-report.md
+          echo "" >> test-report.md
+          echo "## Test Results Summary" >> test-report.md
+          echo "- Unit Tests: ${{ needs.unit_tests.result }}" >> test-report.md
+          echo "- Integration Tests: ${{ needs.integration_tests.result }}" >> test-report.md
+          echo "- E2E Tests: ${{ needs.e2e_tests.result }}" >> test-report.md
+          echo "- Security Compliance: ${{ needs.security_compliance.result }}" >> test-report.md
+          echo "- Deployment Validation: ${{ needs.deployment_validation.result }}" >> test-report.md
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.md
