@@ -27,7 +27,7 @@ jobs:
       changed_services: ${{ steps.changes.outputs.services }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
         with:
           fetch-depth: 0
 
@@ -39,7 +39,11 @@ jobs:
             echo "services=all" >> $GITHUB_OUTPUT
           else
             # Detect changed files and determine affected services
-            changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            if [ "${{ github.event_name }}" == "pull_request" ]; then
+              changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+            else
+              changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            fi
             echo "Changed files: $changed_files"
 
             if echo "$changed_files" | grep -E "(src/|tests/|scripts/|\.github/)" > /dev/null; then
@@ -70,10 +74,10 @@ jobs:
     if: needs.preflight.outputs.should_run_tests == 'true'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -81,7 +85,7 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3.25.15
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -93,10 +97,10 @@ jobs:
     if: needs.preflight.outputs.should_run_tests == 'true'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: '3.11'
 
@@ -124,7 +128,7 @@ jobs:
           safety check --json --output safety-report.json
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.4
         with:
           name: security-reports
           path: |
@@ -140,13 +144,13 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.10', '3.11']
-        service: ['ac_service', 'gs_service', 'workflow_service']
+        service: ['ac_service', 'gs_service', 'workflow_service', 'auth_service']
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -162,7 +166,7 @@ jobs:
           python -m pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4.5.0
         with:
           file: src/backend/${{ matrix.service }}/coverage.xml
           flags: ${{ matrix.service }}
@@ -179,13 +183,13 @@ jobs:
         service: ['ac_service', 'gs_service', 'workflow_service', 'auth_service']
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3.4.0
 
       - name: Log in to Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.2.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -193,7 +197,7 @@ jobs:
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v5.5.1
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
           tags: |
@@ -203,7 +207,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6.5.0
         with:
           context: src/backend/${{ matrix.service }}
           file: src/backend/${{ matrix.service }}/Dockerfile
@@ -219,7 +223,7 @@ jobs:
     needs: preflight
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Install TeX Live
         run: |
@@ -229,21 +233,30 @@ jobs:
       - name: Compile LaTeX document
         run: |
           # Build ACGS-PGP Framework documentation
-          cd ACGS-PGP_Framework
+          cd docs/research/ACGS-PGP_Framework
           if [ -f "acgs_pgp_main.tex" ]; then
             pdflatex -interaction=nonstopmode acgs_pgp_main.tex
             bibtex acgs_pgp_main || true
             pdflatex -interaction=nonstopmode acgs_pgp_main.tex
             pdflatex -interaction=nonstopmode acgs_pgp_main.tex
           fi
+          # Build AlphaEvolve-ACGS Integration System documentation
+          cd ../AlphaEvolve-ACGS_Integration_System
+          if [ -f "main.tex" ]; then
+            pdflatex -interaction=nonstopmode main.tex
+            bibtex main || true
+            pdflatex -interaction=nonstopmode main.tex
+            pdflatex -interaction=nonstopmode main.tex
+          fi
+          cd ../../.. # Return to the root directory
 
       - name: Upload PDF artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.4
         with:
           name: documentation-pdf
           path: |
-            ACGS-PGP_Framework/*.pdf
-            AlphaEvolve-ACGS_Integration_System/*.pdf
+            docs/research/ACGS-PGP_Framework/*.pdf
+            docs/research/AlphaEvolve-ACGS_Integration_System/*.pdf
           if-no-files-found: warn
 
   # Integration tests
@@ -269,10 +282,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: '3.11'
 
@@ -320,15 +333,16 @@ jobs:
     if: needs.preflight.outputs.should_run_tests == 'true'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Set up Docker Compose
         run: |
           # Start full ACGS-PGP stack
           docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
 
+          # TODO: Replace this sleep with a proper health check mechanism for all services
           # Wait for services to be ready
-          sleep 60
+          sleep 90
 
       - name: Run E2E tests
         run: |
@@ -345,7 +359,7 @@ jobs:
 
       - name: Upload logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.4
         with:
           name: e2e-logs
           path: e2e-logs.txt
@@ -363,10 +377,10 @@ jobs:
     if: needs.preflight.outputs.should_run_tests == 'true' && github.event_name == 'schedule'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: '3.11'
 
@@ -385,7 +399,7 @@ jobs:
           locust -f tests/performance/load_test.py --headless -u 10 -r 2 -t 60s --host http://localhost:8000
 
       - name: Upload performance reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.4
         with:
           name: performance-reports
           path: |
@@ -400,7 +414,7 @@ jobs:
     if: needs.preflight.outputs.should_run_tests == 'true' && github.ref == 'refs/heads/main'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
       - name: Validate Kubernetes manifests
         run: |
@@ -428,13 +442,14 @@ jobs:
     if: needs.preflight.outputs.should_run_tests == 'true'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
 
-      - name: Run OWASP ZAP security scan
-        uses: zaproxy/action-full-scan@v0.8.0
-        with:
-          target: 'http://localhost:8000'
-          rules_file_name: '.zap/rules.tsv'
+      # TODO: This step needs a running service to target. Re-enable after proper setup.
+      # - name: Run OWASP ZAP security scan
+      #   uses: zaproxy/action-full-scan@v0.10.0
+      #   with:
+      #     target: 'http://localhost:8000'
+      #     rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a'
 
       - name: Run compliance validation
@@ -473,7 +488,7 @@ jobs:
           echo "- Deployment Validation: ${{ needs.deployment_validation.result }}" >> test-report.md
 
       - name: Upload test report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.4
         with:
           name: test-report
           path: test-report.md
