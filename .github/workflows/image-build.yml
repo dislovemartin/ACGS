@@ -15,19 +15,21 @@ jobs:
             context: .
             image: ghcr.io/${{ github.repository | toLower }}/dev
           - name: auth
-            file: auth_service/Dockerfile
-            context: auth_service
-            image: ghcr.io/${{ github.repository | toLower }}/auth
-          - name: backend
-            file: backend/ac_service/Dockerfile
-            context: backend/ac_service
-            image: ghcr.io/${{ github.repository | toLower }}/backend
+            file: src/backend/auth_service/Dockerfile
+            context: src/backend/auth_service
+            image: ghcr.io/${{ github.repository | toLower }}/auth_service # Make image name specific
+          # This previously built ac_service under the generic 'backend' image name.
+          # Renaming to 'ac_service' for clarity. The ci.yml workflow builds other backend services.
+          - name: ac_service
+            file: src/backend/ac_service/Dockerfile
+            context: src/backend/ac_service
+            image: ghcr.io/${{ github.repository | toLower }}/ac_service
           - name: frontend
-            file: frontend/Dockerfile
-            context: frontend
+            file: src/frontend/Dockerfile
+            context: src/frontend
             image: ghcr.io/${{ github.repository | toLower }}/frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v4.1.7
+      - uses: docker/setup-buildx-action@v3.4.0
       - run: |
           docker buildx build             -f ${{ matrix.file }}             -t ${{ matrix.image }}:pr-${{ github.sha }}             --load             ${{ matrix.context }}
