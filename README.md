@@ -26,18 +26,36 @@ This project implements the core components of the ACGS-PGP framework, including
 ## Project Structure
 
 The project is organized into several main directories:
--   `alembic/`: Database migration scripts.
--   `backend/`: Contains the source code for all backend microservices.
-    -   `ac_service/`
-    -   `auth_service/`
-    -   `fv_service/`
-    -   `gs_service/`
-    -   `integrity_service/`
-    -   `pgc_service/`
--   `docs/`: Project documentation.
--   `frontend/`: React frontend application.
--   `k8s/`: Kubernetes deployment manifests.
--   `shared/`: Shared Python modules (database models, schemas, utilities).
+-   `migrations/`: Database migration scripts (Alembic).
+-   `src/`: Contains all source code.
+    -   `backend/`: Backend microservices and shared modules.
+        -   `ac_service/`: Audit & Compliance Service
+        -   `auth_service/`: Authentication Service
+        -   `fv_service/`: Formal Verification Service
+        -   `gs_service/`: Governance Synthesis Service
+        -   `integrity_service/`: Integrity & Verifiability Service
+        -   `pgc_service/`: Protective Governance Controls Service
+        -   `shared/`: Shared Python modules (database models, schemas, utilities)
+    -   `frontend/`: React frontend application.
+    -   `alphaevolve_gs_engine/`: AlphaEvolve integration engine.
+-   `tests/`: Centralized test directory.
+    -   `unit/`: Unit tests organized by service.
+    -   `integration/`: Integration tests for cross-service functionality.
+    -   `e2e/`: End-to-end workflow tests.
+-   `config/`: All configuration files.
+    -   `docker/`: Docker Compose and Dockerfile configurations.
+    -   `k8s/`: Kubernetes deployment manifests.
+    -   `env/`: Environment variable templates.
+    -   `monitoring/`: Monitoring and alerting configurations.
+-   `docs/`: Project documentation organized by type.
+    -   `api/`: API documentation and schemas.
+    -   `deployment/`: Deployment guides and checklists.
+    -   `development/`: Developer guides and contribution docs.
+    -   `research/`: Research papers and academic content.
+    -   `user/`: User guides and tutorials.
+-   `scripts/`: Utility scripts for development, testing, and deployment.
+-   `data/`: Test data, policy corpus, and sample datasets.
+-   `tools/`: Development tools and build utilities.
 
 ## Local Development Setup
 
@@ -55,24 +73,24 @@ The project is organized into several main directories:
     ```
 
 2.  **Configure Environment Variables:**
-    *   Copy the root `.env.example` to `.env` and update the variables, especially `DATABASE_URL` and service-specific secrets like `AUTH_SERVICE_SECRET_KEY`.
+    *   Copy the environment template to the root directory and update the variables, especially `DATABASE_URL` and service-specific secrets like `AUTH_SERVICE_SECRET_KEY`.
         ```bash
-        cp .env.example .env
+        cp config/env/.env.example .env
         ```
-    *   Navigate to the `frontend` directory, copy `frontend/.env.example` to `frontend/.env`, and update `REACT_APP_API_BASE_URL` if necessary (default is `/api` which assumes Nginx proxying from root or a specific host port).
+    *   Navigate to the `src/frontend` directory, copy `frontend/.env.example` to `frontend/.env`, and update `REACT_APP_API_BASE_URL` if necessary (default is `/api` which assumes Nginx proxying from root or a specific host port).
         ```bash
-        cd frontend
+        cd src/frontend
         cp .env.example .env
-        cd ..
+        cd ../..
         ```
-        The `REACT_APP_API_BASE_URL` in `frontend/.env` should typically be `/api` if you are accessing the frontend via `http://localhost:3000` and the Nginx gateway (defined in `docker-compose.yml`) is serving backend APIs at `http://localhost:8000/api/...`. The `proxy` setting in `frontend/package.json` (e.g., `"proxy": "http://localhost:8000"`) can also handle this for development by proxying frontend's `/api` calls to the backend Nginx.
+        The `REACT_APP_API_BASE_URL` in `src/frontend/.env` should typically be `/api` if you are accessing the frontend via `http://localhost:3000` and the Nginx gateway (defined in `config/docker/docker-compose.yml`) is serving backend APIs at `http://localhost:8000/api/...`. The `proxy` setting in `src/frontend/package.json` (e.g., `"proxy": "http://localhost:8000"`) can also handle this for development by proxying frontend's `/api` calls to the backend Nginx.
 
 3.  **Build and Run Services using Docker Compose:**
-    From the project root directory (`ACGS/`):
+    From the project root directory (`ACGS-master/`):
 
     **Primary Command to Start the System:**
     ```bash
-    docker-compose up --build -d
+    docker-compose -f config/docker/docker-compose.yml up --build -d
     ```
     This command will:
     *   Build Docker images for all services.
@@ -93,37 +111,56 @@ The project is organized into several main directories:
 5.  **Database Migrations (Manual, if needed):**
     The `alembic-runner` service runs migrations on startup. To run them manually:
     ```bash
-    docker-compose exec alembic-runner alembic upgrade head
+    docker-compose -f config/docker/docker-compose.yml exec alembic-runner alembic upgrade head
     ```
-    To create a new migration after changing models in `shared/models.py`:
+    To create a new migration after changing models in `src/backend/shared/models.py`:
     ```bash
-    docker-compose exec alembic-runner alembic revision -m "your_migration_message" --autogenerate
+    docker-compose -f config/docker/docker-compose.yml exec alembic-runner alembic revision -m "your_migration_message" --autogenerate
     ```
     Remember to review and edit the autogenerated script.
 
 6.  **Stopping Services:**
     ```bash
-    docker-compose down
+    docker-compose -f config/docker/docker-compose.yml down
     ```
     To remove volumes (including PostgreSQL data):
     ```bash
-    docker-compose down -v
+    docker-compose -f config/docker/docker-compose.yml down -v
     ```
 
 ## Documentation
 
-Detailed documentation can be found in the `/docs` directory:
--   `architecture.md`: System architecture overview.
--   `deployment.md`: Deployment guides for Docker Compose and Kubernetes.
--   `developer_guide.md`: Information for developers contributing to the project.
--   `user_guide.md`: How to use the platform (from a user's perspective).
--   `security.md`: Security considerations.
--   `roadmap.md`: Project development roadmap.
+Detailed documentation can be found in the `/docs` directory, organized by type:
+
+### API Documentation (`docs/api/`)
+- API schemas and endpoint documentation
+
+### Deployment Documentation (`docs/deployment/`)
+- `deployment.md`: Deployment guides for Docker Compose and Kubernetes
+- Deployment checklists and production guides
+
+### Development Documentation (`docs/development/`)
+- `developer_guide.md`: Information for developers contributing to the project
+- `REORGANIZATION_SUMMARY.md`: Details about the framework reorganization
+- Development workflows and contribution guidelines
+
+### Research Documentation (`docs/research/`)
+- Academic papers and research content
+- Framework design and theoretical foundations
+
+### User Documentation (`docs/user/`)
+- `user_guide.md`: How to use the platform (from a user's perspective)
+- User tutorials and guides
+
+### Core Documentation
+- `docs/architecture.md`: System architecture overview
+- `docs/security.md`: Security considerations
+- `docs/roadmap.md`: Project development roadmap
 
 ## Kubernetes Deployment
 
-For deployment to Kubernetes, refer to the instructions in `k8s/README.md`.
+For deployment to Kubernetes, refer to the instructions in `config/k8s/README.md`.
 
 ## Contributing
 
-Please refer to `docs/developer_guide.md` for guidelines on contributing to the project.
+Please refer to `docs/development/developer_guide.md` for guidelines on contributing to the project.

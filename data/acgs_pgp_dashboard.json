@@ -1,0 +1,68 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "ACGS-PGP System Overview",
+    "tags": [
+      "acgs-pgp"
+    ],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up",
+            "legendFormat": "{{ instance }}"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Response Times",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "http_request_duration_seconds{quantile=\"0.95\"}",
+            "legendFormat": "95th percentile"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Constitutional Compliance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "acgs_constitutional_compliance_rate",
+            "legendFormat": "Compliance Rate"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+}

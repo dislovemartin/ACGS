@@ -1,0 +1,14 @@
+{
+  "tokens": {},
+  "users": {},
+  "generated_at": "2025-05-30T04:02:59.965789",
+  "base_urls": {
+    "gateway": "http://localhost:8000",
+    "auth_service": "http://localhost:8001",
+    "ac_service": "http://localhost:8001",
+    "gs_service": "http://localhost:8004",
+    "fv_service": "http://localhost:8003",
+    "integrity_service": "http://localhost:8002",
+    "pgc_service": "http://localhost:8005"
+  }
+}

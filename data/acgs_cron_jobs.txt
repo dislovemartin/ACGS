@@ -1,0 +1,17 @@
+# ACGS-PGP Automated Backup and Monitoring Cron Jobs
+# Add these to your crontab: crontab -e
+
+# Daily database backup at 2:00 AM
+0 2 * * * /path/to/acgs-pgp/backup_database_comprehensive.sh >> /var/log/acgs-backup.log 2>&1
+
+# Hourly backup monitoring
+0 * * * * /path/to/acgs-pgp/monitor_backups.sh >> /var/log/acgs-backup-monitor.log 2>&1
+
+# Weekly backup cleanup and S3 sync
+0 3 * * 0 find /var/backups/acgs-pgp -name "*.gz*" -mtime +7 -delete
+
+# Monthly disaster recovery test (first Sunday of month)
+0 4 1-7 * 0 /path/to/acgs-pgp/test_disaster_recovery.sh >> /var/log/acgs-dr-test.log 2>&1
+
+# Daily health check
+*/30 * * * * /path/to/acgs-pgp/health_check.sh >> /var/log/acgs-health.log 2>&1

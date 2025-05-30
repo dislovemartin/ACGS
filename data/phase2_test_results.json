@@ -1,0 +1,59 @@
+{
+  "test_results": [
+    {
+      "test_name": "GS Service Health Check",
+      "success": true,
+      "details": "GS service is healthy",
+      "latency_ms": 7.22193717956543,
+      "timestamp": "2025-05-30T08:29:34.551590"
+    },
+    {
+      "test_name": "PGC Service Health Check",
+      "success": true,
+      "details": "PGC service is healthy",
+      "latency_ms": 1.8422603607177734,
+      "timestamp": "2025-05-30T08:29:34.553450"
+    },
+    {
+      "test_name": "EC Constitutional Prompting",
+      "success": true,
+      "details": "Generated guidance with 7 constraints",
+      "latency_ms": 22.025585174560547,
+      "timestamp": "2025-05-30T08:29:34.575521"
+    },
+    {
+      "test_name": "EC Governance Evaluation",
+      "success": true,
+      "details": "Evaluated 3 proposals, compliance rate: 0.97",
+      "latency_ms": 5.650043487548828,
+      "timestamp": "2025-05-30T08:29:34.581219"
+    },
+    {
+      "test_name": "PGC Batch Evaluation",
+      "success": true,
+      "details": "Batch processed successfully. Avg latency: 0.02ms (target: 50ms)",
+      "latency_ms": 1.7321109771728516,
+      "timestamp": "2025-05-30T08:29:34.582993"
+    },
+    {
+      "test_name": "PGC Single Evaluation",
+      "success": true,
+      "details": "Single evaluation successful. Latency: 0.01ms (target: 20ms)",
+      "latency_ms": 1.0807514190673828,
+      "timestamp": "2025-05-30T08:29:34.584106"
+    },
+    {
+      "test_name": "PGC Cache Functionality",
+      "success": true,
+      "details": "Cache populated: 0 -> 1 entries",
+      "latency_ms": 0,
+      "timestamp": "2025-05-30T08:29:34.587671"
+    }
+  ],
+  "summary": {
+    "total_tests": 7,
+    "passed_tests": 7,
+    "overall_success": true,
+    "timestamp": "2025-05-30T08:29:34.587814"
+  }
+}
