@@ -1,8 +1,8 @@
 # backend/auth_service/app/core/config.py
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, root_field_validator
+from pydantic import AnyHttpUrl, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -22,9 +22,10 @@ class Settings(BaseSettings):
     CSRF_SECRET_KEY: str = os.getenv("CSRF_SECRET_KEY", "a_default_csrf_secret_key_change_me")
 
     # Backend CORS origins
+    # Can accept either a comma-separated string or a list of URLs
     # Example for local development if your frontend runs on port 3000:
-    # BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:3000"]
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    # BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    BACKEND_CORS_ORIGINS: str = ""
 
     # Project Name
     PROJECT_NAME: str = "ACGS-PGP Auth Service"
@@ -39,15 +40,31 @@ class Settings(BaseSettings):
     # For simplicity in config, we can allow it to be overridden if TEST_ASYNC_DATABASE_URL is set.
     TEST_ASYNC_DATABASE_URL: Optional[str] = os.getenv("TEST_ASYNC_DATABASE_URL", None)
 
-    @root_validator(pre=False)
-    @classmethod
-    def assemble_db_connection(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @property
+    def cors_origins_list(self) -> List[str]:
+        """Parse CORS origins from comma-separated string."""
+        if not self.BACKEND_CORS_ORIGINS.strip():
+            return []
+        # Split by comma and strip whitespace
+        origins = [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
+        # Basic URL validation - ensure they start with http:// or https://
+        validated_origins = []
+        for origin in origins:
+            if origin.startswith(('http://', 'https://')):
+                validated_origins.append(origin)
+            else:
+                # Log warning but don't fail - allow for development flexibility
+                print(f"Warning: CORS origin '{origin}' does not start with http:// or https://")
+                validated_origins.append(origin)
+        return validated_origins
+
+    @model_validator(mode='after')
+    def assemble_db_connection(self) -> 'Settings':
         # Prioritize TEST_ASYNC_DATABASE_URL if set (e.g., during testing)
-        test_db_url = info.data.get("TEST_ASYNC_DATABASE_URL")
-        if test_db_url:
-            values["SQLALCHEMY_DATABASE_URI"] = test_db_url
+        if self.TEST_ASYNC_DATABASE_URL:
+            self.SQLALCHEMY_DATABASE_URI = self.TEST_ASYNC_DATABASE_URL
         # Otherwise, SQLALCHEMY_DATABASE_URI (from DATABASE_URL) is used.
-        return values
+        return self
 
     class Config:
         case_sensitive = True

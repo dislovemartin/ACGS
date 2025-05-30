@@ -9,8 +9,10 @@ from pydantic import BaseModel
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from argon2 import PasswordHasher, exceptions as argon2_exceptions
 from sqlalchemy.ext.asyncio import AsyncSession
+
+# Import password functions from separate module to avoid circular imports
+from app.core.password import verify_password, get_password_hash
 
 # Adjust path if shared is not directly under a dir in sys.path
 # This assumes 'acgspcp-main' is the project root and is in PYTHONPATH
@@ -38,28 +40,7 @@ class TokenPayload(BaseModel):
     type: str # "access" or "refresh"
     jti: str # JWT ID
 
-# --- Argon2 Password Hashing ---
-ph = PasswordHasher(time_cost=2, memory_cost=65536, parallelism=4)
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    try:
-        ph.verify(hashed_password, plain_password)
-        # Optional: check if rehash is needed
-        # if ph.check_needs_rehash(hashed_password):
-        #     # Trigger rehash logic (e.g., during login)
-        #     pass
-        return True
-    except argon2_exceptions.VerifyMismatchError:
-        return False
-    except argon2_exceptions.InvalidHashError: # If hash is malformed
-        # Log this error, as it indicates a problem with stored hash
-        return False
-    except Exception: # Catch any other unexpected argon2 errors
-        # Log this error
-        return False
-
-def get_password_hash(password: str) -> str:
-    return ph.hash(password)
+# Password hashing functions are now imported from app.core.password module
 
 # --- JWT Creation & Revocation (Access Token JTI Blacklist) ---
 # For production, use a persistent store like Redis for the JTI blacklist.
@@ -185,6 +166,25 @@ def authorize_roles(required_roles: List[str]):
             )
         return current_user
     return role_checker
+
+# --- Rate Limiting Helper Function ---
+def get_user_id_from_request_optional(request: Request) -> Optional[str]:
+    """
+    Extracts user identifier from request for rate limiting purposes.
+    Returns username if user is authenticated via cookie, None otherwise.
+    This function is used by the rate limiter to distinguish between authenticated users and anonymous requests.
+    """
+    try:
+        access_token_cookie = request.cookies.get("access_token_cookie")
+        if not access_token_cookie:
+            return None
+
+        # Verify token without database lookup for performance
+        token_payload = verify_token_and_get_payload(access_token_cookie)
+        return token_payload.sub  # Return username
+    except Exception:
+        # If token is invalid, expired, or any other error, treat as anonymous
+        return None
 
 # OAuth2PasswordBearer for form data in /token endpoint, not for Bearer token auth itself
 oauth2_password_bearer_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")

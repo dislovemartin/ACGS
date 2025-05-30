@@ -9,12 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python requirements
-COPY requirements.txt /app/requirements.txt
+COPY src/backend/shared/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy necessary directories and files
-COPY migrations/alembic.ini /app/alembic.ini
-COPY migrations /app/alembic
+COPY migrations/ /app/
 COPY src/backend/shared /app/shared
 
 # Make wait script executable

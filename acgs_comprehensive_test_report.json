@@ -1,0 +1,187 @@
+{
+  "summary": {
+    "total_tests": 15,
+    "passed": 7,
+    "failed": 8,
+    "skipped": 0,
+    "success_rate": 46.666666666666664,
+    "avg_response_time": 0.06830064455668132
+  },
+  "test_results": [
+    {
+      "test_name": "Authentication Service Health Check",
+      "status": "PASS",
+      "response_time": 0.002657175064086914,
+      "timestamp": "2025-05-30T10:36:51.975282",
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok"
+        }
+      }
+    },
+    {
+      "test_name": "AC Service Health Check",
+      "status": "PASS",
+      "response_time": 0.0012197494506835938,
+      "timestamp": "2025-05-30T10:36:51.976640",
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok"
+        }
+      }
+    },
+    {
+      "test_name": "Integrity Service Health Check",
+      "status": "PASS",
+      "response_time": 0.0012929439544677734,
+      "timestamp": "2025-05-30T10:36:51.978069",
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok"
+        }
+      }
+    },
+    {
+      "test_name": "FV Service Health Check",
+      "status": "PASS",
+      "response_time": 0.001192331314086914,
+      "timestamp": "2025-05-30T10:36:51.979378",
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok",
+          "message": "FV Service is operational."
+        }
+      }
+    },
+    {
+      "test_name": "GS Service Health Check",
+      "status": "PASS",
+      "response_time": 0.0010890960693359375,
+      "timestamp": "2025-05-30T10:36:51.980574",
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok",
+          "message": "GS Service is operational."
+        }
+      }
+    },
+    {
+      "test_name": "PGC Service Health Check",
+      "status": "PASS",
+      "response_time": 0.0011150836944580078,
+      "timestamp": "2025-05-30T10:36:51.981761",
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok",
+          "message": "PGC Service is operational.",
+          "policies_loaded_at": "2025-05-30T14:08:00.431014"
+        }
+      }
+    },
+    {
+      "test_name": "Authentication Flow",
+      "status": "FAIL",
+      "response_time": 0.0012030601501464844,
+      "timestamp": "2025-05-30T10:36:51.983035",
+      "details": {
+        "status_code": 404,
+        "error": "Login failed: {\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "test_name": "AC Service CRUD Operations",
+      "status": "FAIL",
+      "response_time": 0.0019559860229492188,
+      "timestamp": "2025-05-30T10:36:51.985122",
+      "details": {
+        "error": "Server disconnected"
+      }
+    },
+    {
+      "test_name": "Integrity Service Policy Storage",
+      "status": "FAIL",
+      "response_time": 0.0013773441314697266,
+      "timestamp": "2025-05-30T10:36:51.986637",
+      "details": {
+        "status_code": 401,
+        "error": "Failed to store policy"
+      }
+    },
+    {
+      "test_name": "FV Service Z3 Integration",
+      "status": "FAIL",
+      "response_time": 0.0010950565338134766,
+      "timestamp": "2025-05-30T10:36:51.987839",
+      "details": {
+        "status_code": 401,
+        "error": "Z3 verification failed"
+      }
+    },
+    {
+      "test_name": "GS Service LLM Integration",
+      "status": "FAIL",
+      "response_time": 0.0010082721710205078,
+      "timestamp": "2025-05-30T10:36:51.988978",
+      "details": {
+        "status_code": 422,
+        "error": "Policy synthesis failed"
+      }
+    },
+    {
+      "test_name": "PGC Service OPA Integration",
+      "status": "FAIL",
+      "response_time": 0.0005726814270019531,
+      "timestamp": "2025-05-30T10:36:51.989680",
+      "details": {
+        "status_code": 404,
+        "error": "Policy evaluation failed"
+      }
+    },
+    {
+      "test_name": "Cross-Service Integration Pipeline",
+      "status": "FAIL",
+      "response_time": 0.0010628700256347656,
+      "timestamp": "2025-05-30T10:36:51.990913",
+      "details": {
+        "error": "Failed to create principle: 401"
+      }
+    },
+    {
+      "test_name": "Phase 1 Features",
+      "status": "FAIL",
+      "response_time": 0.0016026496887207031,
+      "timestamp": "2025-05-30T10:36:51.992667",
+      "details": {
+        "constitutional_prompting": false,
+        "meta_rules": false
+      }
+    },
+    {
+      "test_name": "Performance Metrics",
+      "status": "PASS",
+      "response_time": 1.0060653686523438,
+      "timestamp": "2025-05-30T10:36:52.998844",
+      "details": {
+        "response_times": {
+          "auth": 0.0006432533264160156,
+          "ac": 0.0011401176452636719,
+          "integrity": 0.000751495361328125,
+          "fv": 0.0007164478302001953,
+          "gs": 0.0011696815490722656,
+          "pgc": 0.0011394023895263672
+        },
+        "cpu_usage_percent": 21.0,
+        "memory_usage_percent": 92.9,
+        "disk_usage_percent": 3.1,
+        "avg_response_time": 0.0009267330169677734
+      }
+    }
+  ],
+  "timestamp": "2025-05-30T10:36:52.999186"
+}

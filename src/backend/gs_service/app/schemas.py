@@ -1,6 +1,6 @@
 # backend/gs_service/app/schemas.py
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, field_field_validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 
 # Schemas for Policy Templates
