@@ -21,7 +21,7 @@
 \usepackage{algpseudocode} % For pseudocode in algorithm environment
 \usepackage{appendix} % For appendices
 \usepackage{balance}  % To balance columns on the last page
-\usepackage{cleveref} % For smart cross-referencing (e.g., \Cref{fig:myfig})
+\usepackage{cleveref} % For smart cross-referencing (e.g., \Cref{fig:example})
 \usepackage{ragged2e} % For better text justification
 \usepackage{setspace} % For line spacing control
 \usepackage{textcomp} % For additional text symbols including em-dash
@@ -436,13 +436,7 @@
   volume    = {59},
   url       = {https://digitalcommons.law.uga.edu/cgi/viewcontent.cgi?article=1819&context=glr}
 }
-@misc{PrincipledEvolution2024PolicyAsCode,
-  author    = {{Principled Evolution}},
-  title     = {Principled AI Governance with Policy-as-Code: Leveraging OPA for Trustworthy AI},
-  year      = {2024},
-  howpublished = {Blog Post},
-  url       = {https://principledevolution.ai/blog/governance-policy-as-code-opa-trust-ai}
-}
+
 @article{Almulla2024EmergenceLLMPolicy,
   author    = {Almulla, Mohammed and Majumdar, Rejwana and Erikson, Brian and Wang, Lanjing and Singh, Munindar P.},
   title     = {Emergence: LLM-Based Policy Generation for Intent-Based Management of Applications},
@@ -501,13 +495,7 @@
   year      = {2025},
   url       = {https://arxiv.org/abs/2504.15659}
 }
-@misc{TheMoonlight2024LLMPolicyGen,
-  author    = {{The Moonlight}},
-  title     = {LLM-Based Policy Generation for Intent-Based Management of Applications},
-  year      = {2024},
-  howpublished = {Literature Review},
-  url       = {https://www.themoonlight.io/en/review/llm-based-policy-generation-for-intent-based-management-of-applications}
-}
+
 @article{arXiv2025FutureWorkRAG, % This was Gautam2025 in PDF, but content matches
   author    = {Gautam, Rohit and Singh, Diganta and Kumar, Sachin},
   title     = {Automated Extraction and Generation of Future Work Sections using LLMs},
@@ -571,23 +559,7 @@
   year      = {2017},
   doi       = {10.1089/big.2016.0047}
 }
-@inproceedings{Hardt2016EqualityOpportunity,
-  author    = {Hardt, Moritz and Price, Eric and Srebro, Nathan},
-  title     = {Equality of Opportunity in Supervised Learning},
-  booktitle = {Advances in Neural Information Processing Systems},
-  pages     = {3315--3323},
-  year      = {2016}
-}
-@article{Chouldechova2017FairPrediction,
-  author    = {Chouldechova, Alexandra},
-  title     = {Fair Prediction with Disparate Impact: A Study of Bias in Recidivism Prediction Instruments},
-  journal   = {Big Data},
-  volume    = {5},
-  number    = {2},
-  pages     = {153--163},
-  year      = {2017},
-  doi       = {10.1089/big.2016.0047}
-}
+
 @article{Mehrabi2021BiasAI,
   author    = {Mehrabi, Ninareh and Morstatter, Fred and Saxena, Nripsuta and Lerman, Kristina and Galstyan, Aram},
   title     = {A Survey on Bias and Fairness in Machine Learning},
@@ -598,20 +570,8 @@
   year      = {2021},
   doi       = {10.1145/3457607}
 }
-@misc{DeloitteInsights2025HumanAICollab,
-  author    = {{Deloitte Insights}},
-  title     = {A new model for human-AI collaboration},
-  year      = {2025},
-  howpublished = {Online Article},
-  url       = {https://www2.deloitte.com/us/en/insights/industry/technology/ai-and-vr-model-for-human-ai-collaboration.html}
-}
-@article{Engin2025HAIGTrust,
-  author    = {Engin, Zeynep},
-  title     = {Human-AI Governance (HAIG): A Trust-Utility Approach for Analyzing Trust Dynamics in Evolving Human-AI Relationships},
-  journal   = {arXiv preprint arXiv:2505.01651},
-  year      = {2025},
-  url       = {https://arxiv.org/abs/2505.01651}
-}
+
+
 @book{LamportTLA,
   author    = {Lamport, Leslie},
   title     = {Specifying Systems: The TLA+ Language and Tools for Hardware and Software Engineers},
@@ -2469,7 +2429,7 @@ We validate SMT encoding correctness through comprehensive positive/negative cas
     \item \textbf{Positive Case Pass Rate}: 87\% (174/200 cases correctly identified as valid)
     \item \textbf{Negative Case Pass Rate}: 91\% (182/200 cases correctly identified as invalid)
     \item \textbf{Boundary Case Accuracy}: 83\% (83/100 cases correctly classified)
-    \item \textbf{Overall Completeness Score}: $\frac{87 + 91}{2} \times 0.85 = 0.85$ (weighted by boundary accuracy)
+    \item \textbf{Overall Completeness Score}: $\frac{87 + 91}{2} \times 0.83 = 89 \times 0.83 = 73.87\%$ (weighted by boundary accuracy)
 \end{itemize}
 
 \textbf{Error Analysis:}
