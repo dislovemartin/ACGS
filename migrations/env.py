@@ -12,7 +12,7 @@ from alembic import context
 # With the new directory structure:
 # - migrations/ contains alembic files
 # - src/backend/shared/ contains shared models
-# The Dockerfile.alembic copies `src/backend/shared` to `/app/shared` and `migrations` to `/app/alembic`.
+# The Dockerfile.alembic copies `src/backend/shared` to `/app/shared` and `migrations` to `/app/`.
 # WORKDIR in Dockerfile.alembic is /app.
 # alembic.ini is expected to be in /app/alembic.ini
 # shared is in /app/shared
@@ -20,31 +20,44 @@ from alembic import context
 # So from /app/env.py, /app/shared is `./shared`
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+# Add the shared directory to Python path for direct imports
+shared_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared"))
+if shared_path not in sys.path:
+    sys.path.insert(0, shared_path)
+
+print(f"Alembic env.py: Current working directory: {os.getcwd()}")
+print(f"Alembic env.py: Python path: {sys.path}")
 
 # Now you can import your models and metadata
 # Ensure these imports match your project structure and model definitions
 try:
-    # Import only the essential models without the full application
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy import MetaData
+    # Import the shared database Base and models
+    print("Attempting to import shared.database...")
+    from shared.database import Base as SharedBase
+    print("Successfully imported shared.database.Base")
 
-    # Create a simple Base for migrations
-    Base = declarative_base()
+    print("Attempting to import shared.models...")
+    import shared.models
+    print("Successfully imported shared.models")
 
-    # For now, use empty metadata - we'll run existing migrations
-    target_metadata = Base.metadata
+    # Use the shared Base metadata for migrations
+    target_metadata = SharedBase.metadata
+    print(f"Using SharedBase.metadata with {len(target_metadata.tables)} tables")
 
-    # Try to import models if possible, but don't fail if dependencies are missing
-    try:
-        from shared.database import Base as SharedBase
-        from shared import models
-        target_metadata = SharedBase.metadata
-    except ImportError:
-        print("Warning: Could not import shared models, using empty metadata")
-        pass
+    # Print table names for debugging
+    table_names = list(target_metadata.tables.keys())
+    print(f"Tables found: {table_names}")
 
 except ImportError as e:
-    sys.exit(f"Error importing models or metadata for Alembic: {e}. Check PYTHONPATH and alembic/env.py structure. Current sys.path: {sys.path}")
+    print(f"Warning: Could not import shared models: {e}")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Python path: {sys.path}")
+
+    # Fallback to empty metadata
+    from sqlalchemy.ext.declarative import declarative_base
+    Base = declarative_base()
+    target_metadata = Base.metadata
+    print("Using empty metadata as fallback")
 
 
 # this is the Alembic Config object, which provides

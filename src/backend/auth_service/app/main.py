@@ -25,7 +25,7 @@ async def test_endpoint():
     return {"message": "Test endpoint working"}
 
 # Import the auth router directly from endpoints to avoid double prefix issue
-# from app.api.v1.endpoints import router as auth_router
+from app.api.v1.endpoints import router as auth_router
 
 # Configure structured logging
 logging.basicConfig(
@@ -88,11 +88,11 @@ app.include_router(
 
 # Include the authentication router
 # The prefix here should match the path used for refresh token cookie
-# app.include_router(
-#     auth_router,
-#     prefix=f"{settings.API_V1_STR}/auth",
-#     tags=["Authentication & Authorization"]
-# )
+app.include_router(
+    auth_router,
+    prefix="/auth",
+    tags=["Authentication & Authorization"]
+)
 
 # If api_v1_router from app.api.v1.api_router.py was for other general v1 routes,
 # it could be included as well, e.g.:
