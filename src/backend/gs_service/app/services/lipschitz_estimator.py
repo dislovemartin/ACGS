@@ -8,17 +8,32 @@ finding that fixed values were asserted without derivation.
 
 import asyncio
 import logging
-import numpy as np
-from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass
-from scipy.spatial.distance import cosine
-from sklearn.metrics.pairwise import euclidean_distances
 import time
 import json
+from typing import Dict, List, Tuple, Optional, Any
+from dataclasses import dataclass
 
-from ..schemas import gs_schemas
-from .policy_synthesizer import PolicySynthesizer
-from .llm_service import get_llm_service
+# Use built-in math instead of external dependencies
+import math
+import hashlib
+
+# Import schemas with fallback
+try:
+    from ..schemas import gs_schemas
+except ImportError:
+    gs_schemas = None
+
+# Import services with fallback
+try:
+    from .policy_synthesizer import PolicySynthesizer
+except ImportError:
+    PolicySynthesizer = None
+
+try:
+    from .llm_service import get_llm_service
+except ImportError:
+    def get_llm_service():
+        return None
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +47,12 @@ class LipschitzEstimationConfig:
     max_distance_threshold: float = 2.0
     embedding_dimension: int = 384  # SBERT default
     random_seed: int = 42
+    # AlphaEvolve-ACGS Integration System improvements
+    theoretical_bound: float = 0.593  # Theoretical upper bound from paper
+    empirical_adjustment_factor: float = 1.2  # Safety factor for empirical estimates
+    bounded_evolution_enabled: bool = True  # Enable bounded evolution constraints
+    lipschitz_validation_threshold: float = 0.8  # Threshold for Lipschitz validation
+    discrepancy_resolution_mode: str = "conservative"  # "conservative", "adaptive", "theoretical"
 
 
 @dataclass
@@ -46,6 +67,13 @@ class LipschitzEstimationResult:
     std_ratio: float
     methodology: str
     raw_ratios: List[float]
+    # AlphaEvolve-ACGS Integration System improvements
+    theoretical_bound: float = 0.593
+    empirical_bound: float = 0.0
+    discrepancy_ratio: float = 0.0
+    bounded_evolution_compliant: bool = True
+    resolution_strategy: str = "conservative"
+    validation_passed: bool = True
 
 
 class MetricSpaceValidator:
@@ -125,17 +153,19 @@ class ConstitutionDistanceFunction:
         self.embedding_model = embedding_model
         self._embeddings_cache = {}
     
-    def _get_embedding(self, text: str) -> np.ndarray:
+    def _get_embedding(self, text: str) -> List[float]:
         """Get or compute embedding for text."""
         if text not in self._embeddings_cache:
             # In practice, use actual sentence transformer
             # For now, simulate with hash-based embedding
-            import hashlib
             hash_obj = hashlib.md5(text.encode())
             # Create deterministic "embedding" from hash
-            np.random.seed(int(hash_obj.hexdigest()[:8], 16))
-            embedding = np.random.normal(0, 1, 384)
-            embedding = embedding / np.linalg.norm(embedding)  # Normalize
+            import random
+            random.seed(int(hash_obj.hexdigest()[:8], 16))
+            embedding = [random.gauss(0, 1) for _ in range(384)]
+            # Normalize
+            norm = math.sqrt(sum(x*x for x in embedding))
+            embedding = [x/norm for x in embedding] if norm > 0 else embedding
             self._embeddings_cache[text] = embedding
         return self._embeddings_cache[text]
     
@@ -143,9 +173,10 @@ class ConstitutionDistanceFunction:
         """Compute semantic distance using embeddings (proper metric)."""
         emb1 = self._get_embedding(principle1)
         emb2 = self._get_embedding(principle2)
-        
+
         # Use Euclidean distance in embedding space (proper metric)
-        return float(np.linalg.norm(emb1 - emb2))
+        squared_diff = sum((a - b) ** 2 for a, b in zip(emb1, emb2))
+        return math.sqrt(squared_diff)
     
     def edit_distance_normalized(self, text1: str, text2: str) -> float:
         """Compute normalized edit distance."""
@@ -198,13 +229,21 @@ class LipschitzEstimator:
         
     async def initialize(self):
         """Initialize services for estimation."""
-        self.llm_service = get_llm_service()
-        # Initialize policy synthesizer if available
         try:
-            from .policy_synthesizer import PolicySynthesizer
-            self.policy_synthesizer = PolicySynthesizer(self.llm_service)
+            self.llm_service = get_llm_service()
         except Exception as e:
-            logger.warning(f"Could not initialize policy synthesizer: {e}")
+            logger.warning(f"Could not initialize LLM service: {e}")
+            self.llm_service = None
+
+        # Initialize policy synthesizer if available
+        if PolicySynthesizer and self.llm_service:
+            try:
+                self.policy_synthesizer = PolicySynthesizer(self.llm_service)
+            except Exception as e:
+                logger.warning(f"Could not initialize policy synthesizer: {e}")
+                self.policy_synthesizer = None
+        else:
+            self.policy_synthesizer = None
     
     async def estimate_llm_lipschitz_constant(
         self,
@@ -215,14 +254,15 @@ class LipschitzEstimator:
             await self.initialize()
         
         ratios = []
-        np.random.seed(self.config.random_seed)
+        import random
+        random.seed(self.config.random_seed)
         
         for i in range(self.config.num_perturbations):
             # Select two random principles
             if len(test_principles) < 2:
                 continue
                 
-            idx1, idx2 = np.random.choice(len(test_principles), 2, replace=False)
+            idx1, idx2 = random.sample(range(len(test_principles)), 2)
             principle1, principle2 = test_principles[idx1], test_principles[idx2]
             
             # Compute input distance
@@ -273,7 +313,7 @@ class LipschitzEstimator:
         component_name: str,
         ratios: List[float]
     ) -> LipschitzEstimationResult:
-        """Compute estimation statistics from ratios."""
+        """Compute estimation statistics from ratios with discrepancy resolution."""
         if not ratios:
             return LipschitzEstimationResult(
                 component_name=component_name,
@@ -284,25 +324,59 @@ class LipschitzEstimator:
                 mean_ratio=0.0,
                 std_ratio=0.0,
                 methodology="perturbation_analysis",
-                raw_ratios=[]
+                raw_ratios=[],
+                theoretical_bound=self.config.theoretical_bound,
+                empirical_bound=0.0,
+                discrepancy_ratio=0.0,
+                bounded_evolution_compliant=False,
+                resolution_strategy=self.config.discrepancy_resolution_mode,
+                validation_passed=False
             )
-        
-        ratios_array = np.array(ratios)
-        mean_ratio = float(np.mean(ratios_array))
-        std_ratio = float(np.std(ratios_array))
-        max_ratio = float(np.max(ratios_array))
-        
+
+        mean_ratio = sum(ratios) / len(ratios)
+        variance = sum((x - mean_ratio) ** 2 for x in ratios) / len(ratios)
+        std_ratio = math.sqrt(variance)
+        max_ratio = max(ratios)
+
         # Compute confidence interval
         alpha = 1 - self.config.confidence_level
         z_score = 1.96  # For 95% confidence
-        margin_error = z_score * std_ratio / np.sqrt(len(ratios))
-        
+        margin_error = z_score * std_ratio / math.sqrt(len(ratios))
+
         ci_lower = max(0.0, mean_ratio - margin_error)
         ci_upper = mean_ratio + margin_error
-        
-        # Use conservative estimate (upper bound of CI or max observed)
-        estimated_constant = min(max_ratio, ci_upper)
-        
+
+        # Empirical bound with adjustment factor
+        empirical_bound = ci_upper * self.config.empirical_adjustment_factor
+
+        # Resolve theoretical/empirical discrepancy
+        discrepancy_ratio = empirical_bound / self.config.theoretical_bound if self.config.theoretical_bound > 0 else float('inf')
+
+        # Choose final estimate based on resolution mode
+        if self.config.discrepancy_resolution_mode == "conservative":
+            # Use the higher of theoretical bound or empirical estimate
+            estimated_constant = max(self.config.theoretical_bound, empirical_bound)
+        elif self.config.discrepancy_resolution_mode == "theoretical":
+            # Use theoretical bound as authoritative
+            estimated_constant = self.config.theoretical_bound
+        elif self.config.discrepancy_resolution_mode == "adaptive":
+            # Weighted combination based on confidence
+            confidence_weight = min(1.0, len(ratios) / 100.0)  # More samples = more trust in empirical
+            estimated_constant = (confidence_weight * empirical_bound +
+                                (1 - confidence_weight) * self.config.theoretical_bound)
+        else:
+            # Default to empirical
+            estimated_constant = empirical_bound
+
+        # Check bounded evolution compliance
+        bounded_evolution_compliant = (self.config.bounded_evolution_enabled and
+                                     estimated_constant <= self.config.theoretical_bound * 1.1)  # 10% tolerance
+
+        # Validation check
+        validation_passed = (discrepancy_ratio <= 2.0 and  # Empirical not more than 2x theoretical
+                           bounded_evolution_compliant and
+                           estimated_constant >= self.config.lipschitz_validation_threshold)
+
         return LipschitzEstimationResult(
             component_name=component_name,
             estimated_constant=estimated_constant,
@@ -312,7 +386,13 @@ class LipschitzEstimator:
             mean_ratio=mean_ratio,
             std_ratio=std_ratio,
             methodology="perturbation_analysis",
-            raw_ratios=ratios
+            raw_ratios=ratios,
+            theoretical_bound=self.config.theoretical_bound,
+            empirical_bound=empirical_bound,
+            discrepancy_ratio=discrepancy_ratio,
+            bounded_evolution_compliant=bounded_evolution_compliant,
+            resolution_strategy=self.config.discrepancy_resolution_mode,
+            validation_passed=validation_passed
         )
     
     async def validate_metric_properties(

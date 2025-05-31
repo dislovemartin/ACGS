@@ -63,12 +63,17 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
-      # alembic-runner:
-      #   condition: service_completed_successfully # Depends on alembic-runner exiting cleanly
+      alembic-runner:
+        condition: service_completed_successfully # Depends on alembic-runner exiting cleanly
     volumes:
       - ../../src/backend/auth_service:/app
       - ../../src/backend/shared:/app/shared
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   ac_service:
     build: ../../src/backend/ac_service
