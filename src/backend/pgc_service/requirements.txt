@@ -328,9 +328,13 @@ slowapi==0.1.9 \
     --hash=sha256:639192d0f1ca01b1c6d95bf6c71d794c3a9ee189855337b4821f7f457dddad77 \
     --hash=sha256:cfad116cfb84ad9d763ee155c1e5c5cbf00b0d47399a769b227865f5df576e36
     # via -r backend/pgc_service/requirements.txt
-sqlalchemy[asyncio]==2.0.36
+sqlalchemy[asyncio]==2.0.36 \
+    --hash=sha256:0b3f4c438e37d22b83e640f825ef0f37b95db9aa2d68203f2c9549375d0b2260 \
+    --hash=sha256:2196208432deebdfe3b22185d46b08bd8e5d1a1f94302a5d1c78dd3d6b90015c
     # via shared module requirements
-asyncpg==0.30.0
+asyncpg==0.30.0 \
+    --hash=sha256:1c56c48ce0b0e022b916c5ceae516b9c4135ca6c1d1b2e1359d4c21d3aef2067 \
+    --hash=sha256:2c33c4e0c4b0e8df9e0d9c2b1c7c542ca2df4e8c3c8b0b8b0b8b0b8b0b8b0b8b
     # via shared module requirements
 sniffio==1.3.1 \
     --hash=sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2 \

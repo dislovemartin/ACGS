@@ -1,0 +1,73 @@
+# Prometheus alert rules for ACGS-PGP microservices
+groups:
+  - name: acgs-pgp-alerts
+    rules:
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: rate(acgs_http_requests_total{status_code=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected for {{ $labels.service }}"
+          description: "Service {{ $labels.service }} has error rate above 5% for more than 2 minutes"
+
+      # High response time alert
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(acgs_http_request_duration_seconds_bucket[5m])) > 0.2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected for {{ $labels.service }}"
+          description: "Service {{ $labels.service }} has 95th percentile response time above 200ms for more than 2 minutes"
+
+      # Service down alert
+      - alert: ServiceDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 30 seconds"
+
+      # Authentication failure rate alert
+      - alert: HighAuthFailureRate
+        expr: rate(acgs_auth_attempts_total{status="failed"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failure rate is above 10% for more than 5 minutes"
+
+      # Database connection issues
+      - alert: DatabaseConnectionIssues
+        expr: acgs_database_connections{pool_status="active"} < 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection issues for {{ $labels.service }}"
+          description: "Service {{ $labels.service }} has no active database connections for more than 1 minute"
+
+      # High memory usage (if available)
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage for {{ $labels.container_label_com_docker_compose_service }}"
+          description: "Container {{ $labels.container_label_com_docker_compose_service }} memory usage is above 80% for more than 5 minutes"
+
+      # High CPU usage (if available)
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage for {{ $labels.container_label_com_docker_compose_service }}"
+          description: "Container {{ $labels.container_label_com_docker_compose_service }} CPU usage is above 80% for more than 5 minutes"

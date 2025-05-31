@@ -16,6 +16,9 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
+
+# Import metrics functionality
+from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 # Temporarily create a simple test router to debug the issue
 from fastapi import APIRouter
 test_router = APIRouter()
@@ -42,6 +45,12 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url="/openapi.json",
 )
+
+# Initialize metrics for auth service
+metrics = get_metrics("auth_service")
+
+# Add metrics middleware
+app.middleware("http")(metrics_middleware("auth_service"))
 
 # Store limiter in app state - temporarily disabled for debugging
 # app.state.limiter = limiter
@@ -118,6 +127,9 @@ async def health_check() -> dict:
     Health check endpoint for service monitoring.
     """
     return {"status": "ok", "message": "Auth Service is operational."}
+
+# Add Prometheus metrics endpoint
+app.get("/metrics")(create_metrics_endpoint())
 
 # Reminder for production deployment:
 # Uvicorn behind a reverse proxy (Nginx, Traefik) for HTTPS/TLS.

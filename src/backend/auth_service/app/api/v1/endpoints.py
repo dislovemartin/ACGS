@@ -73,12 +73,12 @@ async def login_for_access_token(
         subject=user_obj.username, user_id=user_obj.id, roles=[user_obj.role]
     )
     await crud_refresh_token.create_refresh_token(
-        db, user_id=user_obj.id, jti=refresh_jti, expires_at=refresh_expires_at
+        db, user_id=user_obj.id, token=refresh_token_str, jti=refresh_jti, expires_at=refresh_expires_at
     )
 
-    # Set CSRF token
-    csrf_token = csrf_protect.generate_csrf()
-    csrf_protect.set_csrf_cookie(csrf_token, response) # Sets "fastapi-csrf-token" cookie
+    # Set CSRF token using correct API
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    csrf_protect.set_csrf_cookie(signed_token, response)
 
     # Set HttpOnly cookies for tokens
     access_token_expires_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -100,7 +100,7 @@ async def login_for_access_token(
         httponly=True,
         max_age=refresh_token_expires_seconds,
         expires=refresh_token_expires_seconds, # For older browsers
-        path=f"{settings.API_V1_STR}/auth/token/refresh", # Path specific to refresh endpoint
+        path="/auth/token/refresh", # Path specific to refresh endpoint
         secure=SECURE_COOKIE,
         samesite="lax", # Or "strict"
     )
@@ -161,12 +161,12 @@ async def refresh_token(
         subject=user_obj.username, user_id=user_obj.id, roles=[user_obj.role]
     )
     await crud_refresh_token.create_refresh_token(
-        db, user_id=user_obj.id, jti=new_refresh_jti, expires_at=new_refresh_expires_at
+        db, user_id=user_obj.id, token=new_refresh_token_str, jti=new_refresh_jti, expires_at=new_refresh_expires_at
     )
 
-    # Set new CSRF token
-    new_csrf_token = csrf_protect.generate_csrf()
-    csrf_protect.set_csrf_cookie(new_csrf_token, response)
+    # Set new CSRF token using correct API
+    new_csrf_token, new_signed_token = csrf_protect.generate_csrf_tokens()
+    csrf_protect.set_csrf_cookie(new_signed_token, response)
 
     # Set new HttpOnly cookies
     access_token_expires_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -188,7 +188,7 @@ async def refresh_token(
         httponly=True,
         max_age=refresh_token_expires_seconds,
         expires=refresh_token_expires_seconds,
-        path=f"{settings.API_V1_STR}/auth/token/refresh",
+        path="/auth/token/refresh",
         secure=SECURE_COOKIE,
         samesite="lax",
     )
@@ -228,8 +228,8 @@ async def logout(
 
     # Delete cookies
     response.delete_cookie(key="access_token_cookie", path="/", secure=SECURE_COOKIE, httponly=True, samesite="lax")
-    response.delete_cookie(key="refresh_token_cookie", path=f"{settings.API_V1_STR}/auth/token/refresh", secure=SECURE_COOKIE, httponly=True, samesite="lax")
-    csrf_protect.unset_csrf_cookie(response) # Deletes "fastapi-csrf-token" cookie
+    response.delete_cookie(key="refresh_token_cookie", path="/auth/token/refresh", secure=SECURE_COOKIE, httponly=True, samesite="lax")
+    csrf_protect.unset_csrf_cookie(response) # Deletes CSRF cookie to prevent token reuse
 
     return {"message": "Logout successful"}
 
