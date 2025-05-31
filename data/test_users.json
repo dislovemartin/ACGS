@@ -1,0 +1,44 @@
+{
+  "test_users": [
+    {
+      "username": "admin_user",
+      "email": "admin@acgs-pgp.local",
+      "password": "AdminPass123!",
+      "full_name": "System Administrator",
+      "role": "admin",
+      "is_active": true
+    },
+    {
+      "username": "policy_manager",
+      "email": "policy.manager@acgs-pgp.local",
+      "password": "PolicyPass123!",
+      "full_name": "Policy Manager",
+      "role": "policy_manager",
+      "is_active": true
+    },
+    {
+      "username": "auditor_user",
+      "email": "auditor@acgs-pgp.local",
+      "password": "AuditorPass123!",
+      "full_name": "System Auditor",
+      "role": "auditor",
+      "is_active": true
+    },
+    {
+      "username": "constitutional_council",
+      "email": "council@acgs-pgp.local",
+      "password": "CouncilPass123!",
+      "full_name": "Constitutional Council Member",
+      "role": "constitutional_council",
+      "is_active": true
+    },
+    {
+      "username": "regular_user",
+      "email": "user@acgs-pgp.local",
+      "password": "UserPass123!",
+      "full_name": "Regular User",
+      "role": "user",
+      "is_active": true
+    }
+  ]
+}

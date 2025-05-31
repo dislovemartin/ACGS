@@ -1,0 +1,111 @@
+{
+  "test_environmental_factors": [
+    {
+      "factor_name": "deployment_environment",
+      "factor_type": "system_context",
+      "value": "production",
+      "description": "Current deployment environment (development, staging, production)",
+      "impact_level": "high",
+      "affects_principles": ["AI Safety Principle", "System Reliability and Robustness"],
+      "metadata": {
+        "last_updated": "2024-01-15T10:00:00Z",
+        "source": "deployment_manager",
+        "validation_required": true
+      }
+    },
+    {
+      "factor_name": "user_risk_profile",
+      "factor_type": "user_context",
+      "value": "high_risk",
+      "description": "Risk profile of current user or user group",
+      "impact_level": "critical",
+      "affects_principles": ["AI Safety Principle", "Data Privacy Protection", "Algorithmic Fairness"],
+      "metadata": {
+        "risk_factors": ["healthcare_data", "financial_decisions", "safety_critical_operations"],
+        "assessment_date": "2024-01-10T14:30:00Z",
+        "reviewer": "risk_assessment_team"
+      }
+    },
+    {
+      "factor_name": "regulatory_jurisdiction",
+      "factor_type": "legal_context",
+      "value": "EU",
+      "description": "Primary regulatory jurisdiction for current operation",
+      "impact_level": "high",
+      "affects_principles": ["Data Privacy Protection", "Algorithmic Fairness", "Transparency and Explainability"],
+      "metadata": {
+        "applicable_regulations": ["GDPR", "AI_Act", "Digital_Services_Act"],
+        "compliance_status": "verified",
+        "last_audit": "2024-01-05T09:00:00Z"
+      }
+    },
+    {
+      "factor_name": "data_sensitivity_level",
+      "factor_type": "data_context",
+      "value": "highly_sensitive",
+      "description": "Sensitivity level of data being processed",
+      "impact_level": "critical",
+      "affects_principles": ["Data Privacy Protection", "AI Safety Principle"],
+      "metadata": {
+        "data_categories": ["personal_health_information", "financial_records", "biometric_data"],
+        "classification_date": "2024-01-12T16:45:00Z",
+        "classifier": "data_governance_team"
+      }
+    },
+    {
+      "factor_name": "system_load",
+      "factor_type": "performance_context",
+      "value": "high",
+      "description": "Current system load and performance metrics",
+      "impact_level": "medium",
+      "affects_principles": ["System Reliability and Robustness", "Transparency and Explainability"],
+      "metadata": {
+        "cpu_utilization": 0.85,
+        "memory_utilization": 0.78,
+        "response_time_ms": 250,
+        "concurrent_users": 1500,
+        "measurement_time": "2024-01-15T11:30:00Z"
+      }
+    },
+    {
+      "factor_name": "security_threat_level",
+      "factor_type": "security_context",
+      "value": "elevated",
+      "description": "Current security threat assessment level",
+      "impact_level": "high",
+      "affects_principles": ["AI Safety Principle", "Data Privacy Protection", "System Reliability and Robustness"],
+      "metadata": {
+        "threat_indicators": ["increased_attack_attempts", "new_vulnerability_discovered"],
+        "assessment_time": "2024-01-15T08:00:00Z",
+        "security_team": "cybersecurity_operations_center"
+      }
+    },
+    {
+      "factor_name": "user_consent_status",
+      "factor_type": "legal_context",
+      "value": "explicit_consent",
+      "description": "Status of user consent for data processing",
+      "impact_level": "critical",
+      "affects_principles": ["Data Privacy Protection", "Transparency and Explainability"],
+      "metadata": {
+        "consent_type": "informed_explicit",
+        "consent_date": "2024-01-10T12:00:00Z",
+        "consent_scope": ["data_processing", "automated_decision_making", "profiling"],
+        "withdrawal_option": "available"
+      }
+    },
+    {
+      "factor_name": "algorithmic_complexity",
+      "factor_type": "technical_context",
+      "value": "high",
+      "description": "Complexity level of algorithms being deployed",
+      "impact_level": "medium",
+      "affects_principles": ["Transparency and Explainability", "Algorithmic Fairness"],
+      "metadata": {
+        "model_types": ["deep_neural_network", "ensemble_methods", "reinforcement_learning"],
+        "explainability_score": 0.65,
+        "complexity_assessment_date": "2024-01-08T14:00:00Z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "test_amendments": [
+    {
+      "principle_id": 1,
+      "amendment_type": "modify",
+      "proposed_changes": "Update AI Safety Principle to include quantum computing safety requirements",
+      "justification": "Emerging quantum computing technologies require specific safety considerations not covered in the current principle",
+      "proposed_content": "AI systems, including quantum-enhanced AI, must prioritize human safety and well-being in all operations. No action should be taken that could reasonably lead to harm to humans or critical infrastructure. Quantum computing components must include additional safeguards for quantum supremacy scenarios.",
+      "proposed_status": "active",
+      "status": "proposed",
+      "consultation_period_days": 30,
+      "public_comment_enabled": true,
+      "stakeholder_groups": ["quantum_researchers", "safety_experts", "policy_makers"]
+    },
+    {
+      "principle_id": 2,
+      "amendment_type": "add",
+      "proposed_changes": "Add new sub-principle for cross-border data transfer requirements",
+      "justification": "International data transfers require specific privacy protections beyond general data privacy requirements",
+      "proposed_content": "Cross-border data transfers must comply with international privacy frameworks and include appropriate safeguards such as adequacy decisions, standard contractual clauses, or binding corporate rules.",
+      "proposed_status": "active",
+      "status": "proposed",
+      "consultation_period_days": 45,
+      "public_comment_enabled": true,
+      "stakeholder_groups": ["privacy_experts", "international_law_experts", "data_protection_authorities"]
+    },
+    {
+      "principle_id": 3,
+      "amendment_type": "modify",
+      "proposed_changes": "Strengthen algorithmic fairness requirements with specific metrics",
+      "justification": "Current fairness requirements need more specific, measurable criteria for implementation and compliance",
+      "proposed_content": "AI systems must make decisions fairly without discrimination based on protected characteristics. Fairness must be measured using demographic parity (≥0.8), equalized odds (≥0.85), and calibration metrics (≥0.9). Regular bias testing and mitigation measures must be implemented quarterly.",
+      "proposed_status": "active",
+      "status": "under_review",
+      "consultation_period_days": 30,
+      "public_comment_enabled": true,
+      "stakeholder_groups": ["fairness_researchers", "civil_rights_organizations", "ai_ethics_boards"]
+    },
+    {
+      "principle_id": 4,
+      "amendment_type": "status_change",
+      "proposed_changes": "Elevate transparency principle priority weight from 0.80 to 0.87",
+      "justification": "Recent regulatory developments and public concerns require stronger emphasis on AI transparency",
+      "proposed_content": null,
+      "proposed_status": "active",
+      "status": "voting",
+      "voting_started_at": "2024-01-15T10:00:00Z",
+      "voting_ends_at": "2024-01-22T10:00:00Z",
+      "votes_for": 12,
+      "votes_against": 3,
+      "votes_abstain": 1,
+      "required_threshold": "0.67",
+      "consultation_period_days": 21,
+      "public_comment_enabled": true,
+      "stakeholder_groups": ["transparency_advocates", "regulatory_experts", "ai_developers"]
+    },
+    {
+      "principle_id": 5,
+      "amendment_type": "remove",
+      "proposed_changes": "Remove redundant reliability requirement that overlaps with safety principle",
+      "justification": "The reliability requirement in section 3.2 is fully covered by the safety principle and creates unnecessary duplication",
+      "proposed_content": null,
+      "proposed_status": "deprecated",
+      "status": "rejected",
+      "consultation_period_days": 30,
+      "public_comment_enabled": true,
+      "stakeholder_groups": ["system_architects", "safety_engineers", "legal_experts"]
+    }
+  ]
+}

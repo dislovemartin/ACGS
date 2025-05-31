@@ -1,0 +1,84 @@
+{
+  "test_principles": [
+    {
+      "title": "AI Safety Principle",
+      "description": "Fundamental safety requirements for AI systems",
+      "content": "AI systems must prioritize human safety and well-being in all operations. No action should be taken that could reasonably lead to harm to humans or critical infrastructure.",
+      "priority_weight": 0.95,
+      "scope": "safety_critical",
+      "normative_statement": "SHALL ensure that all AI operations maintain human safety as the highest priority",
+      "constraints": {
+        "mandatory_checks": ["safety_validation", "risk_assessment", "human_oversight"],
+        "prohibited_actions": ["unsafe_operations", "unvalidated_actions"],
+        "escalation_required": true
+      },
+      "rationale": "Human safety is the foundational requirement for any AI system deployment",
+      "status": "active",
+      "version": 1
+    },
+    {
+      "title": "Data Privacy Protection",
+      "description": "Comprehensive data privacy and protection requirements",
+      "content": "Personal and sensitive data must be protected through encryption, access controls, and privacy-preserving techniques. Data collection and processing must comply with applicable privacy regulations.",
+      "priority_weight": 0.90,
+      "scope": "data_handling",
+      "normative_statement": "SHALL protect all personal and sensitive data through appropriate technical and organizational measures",
+      "constraints": {
+        "mandatory_checks": ["encryption_validation", "access_control_verification", "consent_verification"],
+        "prohibited_actions": ["unauthorized_data_access", "data_sharing_without_consent"],
+        "compliance_frameworks": ["GDPR", "CCPA", "HIPAA"]
+      },
+      "rationale": "Privacy protection is essential for maintaining user trust and regulatory compliance",
+      "status": "active",
+      "version": 1
+    },
+    {
+      "title": "Algorithmic Fairness",
+      "description": "Requirements for fair and unbiased AI decision-making",
+      "content": "AI systems must make decisions fairly without discrimination based on protected characteristics. Regular bias testing and mitigation measures must be implemented.",
+      "priority_weight": 0.85,
+      "scope": "decision_making",
+      "normative_statement": "SHALL ensure fair treatment and non-discrimination in all automated decisions",
+      "constraints": {
+        "mandatory_checks": ["bias_testing", "fairness_metrics", "demographic_parity"],
+        "prohibited_actions": ["discriminatory_decisions", "biased_algorithms"],
+        "monitoring_required": true
+      },
+      "rationale": "Fairness is fundamental to ethical AI deployment and social acceptance",
+      "status": "active",
+      "version": 1
+    },
+    {
+      "title": "Transparency and Explainability",
+      "description": "Requirements for AI system transparency and decision explainability",
+      "content": "AI systems must provide clear explanations for their decisions, especially in high-stakes scenarios. Users must understand how decisions affecting them are made.",
+      "priority_weight": 0.80,
+      "scope": "user_interaction",
+      "normative_statement": "SHALL provide clear and understandable explanations for AI-driven decisions",
+      "constraints": {
+        "mandatory_checks": ["explainability_validation", "user_comprehension_testing"],
+        "prohibited_actions": ["black_box_decisions", "unexplained_outcomes"],
+        "documentation_required": true
+      },
+      "rationale": "Transparency builds trust and enables accountability in AI systems",
+      "status": "active",
+      "version": 1
+    },
+    {
+      "title": "System Reliability and Robustness",
+      "description": "Requirements for reliable and robust AI system operation",
+      "content": "AI systems must operate reliably under various conditions and gracefully handle edge cases and unexpected inputs. Failure modes must be predictable and safe.",
+      "priority_weight": 0.88,
+      "scope": "system_operation",
+      "normative_statement": "SHALL maintain reliable operation and safe failure modes under all conditions",
+      "constraints": {
+        "mandatory_checks": ["stress_testing", "edge_case_validation", "failure_mode_analysis"],
+        "prohibited_actions": ["unpredictable_failures", "unsafe_degradation"],
+        "redundancy_required": true
+      },
+      "rationale": "Reliability is essential for AI systems deployed in critical applications",
+      "status": "active",
+      "version": 1
+    }
+  ]
+}

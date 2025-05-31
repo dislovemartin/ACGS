@@ -1,7 +1,7 @@
 """Phase 3: Z3 SMT Solver Integration and Advanced Verification
 
 Revision ID: 007_phase3_z3_integration
-Revises: 006_phase2_alphaevolve_integration
+Revises: 005_fix_refresh_token_length
 Create Date: 2024-12-19 14:30:00.000000
 
 """
@@ -11,44 +11,37 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '007_phase3_z3_integration'
-down_revision = '006_phase2_alphaevolve_integration'
+down_revision = '005_fix_refresh_token_length'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     """Add Phase 3 Z3 integration and advanced verification tables."""
-    
-    # 1. Create validation_tiers enum
-    validation_tier_enum = postgresql.ENUM(
-        'automated', 'human_in_the_loop', 'rigorous',
-        name='validation_tier_enum'
-    )
-    validation_tier_enum.create(op.get_bind())
-    
-    # 2. Create validation_levels enum
-    validation_level_enum = postgresql.ENUM(
-        'baseline', 'standard', 'comprehensive', 'critical',
-        name='validation_level_enum'
-    )
-    validation_level_enum.create(op.get_bind())
-    
-    # 3. Create safety_property_types enum
+
+    # Define enums for use in table creation
     safety_property_type_enum = postgresql.ENUM(
         'safety', 'liveness', 'security', 'fairness',
         name='safety_property_type_enum'
     )
-    safety_property_type_enum.create(op.get_bind())
-    
-    # 4. Create conflict_types enum
+
+    validation_tier_enum = postgresql.ENUM(
+        'automated', 'human_in_the_loop', 'rigorous',
+        name='validation_tier_enum'
+    )
+
+    validation_level_enum = postgresql.ENUM(
+        'baseline', 'standard', 'comprehensive', 'critical',
+        name='validation_level_enum'
+    )
+
     conflict_type_enum = postgresql.ENUM(
-        'logical_contradiction', 'practical_incompatibility', 
+        'logical_contradiction', 'practical_incompatibility',
         'priority_conflict', 'resource_conflict',
         name='conflict_type_enum'
     )
-    conflict_type_enum.create(op.get_bind())
-    
-    # 5. Create safety_properties table
+
+    # Create safety_properties table
     op.create_table(
         'safety_properties',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -229,15 +222,5 @@ def downgrade():
     op.drop_table('tiered_verification_results')
     op.drop_table('safety_properties')
     
-    # Drop enums
-    conflict_type_enum = postgresql.ENUM(name='conflict_type_enum')
-    conflict_type_enum.drop(op.get_bind())
-    
-    safety_property_type_enum = postgresql.ENUM(name='safety_property_type_enum')
-    safety_property_type_enum.drop(op.get_bind())
-    
-    validation_level_enum = postgresql.ENUM(name='validation_level_enum')
-    validation_level_enum.drop(op.get_bind())
-    
-    validation_tier_enum = postgresql.ENUM(name='validation_tier_enum')
-    validation_tier_enum.drop(op.get_bind())
+    # Note: Enums will be dropped automatically by SQLAlchemy when tables are dropped
+    # No need to explicitly drop them here

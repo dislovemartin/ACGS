@@ -16,3 +16,4 @@ fastapi-csrf-protect==1.0.3
 slowapi==0.1.9
 httpx==0.28.1
 python-multipart==0.0.18
+prometheus_client==0.21.1

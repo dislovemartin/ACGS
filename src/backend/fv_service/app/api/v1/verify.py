@@ -13,9 +13,8 @@ from ...core.bias_detector import bias_detector
 
 router = APIRouter()
 
-# Placeholder tokens for inter-service communication (same as in gs_service for consistency)
-AC_SERVICE_MOCK_TOKEN = "admin_token" 
-INTEGRITY_SERVICE_MOCK_TOKEN = "internal_service_token"
+# Import service authentication
+from shared.auth import get_service_token
 
 @router.post("/", response_model=schemas.VerificationResponse, status_code=status.HTTP_200_OK)
 async def verify_policies(
@@ -70,9 +69,10 @@ async def verify_policies(
         ]
         return schemas.VerificationResponse(results=results, overall_status="error", summary_message="Missing AC principle context.")
 
+    service_token = await get_service_token()
     fetched_ac_principles = await ac_service_client.list_principles_by_ids(
         principle_ids=list(principle_ids_to_fetch),
-        auth_token=AC_SERVICE_MOCK_TOKEN
+        auth_token=service_token
     )
     if len(fetched_ac_principles) != len(principle_ids_to_fetch):
         found_pids = {p.id for p in fetched_ac_principles}
@@ -164,9 +164,10 @@ async def tiered_verification(
 
     ac_principles = []
     if principle_ids_to_fetch:
+        service_token = await get_service_token()
         ac_principles = await ac_service_client.list_principles_by_ids(
             principle_ids=list(principle_ids_to_fetch),
-            auth_token=AC_SERVICE_MOCK_TOKEN
+            auth_token=service_token
         )
 
     # Perform tiered validation

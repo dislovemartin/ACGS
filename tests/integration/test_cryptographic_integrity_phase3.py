@@ -6,17 +6,35 @@ Tests digital signatures, key management, Merkle trees, and RFC 3161 timestampin
 import asyncio
 import json
 import base64
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+# Add the src directory to Python path for imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root / "src/backend"))
+
 # Import the services we're testing
-from backend.integrity_service.app.services.crypto_service import crypto_service, merkle_service
-from backend.integrity_service.app.services.key_management import key_manager
-from backend.integrity_service.app.services.timestamp_service import timestamp_manager
-from backend.integrity_service.app.services.integrity_verification import integrity_verifier
-from backend.integrity_service.app.models import PolicyRule, AuditLog, CryptoKey
+try:
+    from backend.integrity_service.app.services.crypto_service import crypto_service, merkle_service
+    from backend.integrity_service.app.services.key_management import key_manager
+    from backend.integrity_service.app.services.timestamp_service import timestamp_manager
+    from backend.integrity_service.app.services.integrity_verification import integrity_verifier
+    from backend.integrity_service.app.models import PolicyRule, AuditLog, CryptoKey
+except ImportError:
+    # Fallback for testing without full backend setup
+    crypto_service = None
+    merkle_service = None
+    key_manager = None
+    timestamp_manager = None
+    integrity_verifier = None
+    PolicyRule = None
+    AuditLog = None
+    CryptoKey = None
 
 
 class TestCryptographicIntegrityPhase3:

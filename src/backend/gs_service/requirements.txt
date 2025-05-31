@@ -8,3 +8,4 @@ sqlalchemy[asyncio]==2.0.36
 asyncpg==0.30.0
 tenacity==8.2.3
 openai==1.82.0
+prometheus_client==0.21.1

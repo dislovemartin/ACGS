@@ -7,3 +7,4 @@ pydatalog==0.17.4
 slowapi==0.1.9
 sqlalchemy[asyncio]==2.0.36
 asyncpg==0.30.0
+prometheus_client==0.21.1

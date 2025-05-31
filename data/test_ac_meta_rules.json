@@ -1,0 +1,82 @@
+{
+  "test_meta_rules": [
+    {
+      "rule_type": "amendment_procedure",
+      "name": "Constitutional Amendment Threshold",
+      "description": "Defines the voting threshold required for constitutional amendments",
+      "rule_definition": {
+        "threshold": 0.67,
+        "stakeholder_roles": ["admin", "policy_manager", "constitutional_council"],
+        "decision_mechanism": "supermajority_vote",
+        "voting_period_hours": 168,
+        "quorum_requirement": 0.5
+      },
+      "threshold": "0.67",
+      "stakeholder_roles": ["admin", "policy_manager", "constitutional_council"],
+      "decision_mechanism": "supermajority_vote",
+      "status": "active"
+    },
+    {
+      "rule_type": "conflict_resolution",
+      "name": "Principle Priority Resolution",
+      "description": "Defines how conflicts between principles are resolved based on priority weights",
+      "rule_definition": {
+        "resolution_strategy": "priority_weight_based",
+        "escalation_threshold": 0.1,
+        "human_review_required": true,
+        "documentation_required": true
+      },
+      "threshold": "0.1",
+      "stakeholder_roles": ["admin", "constitutional_council"],
+      "decision_mechanism": "priority_based_resolution",
+      "status": "active"
+    },
+    {
+      "rule_type": "voting_threshold",
+      "name": "Emergency Amendment Procedure",
+      "description": "Fast-track amendment procedure for emergency situations",
+      "rule_definition": {
+        "threshold": 0.75,
+        "stakeholder_roles": ["admin", "constitutional_council"],
+        "decision_mechanism": "emergency_supermajority",
+        "voting_period_hours": 24,
+        "justification_required": true,
+        "review_period_days": 7
+      },
+      "threshold": "0.75",
+      "stakeholder_roles": ["admin", "constitutional_council"],
+      "decision_mechanism": "emergency_supermajority",
+      "status": "active"
+    },
+    {
+      "rule_type": "stakeholder_participation",
+      "name": "Public Consultation Requirements",
+      "description": "Defines requirements for public consultation in constitutional changes",
+      "rule_definition": {
+        "consultation_period_days": 30,
+        "public_comment_enabled": true,
+        "stakeholder_notification_required": true,
+        "impact_assessment_required": true
+      },
+      "threshold": "simple_majority",
+      "stakeholder_roles": ["public", "policy_manager", "constitutional_council"],
+      "decision_mechanism": "consultation_based",
+      "status": "active"
+    },
+    {
+      "rule_type": "version_control",
+      "name": "Constitutional Version Management",
+      "description": "Defines how constitutional versions are managed and tracked",
+      "rule_definition": {
+        "version_increment_policy": "semantic_versioning",
+        "rollback_threshold": 0.8,
+        "backup_retention_days": 365,
+        "change_documentation_required": true
+      },
+      "threshold": "0.8",
+      "stakeholder_roles": ["admin", "constitutional_council"],
+      "decision_mechanism": "version_control_based",
+      "status": "active"
+    }
+  ]
+}

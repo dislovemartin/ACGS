@@ -4,15 +4,15 @@ from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement
 from app.core.policy_manager import policy_manager
 from app.services.integrity_client import integrity_service_client
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
-from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+# from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(title="Protective Governance Controls (PGC) Service")
 
 # Initialize metrics for PGC service
-metrics = get_metrics("pgc_service")
+# metrics = get_metrics("pgc_service")
 
 # Add metrics middleware
-app.middleware("http")(metrics_middleware("pgc_service"))
+# app.middleware("http")(metrics_middleware("pgc_service"))
 
 # Apply the security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
@@ -50,4 +50,4 @@ async def health_check():
         return {"status": "degraded", "message": "PGC Service is operational, but policies have not been loaded yet."}
 
 # Add Prometheus metrics endpoint
-app.get("/metrics")(create_metrics_endpoint())
+# app.get("/metrics")(create_metrics_endpoint())

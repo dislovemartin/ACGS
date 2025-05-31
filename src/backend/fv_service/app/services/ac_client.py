@@ -2,9 +2,10 @@ import os
 import httpx
 from typing import List, Optional
 from ..schemas import ACPrinciple # Using the schema defined in fv_service
+from shared.auth import get_service_token, get_auth_headers
 
 # Load environment variables
-AC_SERVICE_URL = os.getenv("AC_SERVICE_URL", "http://ac_service:8000/api/v1")
+AC_SERVICE_URL = os.getenv("AC_SERVICE_URL", "http://ac_service:8001/api/v1")
 
 class ACServiceClient:
     def __init__(self, base_url: str):
@@ -13,10 +14,12 @@ class ACServiceClient:
         self.client = httpx.AsyncClient(base_url=self.base_url, timeout=timeout_config)
 
     async def get_principle_by_id(self, principle_id: int, auth_token: Optional[str] = None) -> Optional[ACPrinciple]:
-        headers = {}
-        if auth_token:
-            headers["Authorization"] = f"Bearer {auth_token}"
-        
+        # Use service token if no auth token provided
+        if not auth_token:
+            auth_token = await get_service_token()
+
+        headers = get_auth_headers(auth_token)
+
         try:
             response = await self.client.get(f"/principles/{principle_id}", headers=headers)
             response.raise_for_status()

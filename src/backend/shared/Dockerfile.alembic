@@ -13,11 +13,17 @@ COPY src/backend/shared/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy necessary directories and files
-COPY migrations/ /app/
 COPY src/backend/shared /app/shared
+COPY src/backend/shared/alembic.ini /app/alembic.ini
 
 # Make wait script executable
 RUN chmod +x /app/shared/wait-for-postgres.sh
 
 # Set environment variables
 ENV PYTHONPATH=/app
+
+# Set working directory to shared for alembic
+WORKDIR /app/shared
+
+# Set the command to run migrations
+CMD ["/app/shared/wait-for-postgres.sh", "postgres_db:5432", "--", "sh", "-c", "echo 'DB Ready' && echo 'Running Alembic migrations...' && alembic -c /app/alembic.ini upgrade head"]

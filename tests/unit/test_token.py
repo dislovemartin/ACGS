@@ -1,8 +1,21 @@
 from datetime import timedelta
+import sys
+from pathlib import Path
 
 import pytest
-from app.core import security  # Assuming your security functions are here
-from app.core.config import settings
+
+# Add the src directory to Python path for imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root / "src/backend"))
+
+try:
+    from backend.auth_service.app.core import security  # Assuming your security functions are here
+    from backend.auth_service.app.core.config import settings
+except ImportError:
+    # Fallback for testing without full backend setup
+    security = None
+    settings = None
 
 # from app.schemas.token import TokenPayload # Unused, adjust if needed
 

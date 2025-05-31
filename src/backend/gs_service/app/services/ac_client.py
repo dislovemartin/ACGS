@@ -2,9 +2,10 @@ import os
 import httpx
 from typing import List, Optional
 from ..schemas import ACPrinciple # Using the schema defined in gs_service
+from shared.auth import get_service_token, get_auth_headers
 
 # Load environment variables
-AC_SERVICE_URL = os.getenv("AC_SERVICE_URL", "http://ac_service:8000/api/v1") # Default for Docker Compose
+AC_SERVICE_URL = os.getenv("AC_SERVICE_URL", "http://ac_service:8001/api/v1") # Default for Docker Compose
 
 class ACServiceClient:
     def __init__(self, base_url: str):
@@ -16,12 +17,13 @@ class ACServiceClient:
     async def get_principle_by_id(self, principle_id: int, auth_token: Optional[str] = None) -> Optional[ACPrinciple]:
         """
         Fetches a single principle by its ID from the AC Service.
-        Placeholder for auth_token usage.
         """
-        headers = {}
-        if auth_token:
-            headers["Authorization"] = f"Bearer {auth_token}"
-        
+        # Use service token if no auth token provided
+        if not auth_token:
+            auth_token = await get_service_token()
+
+        headers = get_auth_headers(auth_token)
+
         try:
             response = await self.client.get(f"/principles/{principle_id}", headers=headers)
             response.raise_for_status() # Raise an exception for 4XX or 5XX status codes
@@ -40,12 +42,13 @@ class ACServiceClient:
     async def list_principles(self, auth_token: Optional[str] = None) -> List[ACPrinciple]:
         """
         Fetches all principles from the AC Service.
-        Placeholder for auth_token usage.
         """
-        headers = {}
-        if auth_token:
-            headers["Authorization"] = f"Bearer {auth_token}"
-        
+        # Use service token if no auth token provided
+        if not auth_token:
+            auth_token = await get_service_token()
+
+        headers = get_auth_headers(auth_token)
+
         try:
             response = await self.client.get("/principles/", headers=headers)
             response.raise_for_status()
