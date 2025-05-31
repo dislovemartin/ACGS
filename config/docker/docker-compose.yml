@@ -63,8 +63,8 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
-      alembic-runner:
-        condition: service_completed_successfully # Depends on alembic-runner exiting cleanly
+      # alembic-runner:
+      #   condition: service_completed_successfully # Depends on alembic-runner exiting cleanly
     volumes:
       - ../../src/backend/auth_service:/app
       - ../../src/backend/shared:/app/shared

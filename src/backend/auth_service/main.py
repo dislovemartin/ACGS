@@ -1,8 +1,2 @@
-from fastapi import FastAPI
-
-app = FastAPI()
-
-
-@app.get("/health")
-async def health_check():
-    return {"status": "ok"} 
+# Import the actual app from app.main
+from app.main import app

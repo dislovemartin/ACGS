@@ -7,15 +7,15 @@ from app.services.ac_client import ac_service_client
 from app.services.integrity_client import integrity_service_client
 from app.services.fv_client import fv_service_client # Added FV client for shutdown
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
-from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+# from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(title="Governance Synthesis (GS) Service")
 
 # Initialize metrics for GS service
-metrics = get_metrics("gs_service")
+# metrics = get_metrics("gs_service")
 
 # Add metrics middleware
-app.middleware("http")(metrics_middleware("gs_service"))
+# app.middleware("http")(metrics_middleware("gs_service"))
 
 # Apply the security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
@@ -52,4 +52,4 @@ async def health_check():
     return {"status": "ok", "message": "GS Service is operational."}
 
 # Add Prometheus metrics endpoint
-app.get("/metrics")(create_metrics_endpoint())
+# app.get("/metrics")(create_metrics_endpoint())

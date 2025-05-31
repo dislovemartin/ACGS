@@ -1,8 +1,20 @@
 from uuid import uuid4  # For generating unique emails
+import sys
+from pathlib import Path
 
 import pytest
-from app.core.config import settings
 from fastapi.testclient import TestClient  # Use TestClient from FastAPI
+
+# Add the src directory to Python path for imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root / "src"))
+sys.path.insert(0, str(project_root / "src/backend"))
+
+try:
+    from backend.auth_service.app.core.config import settings
+except ImportError:
+    # Fallback for testing without full backend setup
+    settings = None
 
 # The client fixture and DB setup are now handled by conftest.py
 # No need for override_get_async_db_users or local client fixture here.
