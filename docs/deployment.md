@@ -83,26 +83,59 @@ REACT_APP_ENABLE_CONSTITUTIONAL_COUNCIL=true
 REACT_APP_ENABLE_ALPHAEVOLVE=true
 ```
 
-### **Step 3: Build and Deploy**
+### **Step 3: Deploy Monitoring Infrastructure**
+Deploy the complete monitoring stack with Prometheus, Grafana, and AlertManager:
+```bash
+# Deploy monitoring infrastructure
+chmod +x scripts/deploy_monitoring.sh
+./scripts/deploy_monitoring.sh
+
+# Verify monitoring stack deployment
+curl -f http://localhost:9090/api/v1/status/config  # Prometheus
+curl -f http://localhost:3001/api/health           # Grafana
+```
+
+### **Step 4: Build and Deploy Services**
 From the project root directory:
 ```bash
-# Build and start all services
+# Build and start all services with monitoring
 docker-compose -f config/docker/docker-compose.yml up --build -d
 
 # Verify all services are running
 docker-compose -f config/docker/docker-compose.yml ps
+
+# Check service health endpoints
+for port in 8000 8001 8002 8003 8004 8005; do
+  echo "Checking service on port $port..."
+  curl -f http://localhost:$port/health || echo "Service on port $port not ready"
+done
 ```
 
-### **Step 4: Initialize Constitutional Framework**
+### **Step 5: Validate Monitoring Integration**
+```bash
+# Run monitoring validation script
+./scripts/load_test_monitoring.sh 10 60
+
+# Check metrics collection
+curl -s http://localhost:9090/api/v1/query?query=up | jq '.data.result[] | select(.metric.job | startswith("acgs"))'
+
+# Verify Grafana dashboards
+curl -s -u admin:admin123 http://localhost:3001/api/dashboards/home
+```
+
+### **Step 6: Initialize Constitutional Framework**
 ```bash
 # Load test data including constitutional principles
 python scripts/load_test_data.py
 
 # Verify constitutional setup
 python scripts/verify_acgs_deployment.sh
+
+# Test complete policy pipeline with monitoring
+python scripts/test_policy_pipeline.py --with-monitoring
 ```
 
-### **Step 5: Access Services**
+### **Step 7: Access Services and Monitoring**
 
 #### **Frontend Applications**
 *   **Constitutional Dashboard:** `http://localhost:3000`
@@ -117,6 +150,29 @@ python scripts/verify_acgs_deployment.sh
 *   **FV Service:** `http://localhost:8000/api/fv/` ([docs](http://localhost:8000/api/fv/docs))
 *   **Integrity Service:** `http://localhost:8000/api/integrity/` ([docs](http://localhost:8000/api/integrity/docs))
 *   **PGC Service:** `http://localhost:8000/api/pgc/` ([docs](http://localhost:8000/api/pgc/docs))
+
+#### **Monitoring and Observability**
+*   **Grafana Dashboards:** `http://localhost:3001` (admin/admin123)
+    - ACGS-PGP Overview Dashboard
+    - Service Performance Metrics
+    - Authentication and Security Metrics
+    - Database Performance Dashboard
+    - Error Analysis and Alerting
+*   **Prometheus Metrics:** `http://localhost:9090`
+    - Service health and performance metrics
+    - Custom ACGS-PGP business metrics
+    - Infrastructure and resource metrics
+*   **AlertManager:** `http://localhost:9093` (Internal)
+    - Alert routing and notification management
+    - Integration with external notification systems
+
+#### **Production Monitoring Targets**
+- **API Response Times:** <200ms (95th percentile)
+- **Service Uptime:** >99.5% availability
+- **Authentication Success Rate:** >95%
+- **Database Query Times:** <100ms (95th percentile)
+- **Error Rates:** <5% across all services
+- **Concurrent Users:** Support for 100+ concurrent users
 
 5.  **Database Migrations (Manual, if needed):**
     The `alembic-runner` service in `docker-compose.yml` is configured to run migrations on startup. If you need to run migrations manually:

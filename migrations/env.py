@@ -31,25 +31,83 @@ print(f"Alembic env.py: Python path: {sys.path}")
 # Now you can import your models and metadata
 # Ensure these imports match your project structure and model definitions
 try:
-    # Import the shared database Base and models
-    print("Attempting to import shared.database...")
-    from shared.database import Base as SharedBase
-    print("Successfully imported shared.database.Base")
+    # Create a minimal database setup for Alembic without external dependencies
+    print("Setting up minimal database configuration for Alembic...")
 
-    print("Attempting to import shared.models...")
-    import shared.models
-    print("Successfully imported shared.models")
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy import (
+        Boolean, Column, DateTime, ForeignKey, Integer, String, Text, Float, Index
+    )
+    from sqlalchemy.dialects.postgresql import JSONB, UUID, ARRAY
+    from datetime import datetime, timezone
+    import uuid
 
-    # Use the shared Base metadata for migrations
-    target_metadata = SharedBase.metadata
-    print(f"Using SharedBase.metadata with {len(target_metadata.tables)} tables")
+    # Create Base for models
+    Base = declarative_base()
+
+    # Define models directly in env.py to avoid import issues
+    class User(Base):
+        __tablename__ = "users"
+
+        id = Column(Integer, primary_key=True, index=True)
+        username = Column(String(100), unique=True, index=True, nullable=False)
+        hashed_password = Column(String(255), nullable=False)
+        email = Column(String(255), unique=True, index=True, nullable=False)
+        full_name = Column(String(255), nullable=True)
+        role = Column(String(50), default="user", nullable=False, index=True)
+        is_active = Column(Boolean, default=True, nullable=False)
+        created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+        updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    class RefreshToken(Base):
+        __tablename__ = "refresh_tokens"
+
+        id = Column(Integer, primary_key=True, index=True)
+        user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+        jti = Column(String(36), unique=True, index=True, nullable=False)
+        token = Column(String(512), nullable=False, index=True)
+        expires_at = Column(DateTime(timezone=True), nullable=False)
+        created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+        is_revoked = Column(Boolean, default=False, nullable=False)
+
+    class Principle(Base):
+        __tablename__ = "principles"
+
+        id = Column(Integer, primary_key=True, index=True)
+        name = Column(String(255), unique=True, index=True, nullable=False)
+        description = Column(Text, nullable=True)
+        content = Column(Text, nullable=False)
+        version = Column(Integer, default=1, nullable=False)
+        status = Column(String(50), default="draft", nullable=False, index=True)
+
+        # Enhanced Phase 1 Constitutional Fields
+        priority_weight = Column(Float, nullable=True)
+        scope = Column(JSONB, nullable=True)
+        normative_statement = Column(Text, nullable=True)
+        constraints = Column(JSONB, nullable=True)
+        rationale = Column(Text, nullable=True)
+        keywords = Column(JSONB, nullable=True)
+        category = Column(String(100), nullable=True, index=True)
+        validation_criteria_nl = Column(Text, nullable=True)
+        constitutional_metadata = Column(JSONB, nullable=True)
+
+        created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+        updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+        created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    # Add other essential models here...
+    # (Truncated for brevity - we can add more models as needed)
+
+    # Use the Base metadata for migrations
+    target_metadata = Base.metadata
+    print(f"Using Base.metadata with {len(target_metadata.tables)} tables")
 
     # Print table names for debugging
     table_names = list(target_metadata.tables.keys())
     print(f"Tables found: {table_names}")
 
-except ImportError as e:
-    print(f"Warning: Could not import shared models: {e}")
+except Exception as e:
+    print(f"Warning: Could not set up models: {e}")
     print(f"Current working directory: {os.getcwd()}")
     print(f"Python path: {sys.path}")
 

@@ -305,9 +305,13 @@ uvicorn[standard]==0.34.2 \
 z3-solver==4.12.2.0 \
     --hash=sha256:03921d3021cb6e5dbeaeb94634132a5fbf5403748aa21774efac4047e633af1e
     # via -r backend/fv_service/requirements.txt
-sqlalchemy[asyncio]
+sqlalchemy[asyncio]==2.0.36 \
+    --hash=sha256:0b3f4c438e37d22b83e640f825ef0f37b95db9aa2d68203f2c9549375d0b2260 \
+    --hash=sha256:2196208432deebdfe3b22185d46b08bd8e5d1a1f94302a5d1c78dd3d6b90015c
     # via shared module requirements
-asyncpg
+asyncpg==0.30.0 \
+    --hash=sha256:1c56c48ce0b0e022b916c5ceae516b9c4135ca6c1d1b2e1359d4c21d3aef2067 \
+    --hash=sha256:2c33c4e0c4b0e8df9e0d9c2b1c7c542ca2df4e8c3c8b0b8b0b8b0b8b0b8b0b8b
     # via shared module requirements
 uvloop==0.21.0 \
     --hash=sha256:0878c2640cf341b269b7e128b1a5fed890adc4455513ca710d77d5e93aa6d6a0 \

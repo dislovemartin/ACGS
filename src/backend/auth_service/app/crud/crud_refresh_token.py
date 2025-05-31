@@ -5,9 +5,10 @@ from shared.models import RefreshToken # Ensure shared.models has RefreshToken
 from datetime import datetime, timezone
 from typing import Optional
 
-async def create_refresh_token(db: AsyncSession, user_id: int, jti: str, expires_at: datetime) -> RefreshToken:
+async def create_refresh_token(db: AsyncSession, user_id: int, token: str, jti: str, expires_at: datetime) -> RefreshToken:
     db_refresh_token = RefreshToken(
         user_id=user_id,
+        token=token,
         jti=jti,
         expires_at=expires_at,
         created_at=datetime.now(timezone.utc),
@@ -30,7 +31,11 @@ async def is_valid_refresh_token(db: AsyncSession, user_id: int, jti: str) -> bo
         return False
     if token.is_revoked:
         return False
-    if token.expires_at < datetime.now(timezone.utc): # Compare with timezone-aware datetime
+    # Ensure both datetimes are timezone-aware for comparison
+    expires_at = token.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
         return False
     return True
 
@@ -46,3 +51,24 @@ async def revoke_all_refresh_tokens_for_user(db: AsyncSession, user_id: int):
     stmt = update(RefreshToken).where(RefreshToken.user_id == user_id).values(is_revoked=True)
     await db.execute(stmt)
     await db.commit()
+
+# Alias for backward compatibility with backend endpoints
+async def create_user_refresh_token(db: AsyncSession, user_id: int, token: str, jti: str, expires_at: datetime) -> RefreshToken:
+    """Alias for create_refresh_token to maintain backward compatibility."""
+    return await create_refresh_token(db, user_id, token, jti, expires_at)
+
+async def revoke_refresh_token_by_jti(db: AsyncSession, jti: str):
+    """Revoke a refresh token by its JTI."""
+    stmt = update(RefreshToken).where(RefreshToken.jti == jti).values(is_revoked=True)
+    await db.execute(stmt)
+    await db.commit()
+
+async def get_active_refresh_token_by_jti(db: AsyncSession, jti: str) -> Optional[RefreshToken]:
+    """Get an active (non-revoked) refresh token by its JTI."""
+    result = await db.execute(
+        select(RefreshToken).filter(
+            RefreshToken.jti == jti,
+            RefreshToken.is_revoked == False
+        )
+    )
+    return result.scalars().first()

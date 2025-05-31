@@ -1,0 +1,92 @@
+# Prometheus configuration for ACGS-PGP microservices monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "alert_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ACGS-PGP Authentication Service
+  - job_name: 'acgs-auth-service'
+    static_configs:
+      - targets: ['auth_service:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+
+  # ACGS-PGP AC Service
+  - job_name: 'acgs-ac-service'
+    static_configs:
+      - targets: ['ac_service:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+
+  # ACGS-PGP Integrity Service
+  - job_name: 'acgs-integrity-service'
+    static_configs:
+      - targets: ['integrity_service:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+
+  # ACGS-PGP FV Service
+  - job_name: 'acgs-fv-service'
+    static_configs:
+      - targets: ['fv_service:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+
+  # ACGS-PGP GS Service
+  - job_name: 'acgs-gs-service'
+    static_configs:
+      - targets: ['gs_service:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+
+  # ACGS-PGP PGC Service
+  - job_name: 'acgs-pgc-service'
+    static_configs:
+      - targets: ['pgc_service:8005']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: http
+
+  # PostgreSQL Database (if postgres_exporter is added)
+  - job_name: 'acgs-postgres'
+    static_configs:
+      - targets: ['postgres_exporter:9187']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    scheme: http
+
+  # Nginx Gateway (if nginx_exporter is added)
+  - job_name: 'acgs-nginx'
+    static_configs:
+      - targets: ['nginx_exporter:9113']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    scheme: http

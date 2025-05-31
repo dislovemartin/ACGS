@@ -41,7 +41,6 @@ async def create_user(db: AsyncSession, *, obj_in: UserCreate) -> User:
         email=obj_in.email,
         hashed_password=get_password_hash(obj_in.password),
         full_name=getattr(obj_in, 'full_name', None), # Handle optional fields
-        is_superuser=getattr(obj_in, 'is_superuser', False), # Handle optional fields
         username=obj_in.username,
         is_active=True  # New users active by default
     )

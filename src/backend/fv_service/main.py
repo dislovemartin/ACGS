@@ -3,8 +3,15 @@ from app.api.v1.verify import router as verify_router
 from app.services.ac_client import ac_service_client
 from app.services.integrity_client import integrity_service_client
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
+from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(title="Formal Verification (FV) Service")
+
+# Initialize metrics for FV service
+metrics = get_metrics("fv_service")
+
+# Add metrics middleware
+app.middleware("http")(metrics_middleware("fv_service"))
 
 # Apply the security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
@@ -34,3 +41,6 @@ async def root():
 async def health_check():
     # A more comprehensive health check might try to connect to dependent services.
     return {"status": "ok", "message": "FV Service is operational."}
+
+# Add Prometheus metrics endpoint
+app.get("/metrics")(create_metrics_endpoint())
