@@ -1,10 +1,31 @@
 {
-  // 用于解析需求文档、生成任务、代码实现等核心工作：
-  "mainModel": "google.gemini-2-5-pro-0506",
-
-  // 用于需要实时网络搜索、调研最佳方案时调用（此处示例使用 Perplexity Sonar Pro）：
-  "researchModel": "google.gemini-2-5-flash-0520",
-
-  // 如果主模型失效或成本过高时切换到 Gemini Flash：
-  "fallbackModel": "google.gemini-2-5-flash-0520"
+  "models": {
+    "main": {
+      "provider": "anthropic",
+      "modelId": "claude-3-7-sonnet-20250219",
+      "maxTokens": 64000,
+      "temperature": 0.2
+    },
+    "research": {
+      "provider": "perplexity",
+      "modelId": "sonar-pro",
+      "maxTokens": 8700,
+      "temperature": 0.1
+    },
+    "fallback": {
+      "provider": "anthropic",
+      "modelId": "claude-3-5-sonnet",
+      "maxTokens": 64000,
+      "temperature": 0.2
+    }
+  },
+  "global": {
+    "logLevel": "info",
+    "debug": false,
+    "defaultSubtasks": 5,
+    "defaultPriority": "medium",
+    "projectName": "Task Master",
+    "ollamaBaseUrl": "http://localhost:11434/api",
+    "userId": "1234567890"
+  }
 }
