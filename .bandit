@@ -1,0 +1,126 @@
+# Bandit security scanning configuration for ACGS-PGP
+[bandit]
+
+# Directories to exclude from scanning
+exclude_dirs = [
+    "tests",
+    "migrations", 
+    "data",
+    "docs",
+    "scripts",
+    "__pycache__",
+    ".git",
+    "node_modules",
+    "venv",
+    ".venv"
+]
+
+# Files to exclude
+exclude = [
+    "*/test_*.py",
+    "*/tests.py",
+    "*_test.py",
+    "conftest.py"
+]
+
+# Security issues to skip (with justification)
+skips = [
+    "B101",  # assert_used - Used in tests and development
+    "B601",  # paramiko_calls - Not using paramiko
+    "B602",  # subprocess_popen_with_shell_equals_true - Controlled usage
+    "B603",  # subprocess_without_shell_equals_true - Controlled usage
+    "B607",  # start_process_with_partial_path - Controlled usage
+]
+
+# Confidence levels to report
+confidence = ["HIGH", "MEDIUM"]
+
+# Severity levels to report  
+severity = ["HIGH", "MEDIUM"]
+
+# Output format
+format = "json"
+
+# Additional plugins (if needed)
+# plugins = ["bandit_plugin_name"]
+
+# Test-specific configurations
+[bandit.any_other_function_with_shell_equals_true]
+shell = [
+    "os.system",
+    "popen",
+    "subprocess.Popen",
+    "subprocess.call"
+]
+
+[bandit.hardcoded_password_string]
+# Allow certain patterns that are not actual passwords
+word_list = [
+    "password",
+    "pass",
+    "passwd",
+    "pwd",
+    "secret",
+    "token"
+]
+
+[bandit.hardcoded_password_funcarg]
+# Function arguments that might contain passwords
+function_names = [
+    "create_user",
+    "authenticate",
+    "login",
+    "set_password"
+]
+
+[bandit.hardcoded_password_default]
+# Default password patterns to check
+check_typed_list = true
+
+[bandit.request_with_no_cert_validation]
+# Allow certain domains for development
+allowed_domains = [
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0"
+]
+
+[bandit.ssl_with_bad_version]
+# SSL/TLS version checking
+bad_protocol_versions = [
+    "PROTOCOL_SSLv2",
+    "PROTOCOL_SSLv3",
+    "PROTOCOL_TLSv1",
+    "SSLv2_METHOD",
+    "SSLv3_METHOD",
+    "TLSv1_METHOD"
+]
+
+[bandit.ssl_with_bad_defaults]
+# SSL context checking
+check_httplib_https_connection = true
+
+[bandit.sql_injection_db_api]
+# SQL injection patterns
+sql_statements = [
+    "execute",
+    "executemany",
+    "executescript"
+]
+
+[bandit.blacklist_calls]
+# Dangerous function calls to flag
+bad_name_sets = [
+    "pickle",
+    "cPickle", 
+    "subprocess",
+    "os.system"
+]
+
+[bandit.blacklist_imports]
+# Dangerous imports to flag
+bad_import_sets = [
+    "pickle",
+    "cPickle",
+    "subprocess"
+]

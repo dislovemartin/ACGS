@@ -13,6 +13,11 @@ sys.path.insert(0, str(project_root / "src"))
 sys.path.insert(0, str(project_root / "src/backend"))
 sys.path.insert(0, str(project_root / "src/alphaevolve_gs_engine/src"))
 
+# Ensure shared module can be found by adding backend directory to path
+backend_path = str(project_root / "src" / "backend")
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
+
 try:
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
