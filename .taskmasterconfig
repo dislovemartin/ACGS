@@ -1,20 +1,20 @@
 {
   "models": {
     "main": {
-      "provider": "anthropic",
-      "modelId": "claude-3-7-sonnet-20250219",
+      "provider": "openrouter",
+      "modelId": "meta-llama/llama-4-maverick",
       "maxTokens": 64000,
       "temperature": 0.2
     },
     "research": {
-      "provider": "perplexity",
-      "modelId": "sonar-pro",
+      "provider": "openrouter",
+      "modelId": "meta-llama/llama-4-scout",
       "maxTokens": 8700,
       "temperature": 0.1
     },
     "fallback": {
-      "provider": "anthropic",
-      "modelId": "claude-3-5-sonnet",
+      "provider": "openrouter",
+      "modelId": "meta-llama/llama-3.3-70b-instruct",
       "maxTokens": 64000,
       "temperature": 0.2
     }

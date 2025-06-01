@@ -3,9 +3,14 @@ import httpx
 from typing import List, Optional
 from ..schemas import ACPrinciple # Using the schema defined in fv_service
 from shared.auth import get_service_token, get_auth_headers
+from shared import get_config
 
-# Load environment variables
-AC_SERVICE_URL = os.getenv("AC_SERVICE_URL", "http://ac_service:8001/api/v1")
+# Load centralized configuration
+config = get_config()
+
+# Determine if running in Docker (internal) or external environment
+is_docker_env = os.getenv('DOCKER_ENV', 'false').lower() == 'true'
+AC_SERVICE_URL = config.get_service_url('ac', internal=is_docker_env, api_path='')
 
 class ACServiceClient:
     def __init__(self, base_url: str):

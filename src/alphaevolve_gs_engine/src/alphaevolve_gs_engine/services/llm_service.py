@@ -262,38 +262,153 @@ class MockLLMService(LLMService):
         return mock_data
 
 
-def get_llm_service(service_type: Literal["openai", "mock"] = "mock", 
+class GroqLLMService(LLMService):
+    """
+    LLM Service implementation using the Groq API (OpenAI-compatible endpoint).
+    """
+    def __init__(self, api_key: Optional[str] = None, default_model: str = "llama-3.3-70b-versatile"):
+        if openai is None:
+            raise ImportError("OpenAI Python client is not installed. Please install it with 'pip install openai'.")
+
+        self.api_key = api_key or os.getenv("GROQ_API_KEY")
+        if not self.api_key:
+            raise ValueError("Groq API key not found. Set GROQ_API_KEY environment variable or pass it directly.")
+
+        # Use OpenAI client with Groq's OpenAI-compatible endpoint
+        self.client = openai.OpenAI(
+            api_key=self.api_key,
+            base_url="https://api.groq.com/openai/v1"
+        )
+        self.default_model = default_model
+        logger.info(f"GroqLLMService initialized with model: {self.default_model}")
+
+    def generate_text(self,
+                      prompt: str,
+                      max_tokens: int = 1024,
+                      temperature: float = 0.7,
+                      model: Optional[str] = None) -> str:
+        """
+        Generates text using the Groq API.
+        """
+        selected_model = model or self.default_model
+        try:
+            logger.debug(f"Sending prompt to Groq model {selected_model}: {prompt[:100]}...")
+            response = self.client.chat.completions.create(
+                model=selected_model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=max_tokens,
+                temperature=temperature,
+                n=1,
+                stop=None
+            )
+            generated_text = response.choices[0].message.content
+            logger.info(f"GroqLLMService generated text response for model {selected_model}.")
+            return generated_text
+        except Exception as e:
+            logger.error(f"GroqLLMService error for model {selected_model}: {e}")
+            raise
+
+    def generate_structured_output(self,
+                                   prompt: str,
+                                   output_format: Dict[str, Any],
+                                   max_tokens: int = 2048,
+                                   temperature: float = 0.5,
+                                   model: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Generates structured JSON output using Groq API.
+        Note: Groq models may not support JSON mode, so we rely on prompt engineering.
+        """
+        selected_model = model or self.default_model
+
+        # Create a JSON-focused prompt
+        json_prompt = f"""
+{prompt}
+
+Please respond with valid JSON only, following this format:
+{json.dumps(output_format, indent=2)}
+
+Ensure your response is valid JSON that can be parsed.
+"""
+
+        try:
+            logger.debug(f"Sending structured output prompt to Groq model {selected_model}: {json_prompt[:200]}...")
+
+            response = self.client.chat.completions.create(
+                model=selected_model,
+                messages=[{"role": "user", "content": json_prompt}],
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+            generated_content = response.choices[0].message.content
+
+            # Parse the JSON response
+            try:
+                parsed_json = json.loads(generated_content)
+                logger.info(f"GroqLLMService generated structured response for model {selected_model}.")
+                return parsed_json
+            except json.JSONDecodeError as json_err:
+                logger.warning(f"GroqLLMService: Failed to parse JSON from model {selected_model}. Attempting to extract JSON...")
+                # Try to extract JSON from the response if it's wrapped in text
+                import re
+                json_match = re.search(r'\{.*\}', generated_content, re.DOTALL)
+                if json_match:
+                    try:
+                        parsed_json = json.loads(json_match.group())
+                        return parsed_json
+                    except json.JSONDecodeError:
+                        pass
+
+                # If all else fails, return a structured error
+                logger.error(f"GroqLLMService: Could not extract valid JSON from response: {generated_content}")
+                return {"error": "Failed to generate valid JSON", "raw_response": generated_content}
+
+        except Exception as e:
+            logger.error(f"GroqLLMService structured output error for model {selected_model}: {e}")
+            raise
+
+
+def get_llm_service(service_type: Literal["openai", "groq", "mock"] = "mock",
                     config: Optional[Dict[str, Any]] = None) -> LLMService:
     """
     Factory function to get an instance of an LLM service.
 
     Args:
-        service_type (str): Type of LLM service ('openai', 'mock').
-                            Defaults to 'mock' if not specified or if OPENAI_API_KEY is missing.
+        service_type (str): Type of LLM service ('openai', 'groq', 'mock').
+                            Defaults to 'mock' if not specified or if API keys are missing.
         config (Dict[str, Any], optional): Configuration for the service.
             For 'openai': {"api_key": "your_key", "default_model": "gpt-4"}
+            For 'groq': {"api_key": "your_key", "default_model": "llama-3.3-70b-versatile"}
             For 'mock': {"delay": 0.05}
 
     Returns:
         LLMService: An instance of the requested LLM service.
-    
+
     Raises:
         ValueError: If an unsupported service type is requested.
     """
     config = config or {}
-    
-    # Default to mock if OpenAI key is not available and openai service is implicitly requested
+
+    # Default to mock if API keys are not available
     effective_service_type = service_type
     if service_type == "openai" and not (os.getenv("OPENAI_API_KEY") or config.get("api_key")):
         logger.warning("OpenAI service requested, but no API key found. Falling back to MockLLMService.")
         effective_service_type = "mock"
-        
+    elif service_type == "groq" and not (os.getenv("GROQ_API_KEY") or config.get("api_key")):
+        logger.warning("Groq service requested, but no API key found. Falling back to MockLLMService.")
+        effective_service_type = "mock"
+
     if effective_service_type == "openai":
         if openai is None:
             logger.error("OpenAI client library not installed. Falling back to MockLLMService.")
             return MockLLMService(**config.get("mock_config", {}))
-        return OpenAILLMService(api_key=config.get("api_key"), 
+        return OpenAILLMService(api_key=config.get("api_key"),
                                 default_model=config.get("default_model", "gpt-3.5-turbo"))
+    elif effective_service_type == "groq":
+        if openai is None:
+            logger.error("OpenAI client library not installed (required for Groq). Falling back to MockLLMService.")
+            return MockLLMService(**config.get("mock_config", {}))
+        return GroqLLMService(api_key=config.get("api_key"),
+                              default_model=config.get("default_model", "llama-3.3-70b-versatile"))
     elif effective_service_type == "mock":
         return MockLLMService(**config.get("mock_config", {})) # e.g. config={"mock_config": {"delay": 0.2}}
     else:
@@ -324,6 +439,11 @@ if __name__ == "__main__":
     # This will try to use OpenAI, but fall back to Mock if key is not found or library not installed
     # To force OpenAI and see an error if not configured: get_llm_service("openai", {"api_key": "sk-..."})
     openai_service_instance = get_llm_service("openai") # Will be Mock if key is missing
+
+    # --- Groq Service Example (requires GROQ_API_KEY) ---
+    print("\n--- Using Groq LLM Service ---")
+    # This will try to use Groq, but fall back to Mock if key is not found
+    groq_service_instance = get_llm_service("groq") # Will be Mock if key is missing
 
     if isinstance(openai_service_instance, OpenAILLMService):
         print("OpenAI Service is configured.")
@@ -376,3 +496,50 @@ if __name__ == "__main__":
          print("The example proceeded with the MockLLMService.")
     else:
         print("Could not determine LLM service type for the OpenAI example part.")
+
+    # Test Groq service if configured
+    if isinstance(groq_service_instance, GroqLLMService):
+        print("\nGroq Service is configured.")
+        try:
+            # Simple text generation with Groq
+            groq_text_prompt = "What are the key principles of AI governance?"
+            groq_text_response = groq_service_instance.generate_text(groq_text_prompt, max_tokens=100)
+            print(f"Groq Text Prompt: {groq_text_prompt}")
+            print(f"Groq Text Response: {groq_text_response}\n")
+
+            # Structured output with Groq
+            groq_structured_prompt = "Generate a policy rule for data privacy compliance."
+            groq_format_guide = {
+                "rule_name": "string",
+                "description": "string",
+                "conditions": ["list of conditions"],
+                "actions": ["list of actions"]
+            }
+
+            # Test with different Groq models
+            groq_models = [
+                "llama-3.3-70b-versatile",
+                "meta-llama/llama-4-maverick-17b-128e-instruct",
+                "meta-llama/llama-4-scout-17b-16e-instruct"
+            ]
+
+            for model in groq_models:
+                try:
+                    print(f"Testing Groq model: {model}")
+                    groq_structured_response = groq_service_instance.generate_structured_output(
+                        groq_structured_prompt,
+                        output_format=groq_format_guide,
+                        model=model
+                    )
+                    print(f"Groq Structured Response ({model}): {groq_structured_response}\n")
+                except Exception as model_error:
+                    print(f"Error with Groq model {model}: {model_error}")
+
+        except Exception as e:
+            print(f"An error occurred while using Groq service: {e}")
+            print("Please ensure your GROQ_API_KEY is correctly set and valid.")
+    elif isinstance(groq_service_instance, MockLLMService):
+        print("\nGroq Service not configured (API key likely missing).")
+        print("The example proceeded with the MockLLMService.")
+    else:
+        print("\nCould not determine LLM service type for the Groq example part.")

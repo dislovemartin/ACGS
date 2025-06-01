@@ -3,16 +3,36 @@ import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base # Updated import for declarative_base
 
-# Use a single DATABASE_URL environment variable with the async driver
-# Default value is for Docker Compose setup.
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db",
-)
+# Import centralized configuration
+try:
+    from .utils import get_config
+    _config_available = True
+except ImportError:
+    # Fallback for when utils is not available (e.g., during initial setup)
+    _config_available = False
+
+# Get database configuration
+if _config_available:
+    try:
+        config = get_config()
+        DATABASE_URL = config.get_database_url()
+        DB_ECHO = config.get('db_echo_log', False)
+    except Exception:
+        # Fallback to environment variables if config fails
+        DATABASE_URL = os.getenv(
+            "DATABASE_URL",
+            "postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db",
+        )
+        DB_ECHO = os.getenv("DB_ECHO_LOG", "False").lower() == "true"
+else:
+    # Fallback to environment variables
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db",
+    )
+    DB_ECHO = os.getenv("DB_ECHO_LOG", "False").lower() == "true"
 
 # Create async engine
-# echo=True can be noisy in production, consider making it configurable via ENV
-DB_ECHO = os.getenv("DB_ECHO_LOG", "False").lower() == "true"
 async_engine = create_async_engine(DATABASE_URL, echo=DB_ECHO, pool_pre_ping=True)
 
 # Create async session factory

@@ -238,10 +238,14 @@ class TestConstitutionalCouncilScalability:
         
         # Test rapid amendment processing (mock database)
         class MockDB:
-            async def execute(self, query): 
+            async def execute(self, query):
                 class MockResult:
                     def scalar(self): return 0
                     def fetchall(self): return []
+                    def scalars(self):
+                        class MockScalars:
+                            def all(self): return []
+                        return MockScalars()
                 return MockResult()
             async def get(self, model, id): return None
             def add(self, obj): pass
@@ -278,11 +282,14 @@ class TestConstitutionalCouncilScalability:
                     def scalars(self):
                         class MockAmendment:
                             def __init__(self):
+                                import datetime
                                 self.id = 1
                                 self.status = "approved"
-                                self.created_at = time.time()
-                                self.finalized_at = time.time() + 3600
-                        return [MockAmendment()]
+                                self.created_at = datetime.datetime.now()
+                                self.finalized_at = datetime.datetime.now() + datetime.timedelta(hours=1)
+                        class MockScalars:
+                            def all(self): return [MockAmendment()]
+                        return MockScalars()
                 return MockResult()
         
         mock_db = MockDB()
@@ -464,7 +471,7 @@ class TestCrossServiceIntegration:
         robustness_tester = AdversarialRobustnessTester(adversarial_config)
         
         # 5. Test proactive fairness generation
-        fairness_config = FairnessGenerationConfig(fairness_optimization_iterations=5)
+        fairness_config = FairnessGenerationConfig(fairness_constraints=[], fairness_optimization_iterations=5)
         fairness_generator = ProactiveFairnessGenerator(fairness_config)
         
         # Verify all components initialized successfully

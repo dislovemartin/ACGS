@@ -1,0 +1,130 @@
+{
+  "test_bias_detection_scenarios": [
+    {
+      "scenario_id": "demographic_parity_violation",
+      "description": "Policy rule that violates demographic parity",
+      "policy_rule": {
+        "id": "bias_test_1",
+        "rule_content": "allow { input.user.age >= 25; input.user.gender == \"male\" }",
+        "rule_type": "access_control"
+      },
+      "protected_attributes": ["gender", "age"],
+      "dataset": [
+        {"user_id": 1, "age": 30, "gender": "male", "qualification_score": 85},
+        {"user_id": 2, "age": 28, "gender": "female", "qualification_score": 87},
+        {"user_id": 3, "age": 35, "gender": "male", "qualification_score": 82},
+        {"user_id": 4, "age": 26, "gender": "female", "qualification_score": 89},
+        {"user_id": 5, "age": 40, "gender": "male", "qualification_score": 78},
+        {"user_id": 6, "age": 32, "gender": "female", "qualification_score": 91},
+        {"user_id": 7, "age": 29, "gender": "male", "qualification_score": 84},
+        {"user_id": 8, "age": 27, "gender": "female", "qualification_score": 86},
+        {"user_id": 9, "age": 33, "gender": "male", "qualification_score": 80},
+        {"user_id": 10, "age": 31, "gender": "female", "qualification_score": 88}
+      ],
+      "expected_bias_detected": true,
+      "expected_bias_score_range": [0.4, 0.8],
+      "bias_type": "gender_discrimination"
+    },
+    {
+      "scenario_id": "fair_policy_rule",
+      "description": "Policy rule that is fair and unbiased",
+      "policy_rule": {
+        "id": "bias_test_2",
+        "rule_content": "allow { input.user.qualification_score >= 85 }",
+        "rule_type": "qualification_based"
+      },
+      "protected_attributes": ["gender", "age", "ethnicity"],
+      "dataset": [
+        {"user_id": 11, "age": 25, "gender": "male", "ethnicity": "group_a", "qualification_score": 90},
+        {"user_id": 12, "age": 30, "gender": "female", "ethnicity": "group_b", "qualification_score": 87},
+        {"user_id": 13, "age": 35, "gender": "male", "ethnicity": "group_a", "qualification_score": 82},
+        {"user_id": 14, "age": 28, "gender": "female", "ethnicity": "group_c", "qualification_score": 91},
+        {"user_id": 15, "age": 40, "gender": "male", "ethnicity": "group_b", "qualification_score": 88},
+        {"user_id": 16, "age": 32, "gender": "female", "ethnicity": "group_a", "qualification_score": 85},
+        {"user_id": 17, "age": 29, "gender": "male", "ethnicity": "group_c", "qualification_score": 86},
+        {"user_id": 18, "age": 27, "gender": "female", "ethnicity": "group_b", "qualification_score": 89},
+        {"user_id": 19, "age": 33, "gender": "male", "ethnicity": "group_a", "qualification_score": 84},
+        {"user_id": 20, "age": 31, "gender": "female", "ethnicity": "group_c", "qualification_score": 92}
+      ],
+      "expected_bias_detected": false,
+      "expected_bias_score_range": [0.0, 0.2],
+      "bias_type": "none"
+    },
+    {
+      "scenario_id": "age_discrimination",
+      "description": "Policy rule that discriminates based on age",
+      "policy_rule": {
+        "id": "bias_test_3",
+        "rule_content": "deny { input.user.age > 50; input.action == \"promotion\" }",
+        "rule_type": "age_restriction"
+      },
+      "protected_attributes": ["age"],
+      "dataset": [
+        {"user_id": 21, "age": 45, "performance_score": 95, "action": "promotion"},
+        {"user_id": 22, "age": 55, "performance_score": 93, "action": "promotion"},
+        {"user_id": 23, "age": 35, "performance_score": 88, "action": "promotion"},
+        {"user_id": 24, "age": 52, "performance_score": 91, "action": "promotion"},
+        {"user_id": 25, "age": 42, "performance_score": 89, "action": "promotion"},
+        {"user_id": 26, "age": 58, "performance_score": 94, "action": "promotion"},
+        {"user_id": 27, "age": 38, "performance_score": 87, "action": "promotion"},
+        {"user_id": 28, "age": 51, "performance_score": 90, "action": "promotion"},
+        {"user_id": 29, "age": 46, "performance_score": 92, "action": "promotion"},
+        {"user_id": 30, "age": 54, "performance_score": 96, "action": "promotion"}
+      ],
+      "expected_bias_detected": true,
+      "expected_bias_score_range": [0.5, 0.9],
+      "bias_type": "age_discrimination"
+    },
+    {
+      "scenario_id": "intersectional_bias",
+      "description": "Policy rule with intersectional bias affecting multiple protected attributes",
+      "policy_rule": {
+        "id": "bias_test_4",
+        "rule_content": "restrict { input.user.gender == \"female\"; input.user.ethnicity == \"group_minority\"; input.resource == \"leadership_role\" }",
+        "rule_type": "intersectional_discrimination"
+      },
+      "protected_attributes": ["gender", "ethnicity"],
+      "dataset": [
+        {"user_id": 31, "gender": "female", "ethnicity": "group_minority", "leadership_score": 88, "resource": "leadership_role"},
+        {"user_id": 32, "gender": "male", "ethnicity": "group_minority", "leadership_score": 85, "resource": "leadership_role"},
+        {"user_id": 33, "gender": "female", "ethnicity": "group_majority", "leadership_score": 87, "resource": "leadership_role"},
+        {"user_id": 34, "gender": "male", "ethnicity": "group_majority", "leadership_score": 86, "resource": "leadership_role"},
+        {"user_id": 35, "gender": "female", "ethnicity": "group_minority", "leadership_score": 92, "resource": "leadership_role"},
+        {"user_id": 36, "gender": "male", "ethnicity": "group_minority", "leadership_score": 89, "resource": "leadership_role"},
+        {"user_id": 37, "gender": "female", "ethnicity": "group_majority", "leadership_score": 90, "resource": "leadership_role"},
+        {"user_id": 38, "gender": "male", "ethnicity": "group_majority", "leadership_score": 88, "resource": "leadership_role"},
+        {"user_id": 39, "gender": "female", "ethnicity": "group_minority", "leadership_score": 91, "resource": "leadership_role"},
+        {"user_id": 40, "gender": "male", "ethnicity": "group_minority", "leadership_score": 87, "resource": "leadership_role"}
+      ],
+      "expected_bias_detected": true,
+      "expected_bias_score_range": [0.6, 1.0],
+      "bias_type": "intersectional_discrimination"
+    }
+  ],
+  "bias_metrics": [
+    {
+      "metric_id": "demographic_parity",
+      "metric_type": "statistical",
+      "threshold": 0.1,
+      "description": "Measures difference in positive outcome rates between groups"
+    },
+    {
+      "metric_id": "equalized_odds",
+      "metric_type": "statistical", 
+      "threshold": 0.1,
+      "description": "Measures difference in true positive and false positive rates between groups"
+    },
+    {
+      "metric_id": "semantic_bias",
+      "metric_type": "embedding",
+      "threshold": 0.15,
+      "description": "Detects bias through semantic analysis of rule language"
+    },
+    {
+      "metric_id": "llm_bias_review",
+      "metric_type": "llm_review",
+      "threshold": 0.2,
+      "description": "Uses LLM to identify complex bias patterns"
+    }
+  ]
+}

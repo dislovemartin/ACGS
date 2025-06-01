@@ -1,0 +1,136 @@
+{
+  "test_amendment_comments": [
+    {
+      "amendment_id": 1,
+      "user_id": 8,
+      "comment_text": "I support this amendment as it enhances privacy protection for citizens in the quantum computing era",
+      "sentiment": "support",
+      "stakeholder_group": "citizen",
+      "created_at": "2024-01-15T12:00:00Z",
+      "is_public": true,
+      "upvotes": 15,
+      "downvotes": 2
+    },
+    {
+      "amendment_id": 1,
+      "user_id": 9,
+      "comment_text": "The quantum computing safety requirements need more specific technical details",
+      "sentiment": "neutral",
+      "stakeholder_group": "quantum_researcher",
+      "created_at": "2024-01-15T13:30:00Z",
+      "is_public": true,
+      "upvotes": 8,
+      "downvotes": 1
+    },
+    {
+      "amendment_id": 1,
+      "user_id": 10,
+      "comment_text": "This amendment could slow down quantum AI development unnecessarily",
+      "sentiment": "oppose",
+      "stakeholder_group": "ai_developer",
+      "created_at": "2024-01-15T14:15:00Z",
+      "is_public": true,
+      "upvotes": 3,
+      "downvotes": 12
+    },
+    {
+      "amendment_id": 2,
+      "user_id": 11,
+      "comment_text": "Cross-border data transfer protections are essential for international cooperation",
+      "sentiment": "support",
+      "stakeholder_group": "privacy_expert",
+      "created_at": "2024-01-16T08:45:00Z",
+      "is_public": true,
+      "upvotes": 22,
+      "downvotes": 1
+    },
+    {
+      "amendment_id": 2,
+      "user_id": 12,
+      "comment_text": "The proposed safeguards align well with GDPR and other international frameworks",
+      "sentiment": "support",
+      "stakeholder_group": "international_law_expert",
+      "created_at": "2024-01-16T11:20:00Z",
+      "is_public": true,
+      "upvotes": 18,
+      "downvotes": 0
+    },
+    {
+      "amendment_id": 3,
+      "user_id": 13,
+      "comment_text": "Specific fairness metrics will help ensure AI systems are truly equitable",
+      "sentiment": "support",
+      "stakeholder_group": "fairness_researcher",
+      "created_at": "2024-01-17T09:30:00Z",
+      "is_public": true,
+      "upvotes": 25,
+      "downvotes": 3
+    },
+    {
+      "amendment_id": 3,
+      "user_id": 14,
+      "comment_text": "The proposed thresholds (0.8, 0.85, 0.9) seem reasonable based on current research",
+      "sentiment": "support",
+      "stakeholder_group": "ai_ethics_board",
+      "created_at": "2024-01-17T10:45:00Z",
+      "is_public": true,
+      "upvotes": 16,
+      "downvotes": 2
+    },
+    {
+      "amendment_id": 3,
+      "user_id": 15,
+      "comment_text": "Quarterly bias testing frequency might be too demanding for smaller organizations",
+      "sentiment": "neutral",
+      "stakeholder_group": "civil_rights_organization",
+      "created_at": "2024-01-17T12:00:00Z",
+      "is_public": true,
+      "upvotes": 7,
+      "downvotes": 8
+    },
+    {
+      "amendment_id": 4,
+      "user_id": 16,
+      "comment_text": "Transparency is fundamental to public trust in AI systems",
+      "sentiment": "support",
+      "stakeholder_group": "transparency_advocate",
+      "created_at": "2024-01-18T07:15:00Z",
+      "is_public": true,
+      "upvotes": 31,
+      "downvotes": 1
+    },
+    {
+      "amendment_id": 4,
+      "user_id": 17,
+      "comment_text": "The priority weight increase from 0.80 to 0.87 reflects current regulatory expectations",
+      "sentiment": "support",
+      "stakeholder_group": "regulatory_expert",
+      "created_at": "2024-01-18T08:00:00Z",
+      "is_public": true,
+      "upvotes": 14,
+      "downvotes": 0
+    },
+    {
+      "amendment_id": 5,
+      "user_id": 18,
+      "comment_text": "Reliability and safety serve different purposes and should remain separate",
+      "sentiment": "oppose",
+      "stakeholder_group": "system_architect",
+      "created_at": "2024-01-19T13:45:00Z",
+      "is_public": true,
+      "upvotes": 19,
+      "downvotes": 4
+    },
+    {
+      "amendment_id": 5,
+      "user_id": 19,
+      "comment_text": "Removing redundant requirements could streamline compliance processes",
+      "sentiment": "support",
+      "stakeholder_group": "legal_expert",
+      "created_at": "2024-01-19T14:30:00Z",
+      "is_public": true,
+      "upvotes": 6,
+      "downvotes": 13
+    }
+  ]
+}

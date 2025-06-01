@@ -10,7 +10,7 @@ import aiohttp
 from typing import Dict, Any
 
 # Base URL for the AC service
-BASE_URL = "http://localhost:8000/ac"
+BASE_URL = "http://localhost:8001"
 
 # Test tokens for different roles
 ADMIN_TOKEN = "admin_token"

@@ -126,7 +126,7 @@ class RealLLMClient:
             logger.warning("OPENAI_API_KEY environment variable not set. RealLLMClient will not be able to make API calls.")
             # You might raise an error here or allow it to fail on first call depending on desired behavior
             # raise ValueError("OPENAI_API_KEY must be set to use RealLLMClient")
-        
+
         # Initialize the OpenAI client if the API key is available
         # Note: The actual initialization might vary based on the version of the openai library
         # For example, older versions used `openai.api_key = self.api_key` globally.
@@ -137,6 +137,125 @@ class RealLLMClient:
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI client: {e}")
             self.client = None
+
+
+class GroqLLMClient:
+    def __init__(self):
+        self.api_key = os.getenv("GROQ_API_KEY")
+        self.model_name = os.getenv("GROQ_MODEL_NAME", "llama-3.3-70b-versatile")
+        if not self.api_key:
+            logger.warning("GROQ_API_KEY environment variable not set. GroqLLMClient will not be able to make API calls.")
+
+        # Initialize the OpenAI client with Groq's endpoint if the API key is available
+        try:
+            self.client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url="https://api.groq.com/openai/v1"
+            ) if self.api_key else None
+            logger.info(f"GroqLLMClient initialized with model: {self.model_name}")
+        except Exception as e:
+            logger.error(f"Failed to initialize Groq client: {e}")
+            self.client = None
+
+    def _construct_prompt(self, query: LLMInterpretationInput) -> str:
+        # Similar prompt construction as RealLLMClient but optimized for Llama models
+        prompt = f"""
+You are an AI assistant specialized in constitutional AI governance. Your task is to interpret constitutional principles and convert them into structured logical rules.
+
+Constitutional Principle (ID: {query.principle_id}):
+{query.principle_content}
+
+Please analyze this principle and provide a structured interpretation in JSON format with the following structure:
+{{
+    "interpretations": [
+        {{
+            "head": {{
+                "predicate_name": "string",
+                "arguments": ["arg1", "arg2"]
+            }},
+            "body": [
+                {{
+                    "predicate_name": "string",
+                    "arguments": ["arg1", "arg2"]
+                }}
+            ],
+            "explanation": "string",
+            "confidence": 0.0-1.0
+        }}
+    ],
+    "raw_llm_response": "string"
+}}
+
+Focus on creating logical rules that capture the essence of the constitutional principle.
+"""
+        return prompt
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    async def get_structured_interpretation(self, query: LLMInterpretationInput) -> LLMStructuredOutput:
+        if not self.client:
+            logger.error("GroqLLMClient is not configured with an API key. Cannot make API calls.")
+            return LLMStructuredOutput(interpretations=[], raw_llm_response="GroqLLMClient not configured.")
+
+        prompt = self._construct_prompt(query)
+        logger.info(f"GroqLLMClient: Sending request to Groq for principle ID {query.principle_id}. Prompt length: {len(prompt)}")
+        logger.debug(f"GroqLLMClient: Prompt for P{query.principle_id}:\n{prompt}")
+
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=2048,
+                temperature=0.3
+            )
+
+            raw_response_content = response.choices[0].message.content
+            logger.info(f"GroqLLMClient: Received raw response for principle ID {query.principle_id}.")
+            logger.debug(f"GroqLLMClient: Raw response content for P{query.principle_id}: {raw_response_content}")
+
+            # Attempt to parse the LLM's JSON response
+            try:
+                parsed_data = json.loads(raw_response_content)
+            except json.JSONDecodeError:
+                # Try to extract JSON from the response if it's wrapped in text
+                import re
+                json_match = re.search(r'\{.*\}', raw_response_content, re.DOTALL)
+                if json_match:
+                    try:
+                        parsed_data = json.loads(json_match.group())
+                    except json.JSONDecodeError:
+                        # Fallback to mock structure if JSON parsing fails
+                        parsed_data = {
+                            "interpretations": [{
+                                "head": {"predicate_name": f"groq_interpreted_p{query.principle_id}", "arguments": ["Context"]},
+                                "body": [{"predicate_name": "groq_condition", "arguments": ["Context"]}],
+                                "explanation": f"Groq interpretation of principle {query.principle_id} (JSON parsing failed)",
+                                "confidence": 0.6
+                            }],
+                            "raw_llm_response": raw_response_content
+                        }
+                else:
+                    # Complete fallback
+                    parsed_data = {
+                        "interpretations": [{
+                            "head": {"predicate_name": f"groq_interpreted_p{query.principle_id}", "arguments": ["Context"]},
+                            "body": [{"predicate_name": "groq_condition", "arguments": ["Context"]}],
+                            "explanation": f"Groq interpretation of principle {query.principle_id} (no JSON found)",
+                            "confidence": 0.5
+                        }],
+                        "raw_llm_response": raw_response_content
+                    }
+
+            # Validate and structure the output using Pydantic models
+            structured_output = LLMStructuredOutput(**parsed_data)
+            logger.info(f"GroqLLMClient: Successfully parsed structured output for principle ID {query.principle_id}.")
+            return structured_output
+
+        except json.JSONDecodeError as e:
+            logger.error(f"GroqLLMClient: JSONDecodeError for principle ID {query.principle_id}. Error: {e}")
+            return LLMStructuredOutput(interpretations=[], raw_llm_response=f"Error decoding Groq JSON: {e}")
+        except Exception as e:
+            logger.error(f"GroqLLMClient: Unexpected error for principle ID {query.principle_id}. Error: {e}")
+            raise
 
 
     def _construct_prompt(self, query: LLMInterpretationInput) -> str:
@@ -362,8 +481,11 @@ class RealLLMClient:
 _mock_llm_client_instance = MockLLMClient()
 _real_llm_client_instance = None # Initialize lazily
 
+# Global instances for different LLM clients
+_groq_llm_client_instance = None
+
 def get_llm_client():
-    global _real_llm_client_instance
+    global _real_llm_client_instance, _groq_llm_client_instance
     llm_provider = os.getenv("LLM_PROVIDER", "mock").lower()
 
     if llm_provider == "real":
@@ -373,6 +495,13 @@ def get_llm_client():
             logger.warning("LLM_PROVIDER is 'real' but OPENAI_API_KEY is not set. Falling back to MockLLMClient.")
             return _mock_llm_client_instance
         return _real_llm_client_instance
+    elif llm_provider == "groq":
+        if _groq_llm_client_instance is None:
+            _groq_llm_client_instance = GroqLLMClient()
+        if not _groq_llm_client_instance.api_key: # Check if API key was actually set
+            logger.warning("LLM_PROVIDER is 'groq' but GROQ_API_KEY is not set. Falling back to MockLLMClient.")
+            return _mock_llm_client_instance
+        return _groq_llm_client_instance
     elif llm_provider == "mock":
         return _mock_llm_client_instance
     else:
