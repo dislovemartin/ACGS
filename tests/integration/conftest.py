@@ -6,6 +6,7 @@ from typing import AsyncGenerator, Generator
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 
 # Add the src directory to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -85,7 +86,7 @@ async def test_client():
         yield None
 
 
-@pytest.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True)
 async def integration_test_cleanup():
     """Cleanup for integration tests to prevent pollution."""
     import gc

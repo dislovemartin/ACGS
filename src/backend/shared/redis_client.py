@@ -171,7 +171,23 @@ class ACGSRedisClient:
         except Exception as e:
             logger.error(f"Failed to get list {key}: {e}")
             return []
-    
+
+    async def get_ttl(self, key: str) -> int:
+        """Get TTL (time to live) for a key in seconds.
+
+        Returns:
+            - Positive integer: TTL in seconds
+            - -1: Key exists but has no expiration
+            - -2: Key does not exist
+        """
+        try:
+            async with self.get_client() as client:
+                ttl = await client.ttl(key)
+                return ttl
+        except Exception as e:
+            logger.error(f"Failed to get TTL for key {key}: {e}")
+            return -2  # Return -2 to indicate error (same as non-existent key)
+
     def generate_key(self, *parts: str) -> str:
         """Generate Redis key with service prefix."""
         return f"acgs:{self.service_name}:{':'.join(parts)}"
