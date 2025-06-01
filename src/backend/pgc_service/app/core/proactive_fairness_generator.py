@@ -13,7 +13,7 @@ import time
 import json
 import statistics
 from typing import Dict, List, Optional, Any, Tuple, Set
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class FairnessConstraint:
 @dataclass
 class FairnessGenerationConfig:
     """Configuration for proactive fairness generation."""
-    fairness_constraints: List[FairnessConstraint]
+    fairness_constraints: List[FairnessConstraint] = field(default_factory=list)
     bias_detection_threshold: float = 0.1
     fairness_optimization_iterations: int = 100
     diversity_promotion_factor: float = 0.3

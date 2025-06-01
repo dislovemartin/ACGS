@@ -1,0 +1,47 @@
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - localhost:9093
+global:
+  evaluation_interval: 15s
+  scrape_interval: 15s
+rule_files:
+- mab_alert_rules.yml
+scrape_configs:
+- job_name: acgs-auth-service
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - localhost:8000
+- job_name: acgs-ac-service
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - localhost:8001
+- job_name: acgs-integrity-service
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - localhost:8002
+- job_name: acgs-fv-service
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - localhost:8003
+- job_name: acgs-gs-service-mab
+  metrics_path: /api/v1/mab/metrics
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - localhost:8004
+- job_name: acgs-pgc-service
+  metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - localhost:8005

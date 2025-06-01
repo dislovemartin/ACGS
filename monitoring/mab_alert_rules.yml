@@ -1,0 +1,42 @@
+groups:
+- name: mab_performance_alerts
+  rules:
+  - alert: MABSuccessRateLow
+    annotations:
+      description: MAB overall success rate is {{ $value }} which is below the 95%
+        threshold
+      summary: MAB success rate below 95%
+    expr: mab_overall_success_rate < 0.95
+    for: 2m
+    labels:
+      service: gs-service
+      severity: warning
+  - alert: MABTemplateSelectionSlow
+    annotations:
+      description: MAB template selection duration is {{ $value }}s which exceeds
+        200ms threshold
+      summary: MAB template selection taking too long
+    expr: mab_template_selection_duration_seconds > 0.2
+    for: 1m
+    labels:
+      service: gs-service
+      severity: warning
+  - alert: MABRewardThresholdLow
+    annotations:
+      description: MAB average reward is {{ $value }} which is below the 0.8 threshold
+        for 5 minutes
+      summary: MAB average reward below threshold
+    expr: mab_average_reward < 0.8
+    for: 5m
+    labels:
+      service: gs-service
+      severity: critical
+  - alert: MABOptimizationStalled
+    annotations:
+      description: No MAB optimizations have occurred in the last 10 minutes
+      summary: MAB optimization has stalled
+    expr: increase(mab_total_optimizations[10m]) == 0
+    for: 10m
+    labels:
+      service: gs-service
+      severity: warning

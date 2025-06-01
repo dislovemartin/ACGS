@@ -1,7 +1,7 @@
 """Phase 3: Z3 SMT Solver Integration and Advanced Verification
 
 Revision ID: 007_phase3_z3_integration
-Revises: 005_fix_refresh_token_length
+Revises: 006_add_mab_optimization_tables
 Create Date: 2024-12-19 14:30:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '007_phase3_z3_integration'
-down_revision = '005_fix_refresh_token_length'
+down_revision = '006_add_mab_optimization_tables'
 branch_labels = None
 depends_on = None
 
