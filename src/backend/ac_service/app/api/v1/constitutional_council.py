@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from app.crud import (
     create_ac_meta_rule, get_ac_meta_rule, get_ac_meta_rules, update_ac_meta_rule,
@@ -12,6 +12,7 @@ from app.crud import (
 from app import schemas
 from shared.database import get_async_db
 from app.core.auth import get_current_active_user_placeholder, require_admin_role, require_constitutional_council_role, User
+from app.core.constitutional_council_scalability import ConstitutionalCouncilScalabilityFramework, ScalabilityConfig
 
 router = APIRouter()
 
@@ -211,3 +212,84 @@ async def update_conflict_resolution_endpoint(
     if updated_conflict is None:
         raise HTTPException(status_code=404, detail="Conflict resolution not found")
     return updated_conflict
+
+# Constitutional Council Scalability Metrics endpoints
+@router.get("/scalability-metrics", response_model=Dict[str, Any])
+async def get_scalability_metrics_endpoint(
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_admin_role)
+):
+    """Get Constitutional Council scalability metrics (requires admin role)"""
+    try:
+        # Initialize scalability framework
+        config = ScalabilityConfig(
+            max_concurrent_amendments=10,
+            rapid_voting_window_hours=24,
+            emergency_voting_window_hours=6,
+            async_voting_enabled=True,
+            performance_monitoring_enabled=True
+        )
+        framework = ConstitutionalCouncilScalabilityFramework(config)
+
+        # Get scalability metrics
+        metrics = await framework.get_scalability_metrics(db)
+
+        return {
+            "amendment_throughput": metrics.amendment_throughput,
+            "average_voting_time": metrics.average_voting_time,
+            "consensus_rate": metrics.consensus_rate,
+            "participation_rate": metrics.participation_rate,
+            "scalability_score": metrics.scalability_score,
+            "bottleneck_indicators": metrics.bottleneck_indicators,
+            "timestamp": "2024-01-01T00:00:00Z"  # Current timestamp would be added
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve scalability metrics: {str(e)}")
+
+# Amendment State Transition endpoint
+@router.post("/amendments/{amendment_id}/transition", response_model=Dict[str, Any])
+async def transition_amendment_state_endpoint(
+    amendment_id: int,
+    transition_data: Dict[str, Any],
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_constitutional_council_role)
+):
+    """Trigger state transition for an amendment (requires Constitutional Council membership)"""
+    try:
+        # Get amendment
+        amendment = await get_ac_amendment(db, amendment_id=amendment_id)
+        if not amendment:
+            raise HTTPException(status_code=404, detail="Amendment not found")
+
+        # Initialize state machine and trigger transition
+        from app.core.amendment_state_machine import amendment_state_machine, WorkflowContext, AmendmentEvent, AmendmentState
+
+        # Parse event and context
+        event_name = transition_data.get("event")
+        if not event_name:
+            raise HTTPException(status_code=400, detail="Event is required")
+
+        try:
+            event = AmendmentEvent(event_name)
+            current_state = AmendmentState(amendment.workflow_state)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid event or state: {str(e)}")
+
+        context = WorkflowContext(
+            amendment_id=amendment_id,
+            user_id=current_user.id,
+            metadata=transition_data.get("metadata", {})
+        )
+
+        # Trigger transition
+        result = await amendment_state_machine.trigger_event(db, current_state, event, context)
+
+        if not result.get("success", False):
+            raise HTTPException(status_code=400, detail=result.get("error", "State transition failed"))
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to transition amendment state: {str(e)}")

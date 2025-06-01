@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 # Base schema for Principle attributes
@@ -126,19 +126,98 @@ class ACMetaRule(ACMetaRuleBase):
     class Config:
         from_attributes = True
 
-# Amendment schemas
+# Amendment schemas with enhanced Pydantic v2.0+ validation
 class ACAmendmentBase(BaseModel):
-    principle_id: int = Field(..., description="ID of the principle being amended")
-    amendment_type: str = Field(..., description="Type of amendment (modify, add, remove, status_change)")
-    proposed_changes: str = Field(..., description="Description of proposed changes")
-    justification: Optional[str] = Field(None, description="Rationale for the amendment")
-    proposed_content: Optional[str] = Field(None, description="New content if modifying/adding")
-    proposed_status: Optional[str] = Field(None, description="New status if changing status")
+    principle_id: int = Field(..., description="ID of the principle being amended", gt=0)
+    amendment_type: str = Field(
+        ...,
+        description="Type of amendment (modify, add, remove, status_change)",
+        pattern="^(modify|add|remove|status_change)$"
+    )
+    proposed_changes: str = Field(
+        ...,
+        description="Description of proposed changes",
+        min_length=10,
+        max_length=5000
+    )
+    justification: Optional[str] = Field(
+        None,
+        description="Rationale for the amendment",
+        max_length=2000
+    )
+    proposed_content: Optional[str] = Field(
+        None,
+        description="New content if modifying/adding",
+        max_length=10000
+    )
+    proposed_status: Optional[str] = Field(
+        None,
+        description="New status if changing status",
+        pattern="^(active|inactive|deprecated|under_review)$"
+    )
+
+    # Co-evolution metadata fields
+    urgency_level: Optional[str] = Field(
+        "normal",
+        description="Amendment urgency level for co-evolution handling",
+        pattern="^(normal|rapid|emergency)$"
+    )
+    co_evolution_context: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Context for rapid co-evolution scenarios"
+    )
+    expected_impact: Optional[str] = Field(
+        None,
+        description="Expected impact assessment",
+        pattern="^(low|medium|high|critical)$"
+    )
 
 class ACAmendmentCreate(ACAmendmentBase):
-    consultation_period_days: Optional[int] = Field(30, description="Days for public consultation")
+    consultation_period_days: Optional[int] = Field(
+        30,
+        description="Days for public consultation",
+        ge=1,
+        le=365
+    )
     public_comment_enabled: bool = Field(True, description="Enable public comments")
-    stakeholder_groups: Optional[List[str]] = Field(None, description="Stakeholder groups to invite")
+    stakeholder_groups: Optional[List[str]] = Field(
+        None,
+        description="Stakeholder groups to invite",
+        max_items=20
+    )
+
+    # Enhanced validation for co-evolution
+    rapid_processing_requested: bool = Field(
+        False,
+        description="Request rapid processing for urgent amendments"
+    )
+    constitutional_significance: Optional[str] = Field(
+        "normal",
+        description="Constitutional significance level",
+        pattern="^(normal|significant|fundamental)$"
+    )
+
+    @field_validator('stakeholder_groups')
+    @classmethod
+    def validate_stakeholder_groups(cls, v):
+        if v is not None:
+            valid_groups = {
+                "citizens", "experts", "affected_parties", "regulatory_bodies",
+                "constitutional_council", "policy_managers", "auditors"
+            }
+            for group in v:
+                if group not in valid_groups:
+                    raise ValueError(f"Invalid stakeholder group: {group}")
+        return v
+
+    @field_validator('co_evolution_context')
+    @classmethod
+    def validate_co_evolution_context(cls, v):
+        if v is not None:
+            required_fields = {"trigger_event", "timeline", "stakeholders"}
+            if not all(field in v for field in required_fields):
+                raise ValueError(f"Co-evolution context must include: {required_fields}")
+        return v
 
 class ACAmendmentUpdate(BaseModel):
     amendment_type: Optional[str] = None
@@ -166,6 +245,26 @@ class ACAmendment(ACAmendmentBase):
     created_at: datetime
     updated_at: datetime
     proposed_by_user_id: int
+
+    # Co-evolution and versioning fields
+    version: int = Field(1, description="Amendment version for optimistic locking")
+    rapid_processing_requested: bool = False
+    constitutional_significance: Optional[str] = "normal"
+    processing_metrics: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Performance metrics for co-evolution tracking"
+    )
+
+    # Workflow state tracking
+    workflow_state: Optional[str] = Field(
+        "proposed",
+        description="Current workflow state",
+        pattern="^(proposed|under_review|voting|approved|rejected|implemented)$"
+    )
+    state_transitions: Optional[List[Dict[str, Any]]] = Field(
+        None,
+        description="History of state transitions"
+    )
 
     class Config:
         from_attributes = True

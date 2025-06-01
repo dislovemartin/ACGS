@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
 from typing import List, Optional
+from datetime import datetime
 
 from . import models, schemas
 
@@ -169,16 +170,55 @@ async def update_ac_meta_rule(db: AsyncSession, meta_rule_id: int, meta_rule_upd
         await db.refresh(db_meta_rule)
     return db_meta_rule
 
-# AC Amendments CRUD
+# AC Amendments CRUD with enhanced scalability support
 async def create_ac_amendment(db: AsyncSession, amendment: schemas.ACAmendmentCreate, user_id: int) -> models.ACAmendment:
+    """Create AC amendment with co-evolution and scalability support."""
+    from .core.constitutional_council_scalability import RapidCoEvolutionHandler, ScalabilityConfig, CoEvolutionMode
+    from .core.amendment_state_machine import amendment_state_machine, WorkflowContext, AmendmentEvent
+
+    # Determine urgency level
+    urgency_level = CoEvolutionMode.RAPID if amendment.rapid_processing_requested else CoEvolutionMode.STANDARD
+
+    # Initialize scalability handler if needed
+    config = ScalabilityConfig()
+    handler = RapidCoEvolutionHandler(config)
+    await handler.initialize()
+
+    # Use rapid processing if requested
+    if amendment.rapid_processing_requested:
+        result = await handler.process_rapid_amendment(db, amendment, urgency_level)
+        if result["success"]:
+            return await get_ac_amendment(db, result["amendment_id"])
+        else:
+            raise ValueError(f"Failed to create rapid amendment: {result['error']}")
+
+    # Standard amendment creation with enhanced fields
     db_amendment = models.ACAmendment(
         **amendment.model_dump(),
         proposed_by_user_id=user_id,
-        status="proposed"
+        status="proposed",
+        version=1,
+        workflow_state="proposed",
+        state_transitions=[{
+            "from_state": None,
+            "to_state": "proposed",
+            "timestamp": datetime.utcnow().isoformat(),
+            "user_id": user_id
+        }]
     )
     db.add(db_amendment)
     await db.commit()
     await db.refresh(db_amendment)
+
+    # Initialize workflow
+    context = WorkflowContext(
+        amendment_id=db_amendment.id,
+        user_id=user_id,
+        urgency_level=amendment.urgency_level or "normal",
+        constitutional_significance=amendment.constitutional_significance or "normal",
+        metadata={"created_via": "standard_process"}
+    )
+
     return db_amendment
 
 async def get_ac_amendment(db: AsyncSession, amendment_id: int) -> Optional[models.ACAmendment]:

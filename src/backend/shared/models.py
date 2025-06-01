@@ -262,6 +262,19 @@ class ACAmendment(Base):
     public_comment_enabled = Column(Boolean, default=True, nullable=False)
     stakeholder_groups = Column(JSONB, nullable=True)  # Groups invited to participate
 
+    # Co-evolution and scalability fields
+    urgency_level = Column(String(20), nullable=False, default="normal", index=True)  # "normal", "rapid", "emergency"
+    co_evolution_context = Column(JSONB, nullable=True)  # Context for rapid co-evolution scenarios
+    expected_impact = Column(String(20), nullable=True, index=True)  # "low", "medium", "high", "critical"
+    rapid_processing_requested = Column(Boolean, default=False, nullable=False)
+    constitutional_significance = Column(String(20), nullable=False, default="normal")  # "normal", "significant", "fundamental"
+
+    # Optimistic locking and versioning
+    version = Column(Integer, default=1, nullable=False)  # For optimistic locking
+    workflow_state = Column(String(50), nullable=False, default="proposed", index=True)  # State machine tracking
+    state_transitions = Column(JSONB, nullable=True)  # History of state transitions
+    processing_metrics = Column(JSONB, nullable=True)  # Performance metrics for co-evolution tracking
+
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 

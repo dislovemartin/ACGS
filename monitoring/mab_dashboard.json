@@ -1,0 +1,144 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "ACGS-PGP MAB Performance Dashboard",
+    "tags": [
+      "acgs",
+      "mab",
+      "performance"
+    ],
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "MAB Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "mab_overall_success_rate",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.95
+                },
+                {
+                  "color": "green",
+                  "value": 0.99
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Template Selection Performance",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "mab_template_selection_duration_seconds",
+            "legendFormat": "Selection Time (s)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear"
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 6,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Template Usage Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "mab_template_uses_total",
+            "legendFormat": "{{ template_name }}"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 0
+        }
+      },
+      {
+        "id": 4,
+        "title": "Average Reward by Template",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "mab_template_average_reward",
+            "legendFormat": "{{ template_name }}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0,
+            "max": 1
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 5,
+        "title": "Optimization Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(mab_total_optimizations[5m])",
+            "legendFormat": "Optimizations/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}

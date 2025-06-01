@@ -18,9 +18,13 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
+from sqlalchemy.exc import SQLAlchemyError
+from prometheus_client import Counter, Histogram, Gauge
 
 from ..models import ACAmendment, ACAmendmentVote, ACAmendmentComment, User
 from ..schemas import ACAmendmentCreate, ACAmendmentVoteCreate, ACAmendmentCommentCreate
+# from shared.redis_client import get_redis_client
+from shared.metrics import ACGSMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -67,12 +71,43 @@ class CoEvolutionMetrics:
 
 class RapidCoEvolutionHandler:
     """Handles rapid co-evolution scenarios for Constitutional Council."""
-    
+
     def __init__(self, config: ScalabilityConfig):
         self.config = config
         self.active_amendments = {}
         self.voting_queues = {}
         self.performance_cache = {}
+
+        # Redis client for caching and metrics
+        self.redis_client = None
+
+        # Prometheus metrics
+        self.amendment_processing_time = Histogram(
+            'acgs_amendment_processing_seconds',
+            'Time spent processing amendments',
+            ['urgency_level', 'constitutional_significance']
+        )
+
+        self.active_amendments_gauge = Gauge(
+            'acgs_active_amendments_total',
+            'Number of active amendments'
+        )
+
+        self.co_evolution_events = Counter(
+            'acgs_co_evolution_events_total',
+            'Total co-evolution events',
+            ['event_type', 'urgency_level']
+        )
+
+    async def initialize(self):
+        """Initialize Redis client and metrics collection."""
+        try:
+            # self.redis_client = await get_redis_client("constitutional_council")
+            logger.info("Rapid co-evolution handler initialized (Redis disabled)")
+        except Exception as e:
+            logger.error(f"Failed to initialize rapid co-evolution handler: {e}")
+            # Continue without Redis if it fails
+            pass
         
     async def process_rapid_amendment(
         self,
@@ -197,31 +232,75 @@ class RapidCoEvolutionHandler:
         amendment_data: ACAmendmentCreate,
         urgency_level: CoEvolutionMode
     ) -> ACAmendment:
-        """Create amendment with rapid processing metadata."""
-        # Add rapid processing metadata (simplified - ACAmendmentCreate doesn't have metadata field)
+        """Create amendment with rapid processing metadata and optimistic locking."""
+        start_time = time.time()
 
-        # Create amendment using actual schema fields
-        amendment = ACAmendment(
-            principle_id=amendment_data.principle_id,
-            amendment_type=amendment_data.amendment_type,
-            proposed_changes=amendment_data.proposed_changes,
-            justification=amendment_data.justification,
-            proposed_content=amendment_data.proposed_content,
-            proposed_status=amendment_data.proposed_status,
-            consultation_period_days=amendment_data.consultation_period_days,
-            public_comment_enabled=amendment_data.public_comment_enabled,
-            stakeholder_groups=amendment_data.stakeholder_groups,
-            status="proposed",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            proposed_by_user_id=1  # Mock user ID for testing
-        )
+        try:
+            # Create amendment with enhanced co-evolution fields
+            amendment = ACAmendment(
+                principle_id=amendment_data.principle_id,
+                amendment_type=amendment_data.amendment_type,
+                proposed_changes=amendment_data.proposed_changes,
+                justification=amendment_data.justification,
+                proposed_content=amendment_data.proposed_content,
+                proposed_status=amendment_data.proposed_status,
+                consultation_period_days=amendment_data.consultation_period_days,
+                public_comment_enabled=amendment_data.public_comment_enabled,
+                stakeholder_groups=amendment_data.stakeholder_groups,
 
-        db.add(amendment)
-        await db.commit()
-        await db.refresh(amendment)
+                # Co-evolution fields
+                urgency_level=urgency_level.value,
+                co_evolution_context=amendment_data.co_evolution_context,
+                expected_impact=amendment_data.expected_impact,
+                rapid_processing_requested=amendment_data.rapid_processing_requested,
+                constitutional_significance=amendment_data.constitutional_significance,
 
-        return amendment
+                # Optimistic locking and workflow
+                version=1,
+                workflow_state="proposed",
+                state_transitions=[{
+                    "from_state": None,
+                    "to_state": "proposed",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "urgency_level": urgency_level.value
+                }],
+                processing_metrics={
+                    "creation_time": time.time() - start_time,
+                    "urgency_level": urgency_level.value,
+                    "rapid_processing": amendment_data.rapid_processing_requested
+                },
+
+                status="proposed",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+                proposed_by_user_id=1  # Mock user ID for testing
+            )
+
+            db.add(amendment)
+            await db.commit()
+            await db.refresh(amendment)
+
+            # Cache amendment in Redis for rapid access
+            if self.redis_client:
+                await self._cache_amendment(amendment)
+
+            # Update metrics
+            self.co_evolution_events.labels(
+                event_type="amendment_created",
+                urgency_level=urgency_level.value
+            ).inc()
+
+            self.amendment_processing_time.labels(
+                urgency_level=urgency_level.value,
+                constitutional_significance=amendment_data.constitutional_significance
+            ).observe(time.time() - start_time)
+
+            return amendment
+
+        except Exception as e:
+            await db.rollback()
+            logger.error(f"Failed to create rapid amendment: {e}")
+            raise
     
     def _get_voting_window(self, urgency_level: CoEvolutionMode) -> int:
         """Get voting window hours based on urgency level."""
@@ -301,6 +380,104 @@ class RapidCoEvolutionHandler:
             "timestamp": time.time(),
             "processing_time": processing_time
         })
+
+    async def _cache_amendment(self, amendment: ACAmendment):
+        """Cache amendment in Redis for rapid access."""
+        if not self.redis_client:
+            return
+
+        try:
+            cache_key = self.redis_client.generate_key("amendment", str(amendment.id))
+            amendment_data = {
+                "id": amendment.id,
+                "principle_id": amendment.principle_id,
+                "amendment_type": amendment.amendment_type,
+                "proposed_changes": amendment.proposed_changes,
+                "urgency_level": amendment.urgency_level,
+                "workflow_state": amendment.workflow_state,
+                "version": amendment.version,
+                "status": amendment.status,
+                "created_at": amendment.created_at.isoformat(),
+                "processing_metrics": amendment.processing_metrics
+            }
+
+            # Cache for 1 hour for rapid amendments, 24 hours for normal
+            ttl = 3600 if amendment.urgency_level in ["rapid", "emergency"] else 86400
+            await self.redis_client.set_json(cache_key, amendment_data, ttl)
+
+            # Add to active amendments set
+            active_key = self.redis_client.generate_key("active_amendments")
+            await self.redis_client.add_to_list(active_key, amendment.id, max_length=100)
+
+        except Exception as e:
+            logger.error(f"Failed to cache amendment {amendment.id}: {e}")
+
+    async def update_amendment_with_optimistic_locking(
+        self,
+        db: AsyncSession,
+        amendment_id: int,
+        updates: Dict[str, Any],
+        expected_version: int
+    ) -> Dict[str, Any]:
+        """Update amendment with optimistic locking to prevent conflicts."""
+        try:
+            # Get current amendment
+            amendment = await db.get(ACAmendment, amendment_id)
+            if not amendment:
+                return {"success": False, "error": "Amendment not found"}
+
+            # Check version for optimistic locking
+            if amendment.version != expected_version:
+                return {
+                    "success": False,
+                    "error": f"Version conflict: expected {expected_version}, got {amendment.version}",
+                    "current_version": amendment.version
+                }
+
+            # Apply updates
+            for key, value in updates.items():
+                if hasattr(amendment, key):
+                    setattr(amendment, key, value)
+
+            # Increment version and update timestamp
+            amendment.version += 1
+            amendment.updated_at = datetime.utcnow()
+
+            # Add state transition if workflow_state changed
+            if "workflow_state" in updates:
+                if not amendment.state_transitions:
+                    amendment.state_transitions = []
+
+                amendment.state_transitions.append({
+                    "from_state": amendment.workflow_state,
+                    "to_state": updates["workflow_state"],
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "version": amendment.version
+                })
+
+            await db.commit()
+            await db.refresh(amendment)
+
+            # Update cache
+            if self.redis_client:
+                await self._cache_amendment(amendment)
+
+            return {
+                "success": True,
+                "new_version": amendment.version,
+                "updated_at": amendment.updated_at.isoformat()
+            }
+
+        except OptimisticLockError:
+            await db.rollback()
+            return {
+                "success": False,
+                "error": "Optimistic lock error: amendment was modified by another process"
+            }
+        except Exception as e:
+            await db.rollback()
+            logger.error(f"Failed to update amendment {amendment_id}: {e}")
+            return {"success": False, "error": str(e)}
 
 
 class AsyncVotingManager:
