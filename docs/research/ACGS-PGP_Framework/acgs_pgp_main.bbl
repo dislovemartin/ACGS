@@ -1,0 +1,354 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{20}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{#1}\fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Ahn et~al\mbox{.}(2025)]%
+        {AhnHIPAAAgenticAI25}
+\bibfield{author}{\bibinfo{person}{Shweta Ahn}, \bibinfo{person}{Rohan Khera},
+  {and} \bibinfo{person}{Arjun~K. Manrai}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{Towards a HIPAA Compliant Agentic AI System in
+  Healthcare}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2504.17669}}
+  (\bibinfo{year}{2025}).
+\newblock
+\showeprint[arxiv]{2504.17669}~[cs.CY]
+
+
+\bibitem[{AWS Machine Learning Blog}(2023)]%
+        {AWSBedrockAgents}
+\bibfield{author}{\bibinfo{person}{{AWS Machine Learning Blog}}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \bibinfo{title}{{Creating asynchronous AI agents with Amazon
+  Bedrock}}.
+\newblock
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://aws.amazon.com/blogs/machine-learning/creating-asynchronous-ai-agents-with-amazon-bedrock/}.
+
+
+\bibitem[Bai et~al\mbox{.}(2022)]%
+        {BaiConstitutionalAI22}
+\bibfield{author}{\bibinfo{person}{Yuntao Bai}, \bibinfo{person}{Saurav
+  Kadavath}, \bibinfo{person}{Sandipan Kundu}, \bibinfo{person}{Amanda Askell},
+  \bibinfo{person}{Jackson Kernion}, \bibinfo{person}{Tom Conerly},
+  \bibinfo{person}{Nelson Elhage}, \bibinfo{person}{Tom Henighan},
+  \bibinfo{person}{Andy Jones}, \bibinfo{person}{Nicholas Joseph},
+  \bibinfo{person}{Ben Mann}, \bibinfo{person}{Nova DasSarma},
+  \bibinfo{person}{Catherine Olsson}, \bibinfo{person}{Danny Hernandez},
+  \bibinfo{person}{Jared Kaplan}, \bibinfo{person}{Sam McCandlish},
+  \bibinfo{person}{Tom Brown}, {and} \bibinfo{person}{Dario Amodei}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{Constitutional AI: Harmlessness from AI
+  Feedback}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2212.08073}}
+  (\bibinfo{year}{2022}).
+\newblock
+\showeprint[arxiv]{2212.08073}~[cs.CL]
+
+
+\bibitem[Chakraborti et~al\mbox{.}(2025)]%
+        {ChakrabortiVeriPlan25}
+\bibfield{author}{\bibinfo{person}{Tathagata Chakraborti},
+  \bibinfo{person}{Kartik Talamadupula}, \bibinfo{person}{Mishal Dholakia},
+  \bibinfo{person}{Tarun Tater}, {and} \bibinfo{person}{Subbarao Kambhampati}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{VeriPlan: Integrating Formal Verification and LLMs
+  into End-User Planning}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2502.17898}}
+  (\bibinfo{year}{2025}).
+\newblock
+\showeprint[arxiv]{2502.17898}~[cs.AI]
+
+
+\bibitem[contributors(2025)]%
+        {WikipediaPGP}
+\bibfield{author}{\bibinfo{person}{Wikipedia contributors}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \bibinfo{title}{{Pretty Good Privacy --- Wikipedia, The Free
+  Encyclopedia}}.
+\newblock
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://en.wikipedia.org/wiki/Pretty\_Good\_Privacy}.
+
+
+\bibitem[{European Parliament and Council}(2024)]%
+        {EUAIAct24}
+\bibfield{author}{\bibinfo{person}{{European Parliament and Council}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{title}{{Regulation (EU) 2024/1689 of the European Parliament
+  and of the Council of 13 June 2024 laying down harmonised rules on artificial
+  intelligence and amending Regulations (EC) No 300/2008, (EU) No 167/2013,
+  (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and
+  Directives 2000/60/EC, 2001/20/EC, 2004/22/EC, 2009/48/EC, 2013/29/EU,
+  2014/30/EU, 2014/31/EU, 2014/32/EU, 2014/34/EU, 2014/35/EU, 2014/53/EU and
+  2014/68/EU and repealing Directive 2001/95/EC (Artificial Intelligence
+  Act)}}.
+\newblock
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from the Official Journal of the EU}.
+
+
+\bibitem[{European Parliament, Policy Department for Citizens' Rights and
+  Constitutional Affairs}(2019)]%
+        {EuroParlAlgoTransparency19}
+\bibfield{author}{\bibinfo{person}{{European Parliament, Policy Department for
+  Citizens' Rights and Constitutional Affairs}}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{{Governance of Algorithmic Transparency and
+  Accountability}}}.
+\newblock \bibinfo{type}{{T}echnical {R}eport}. \bibinfo{institution}{European
+  Parliament}.
+\newblock
+\newblock
+\shownote{PE 624.262. Retrieved May 24, 2025 from
+  https://www.europarl.europa.eu/RegData/etudes/STUD/2019/624262/EPRS_STU(2019)624262_EN.pdf}.
+
+
+\bibitem[{Future of Privacy Forum}(2024)]%
+        {FPFGenAIGov24}
+\bibfield{author}{\bibinfo{person}{{Future of Privacy Forum}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{title}{{Navigating Governance Frameworks for Generative AI
+  Systems in the Asia-Pacific}}.
+\newblock
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://fpf.org/wp-content/uploads/2024/04/FPF_APAC_GenAI_A4_Digital_R5_-_2024_Update.pdf}.
+
+
+\bibitem[Ganguli et~al\mbox{.}(2023)]%
+        {AnthropicCollectiveConstitutionalAI23}
+\bibfield{author}{\bibinfo{person}{Deep Ganguli}, \bibinfo{person}{Amanda
+  Askell}, \bibinfo{person}{Yuntao Bai}, \bibinfo{person}{Saurav Kadavath},
+  \bibinfo{person}{Ben Mann}, \bibinfo{person}{Ethan Perez},
+  \bibinfo{person}{Tom Henighan}, \bibinfo{person}{Kamal Ndousse},
+  \bibinfo{person}{Andy Jones}, \bibinfo{person}{Jackson Kernion},
+  \bibinfo{person}{Liane Lovitt}, \bibinfo{person}{Zac Hatfield-Dodds},
+  \bibinfo{person}{Jared Kaplan}, \bibinfo{person}{Sam McCandlish},
+  \bibinfo{person}{Dario Amodei}, \bibinfo{person}{Tom Brown},
+  \bibinfo{person}{Nicholas Joseph}, \bibinfo{person}{Sam Ringer},
+  \bibinfo{person}{Dawn Drain}, \bibinfo{person}{Nelson Elhage},
+  \bibinfo{person}{Nova DasSarma}, \bibinfo{person}{Catherine Olsson},
+  \bibinfo{person}{Danny Hernandez}, \bibinfo{person}{Dustin Li},
+  \bibinfo{person}{Kamilė Lukošiūtė}, \bibinfo{person}{Tamera Lanham},
+  \bibinfo{person}{Timothy Telleen-Lawton}, \bibinfo{person}{Kamal Choudhary},
+  \bibinfo{person}{Scott Johnston}, \bibinfo{person}{Sheer~El Showk},
+  \bibinfo{person}{Oliver Rausch}, \bibinfo{person}{Newton Cheng},
+  \bibinfo{person}{Anna Chen}, \bibinfo{person}{Christopher Olah},
+  \bibinfo{person}{Esin Durmus}, \bibinfo{person}{Karina Nguyen},
+  \bibinfo{person}{Joshua Landau}, \bibinfo{person}{Marina Favaro},
+  \bibinfo{person}{Timothy Large}, \bibinfo{person}{Sandipan Kundu},
+  \bibinfo{person}{Natasha Jaques}, {and} \bibinfo{person}{Jack Clark}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{{Collective Constitutional AI: Aligning a Language
+  Model with Public Input}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2310.13602}}
+  (\bibinfo{year}{2023}).
+\newblock
+\showeprint[arxiv]{2310.13602}~[cs.CL]
+
+
+\bibitem[Huq(2020)]%
+        {HuqConstitutionalRightsML}
+\bibfield{author}{\bibinfo{person}{Aziz~Z. Huq}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Constitutional Rights in the Machine Learning
+  State}}.
+\newblock \bibinfo{journal}{\emph{University of Chicago Public Law and Legal
+  Theory Working Paper No. 711}} (\bibinfo{year}{2020}).
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://chicagounbound.uchicago.edu/cgi/viewcontent.cgi?article=2207&context=public_law_and_legal_theory}.
+
+
+\bibitem[Krishnamurthy et~al\mbox{.}(2023)]%
+        {KrishnamurthyValueAlignment23}
+\bibfield{author}{\bibinfo{person}{Patrick~V. Krishnamurthy},
+  \bibinfo{person}{Anusha~M. Kumar}, {and} \bibinfo{person}{Priya~S. Sharma}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{{A Survey on Value Alignment in Responsible AI}}.
+  In \bibinfo{booktitle}{\emph{Proceedings of the 2023 ACM Conference on
+  Fairness, Accountability, and Transparency (FAccT '23)}}.
+  \bibinfo{publisher}{ACM}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{1--10}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1145/XXXXXXX.YYYYYYY}
+\showDOI{\tempurl}
+
+
+\bibitem[Li et~al\mbox{.}(2025)]%
+        {LiMAST25}
+\bibfield{author}{\bibinfo{person}{Mingyu Li}, \bibinfo{person}{Hao Wang},
+  \bibinfo{person}{Jun Sun}, \bibinfo{person}{Geguang Pu}, \bibinfo{person}{Ke
+  Xu}, \bibinfo{person}{Mengwei Xu}, \bibinfo{person}{Zhide Zhou},
+  \bibinfo{person}{Jialun Cao}, \bibinfo{person}{Yifan Zhao},
+  \bibinfo{person}{Ziqi Wang}, \bibinfo{person}{Jiaming Zhang},
+  \bibinfo{person}{Houston Schuerger}, \bibinfo{person}{Prakhar Pradhan},
+  \bibinfo{person}{Kaan~Yue Yuen}, {and} \bibinfo{person}{Christopher~M.
+  Poskitt}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{MAST: A Multi-Agent System Failure Taxonomy}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2503.13657}}
+  (\bibinfo{year}{2025}).
+\newblock
+\showeprint[arxiv]{2503.13657}~[cs.SE]
+
+
+\bibitem[Lian et~al\mbox{.}(2025)]%
+        {LianProgent25}
+\bibfield{author}{\bibinfo{person}{Jiaxuan Lian}, \bibinfo{person}{Yutong Li},
+  \bibinfo{person}{Yuchuan Wu}, \bibinfo{person}{Zihan Wang},
+  \bibinfo{person}{Xin Wang}, \bibinfo{person}{Hanyuan Zhang},
+  \bibinfo{person}{Yuqing Yang}, \bibinfo{person}{Danyang Zhang},
+  \bibinfo{person}{Linyi Yang}, \bibinfo{person}{Rui Hao},
+  \bibinfo{person}{Ruijie Xu}, \bibinfo{person}{Yupeng Cao},
+  \bibinfo{person}{Ming-Hsuan Yang}, \bibinfo{person}{Xin Geng},
+  \bibinfo{person}{Shiguang Shan}, \bibinfo{person}{Xihui Liu},
+  \bibinfo{person}{Chao Xu}, \bibinfo{person}{Ming-Ming Cheng},
+  \bibinfo{person}{Baining Guo}, \bibinfo{person}{Gang Hua}, {and}
+  \bibinfo{person}{Jingren Zhou}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{Progent: Programmable Privilege Control for LLM
+  Agents}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2504.11703}}
+  (\bibinfo{year}{2025}).
+\newblock
+\showeprint[arxiv]{2504.11703}~[cs.AI]
+
+
+\bibitem[Liu et~al\mbox{.}(2025)]%
+        {LiuPropertyGPT25}
+\bibfield{author}{\bibinfo{person}{Yifan Liu}, \bibinfo{person}{Haochen Liu},
+  \bibinfo{person}{Zexi Li}, \bibinfo{person}{Zimu Wang},
+  \bibinfo{person}{Jiahuan He}, \bibinfo{person}{Han Liu},
+  \bibinfo{person}{Zhicheng Liu}, \bibinfo{person}{Tianyi Zhang},
+  \bibinfo{person}{Yao Zhang}, \bibinfo{person}{Qingkai Shi},
+  \bibinfo{person}{Guozhu Meng}, {and} \bibinfo{person}{Kai Chen}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{PropertyGPT: LLM-driven Formal Verification of
+  Smart Contracts through Retrieval-Augmented Property Generation}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the Network and Distributed System
+  Security Symposium (NDSS '25)}}.
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://www.ndss-symposium.org/wp-content/uploads/2025-1357-paper.pdf}.
+
+
+\bibitem[Mart{\'\i}nez(2019)]%
+        {MartinezComplianceByDesign19}
+\bibfield{author}{\bibinfo{person}{Raquel~Mart{\'\i}nez Mart{\'\i}nez}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{{From Human Rights Ethics to "Law Compliance by
+  Design" in Artificial Intelligence}}.
+\newblock \bibinfo{journal}{\emph{Revista Catalana de Dret P{\'u}blic}}
+  \bibinfo{volume}{58} (\bibinfo{year}{2019}).
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.2436/rcdp.i58.2019.3317}
+\showDOI{\tempurl}
+
+
+\bibitem[{Model Context Protocol Contributors}(2024)]%
+        {ModelContextProtocolGitHub}
+\bibfield{author}{\bibinfo{person}{{Model Context Protocol Contributors}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{title}{{Model Context Protocol}}.
+\newblock
+  \bibinfo{howpublished}{\url{https://github.com/modelcontextprotocol/modelcontextprotocol}}.
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025}.
+
+
+\bibitem[{National Institute of Standards and Technology (NIST)}(2023)]%
+        {NISTAIRMF23}
+\bibfield{author}{\bibinfo{person}{{National Institute of Standards and
+  Technology (NIST)}}.} \bibinfo{year}{2023}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{{Artificial Intelligence Risk Management
+  Framework (AI RMF 1.0)}}}.
+\newblock \bibinfo{type}{{T}echnical {R}eport}. \bibinfo{institution}{U.S.
+  Department of Commerce}.
+\newblock
+\newblock
+\shownote{DOI: 10.6028/NIST.AI.100-1. Retrieved May 24, 2025 from
+  https://www.nist.gov/itl/ai-risk-management-framework}.
+
+
+\bibitem[{NVIDIA Developer}(2023)]%
+        {NVIDIANeMoGuardrails}
+\bibfield{author}{\bibinfo{person}{{NVIDIA Developer}}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \bibinfo{title}{{NVIDIA NeMo Guardrails}}.
+\newblock
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://developer.nvidia.com/nemo-guardrails}.
+
+
+\bibitem[Wang et~al\mbox{.}(2025)]%
+        {WangAgentSpec25}
+\bibfield{author}{\bibinfo{person}{Hao Wang}, \bibinfo{person}{Christopher~M.
+  Poskitt}, {and} \bibinfo{person}{Jun Sun}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{AgentSpec: Customizable Runtime Enforcement for
+  Safe and Reliable LLM Agents}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2503.18666}}
+  (\bibinfo{year}{2025}).
+\newblock
+\showeprint[arxiv]{2503.18666}~[cs.AI]
+
+
+\bibitem[{World Bank Group}(2024)]%
+        {WorldBankAIGov24}
+\bibfield{author}{\bibinfo{person}{{World Bank Group}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{{AI Governance: An Overview for Policymakers}}.
+\newblock  (\bibinfo{year}{2024}).
+\newblock
+\newblock
+\shownote{Retrieved May 24, 2025 from
+  https://documents1.worldbank.org/curated/en/099120224205026271/pdf/P1786161ad76ca0ae1ba3b1558ca4ff88ba.pdf}.
+
+
+\end{thebibliography}
