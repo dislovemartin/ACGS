@@ -101,6 +101,44 @@ class ACGSMetrics:
             'Total verification operations',
             ['service', 'verification_type', 'result']
         )
+
+        # Task 7: Parallel processing metrics
+        self.parallel_tasks_total = Counter(
+            'acgs_parallel_tasks_total',
+            'Total parallel tasks executed',
+            ['service', 'task_type', 'status']
+        )
+
+        self.parallel_batch_duration = Histogram(
+            'acgs_parallel_batch_duration_seconds',
+            'Parallel batch execution duration',
+            ['service', 'batch_type'],
+            buckets=(0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 25.0, 60.0)
+        )
+
+        self.parallel_task_queue_size = Gauge(
+            'acgs_parallel_task_queue_size',
+            'Number of tasks in parallel processing queue',
+            ['service', 'queue_type']
+        )
+
+        self.parallel_workers_active = Gauge(
+            'acgs_parallel_workers_active',
+            'Number of active parallel workers',
+            ['service', 'worker_type']
+        )
+
+        self.websocket_connections = Gauge(
+            'acgs_websocket_connections_active',
+            'Number of active WebSocket connections',
+            ['service', 'connection_type']
+        )
+
+        self.cache_operations = Counter(
+            'acgs_cache_operations_total',
+            'Total cache operations',
+            ['service', 'operation', 'result']
+        )
         
         # Initialize service info (commented out due to prometheus_client compatibility)
         # self.service_info.info({
@@ -174,6 +212,51 @@ class ACGSMetrics:
         self.verification_operations.labels(
             service=self.service_name,
             verification_type=verification_type,
+            result=result
+        ).inc()
+
+    # Task 7: Parallel processing metrics methods
+    def record_parallel_task(self, task_type: str, status: str):
+        """Record parallel task execution."""
+        self.parallel_tasks_total.labels(
+            service=self.service_name,
+            task_type=task_type,
+            status=status
+        ).inc()
+
+    def record_parallel_batch_duration(self, batch_type: str, duration: float):
+        """Record parallel batch execution duration."""
+        self.parallel_batch_duration.labels(
+            service=self.service_name,
+            batch_type=batch_type
+        ).observe(duration)
+
+    def update_parallel_queue_size(self, queue_type: str, size: int):
+        """Update parallel task queue size."""
+        self.parallel_task_queue_size.labels(
+            service=self.service_name,
+            queue_type=queue_type
+        ).set(size)
+
+    def update_parallel_workers(self, worker_type: str, count: int):
+        """Update active parallel workers count."""
+        self.parallel_workers_active.labels(
+            service=self.service_name,
+            worker_type=worker_type
+        ).set(count)
+
+    def update_websocket_connections(self, connection_type: str, count: int):
+        """Update WebSocket connections count."""
+        self.websocket_connections.labels(
+            service=self.service_name,
+            connection_type=connection_type
+        ).set(count)
+
+    def record_cache_operation(self, operation: str, result: str):
+        """Record cache operation."""
+        self.cache_operations.labels(
+            service=self.service_name,
+            operation=operation,
             result=result
         ).inc()
         
