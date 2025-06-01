@@ -242,9 +242,10 @@ async def test_parallel_validation_performance():
             ])
             
             # Create test request with multiple rules
+            from src.backend.fv_service.app.schemas import PolicyRuleRef, ACPrincipleRef
             request = VerificationRequest(
-                policy_rule_ids=list(range(1, 11)),  # 10 rules
-                ac_principle_ids=[1]
+                policy_rule_refs=[PolicyRuleRef(id=i, version=1) for i in range(1, 11)],  # 10 rules
+                ac_principle_refs=[ACPrincipleRef(id=1, version=1)]
             )
             
             # Test parallel processing
@@ -313,10 +314,11 @@ async def test_concurrent_request_handling():
             mock_ac.get_principles_by_ids = AsyncMock(return_value=[])
             
             # Create multiple concurrent requests
+            from src.backend.fv_service.app.schemas import PolicyRuleRef
             requests = [
                 VerificationRequest(
-                    policy_rule_ids=[i],
-                    ac_principle_ids=[]
+                    policy_rule_refs=[PolicyRuleRef(id=i, version=1)],
+                    ac_principle_refs=[]
                 )
                 for i in range(1, 51)  # 50 concurrent requests
             ]

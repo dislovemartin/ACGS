@@ -95,7 +95,7 @@ class ParallelValidationPipeline:
                 self.pipeline_metrics['cache_hit_rate'] += 1
                 return cached_result
             
-            if enable_parallel and len(request.policy_rule_ids) > 1:
+            if enable_parallel and len(request.policy_rule_refs) > 1:
                 # Use parallel processing for multiple rules
                 response = await self._process_parallel_verification(request, request_id)
             else:
@@ -139,16 +139,17 @@ class ParallelValidationPipeline:
         request_id: str
     ) -> VerificationResponse:
         """Process verification using parallel pipeline."""
-        logger.info(f"Processing parallel verification for {len(request.policy_rule_ids)} rules")
-        
+        logger.info(f"Processing parallel verification for {len(request.policy_rule_refs)} rules")
+
         # Create parallel tasks
         tasks = []
-        for rule_id in request.policy_rule_ids:
+        for rule_ref in request.policy_rule_refs:
             task = ParallelTask(
                 task_type='policy_verification',
                 payload={
-                    'rule_id': rule_id,
-                    'ac_principle_ids': request.ac_principle_ids,
+                    'rule_id': rule_ref.id,
+                    'rule_version': rule_ref.version,
+                    'ac_principle_refs': [ref.dict() for ref in (request.ac_principle_refs or [])],
                     'verification_mode': 'standard',
                     'request_id': request_id
                 },
@@ -425,7 +426,7 @@ class ParallelValidationPipeline:
         """Check Redis cache for existing results."""
         try:
             redis_client = await get_redis_client('fv_service')
-            cache_key = f"verification:{hash(str(sorted(request.policy_rule_ids)))}"
+            cache_key = f"verification:{hash(str(sorted([ref.id for ref in request.policy_rule_refs])))}"
             cached_data = await redis_client.get_json(cache_key)
             
             if cached_data:
@@ -446,7 +447,7 @@ class ParallelValidationPipeline:
         """Cache verification result."""
         try:
             redis_client = await get_redis_client('fv_service')
-            cache_key = f"verification:{hash(str(sorted(request.policy_rule_ids)))}"
+            cache_key = f"verification:{hash(str(sorted([ref.id for ref in request.policy_rule_refs])))}"
             
             # Convert response to dict for caching
             response_dict = {
