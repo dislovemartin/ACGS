@@ -134,7 +134,8 @@ Current AI governance approaches—spanning self-regulation, "soft law," regulat
 
 In response, this paper introduces the Artificial Constitutionalism: Self-Synthesizing Prompt Governance Compiler (ACGS-PGP) framework. This novel, multi-layered architecture aims to embed dynamic, principled, and verifiable governance directly within AI systems. It integrates high-level ethical and legal principles ("Artificial Constitutionalism") with an AI's operational logic via a "Self-Synthesizing" (GS) engine that generates specific governance rules. These are translated into enforceable constraints by a "Prompt Governance Compiler" (PGC), with a "PGP Assurance" component ensuring verifiability.
 
-The ACGS-PGP framework synthesizes concepts like "compliance by design"~\cite{MartinezComplianceByDesign19}, Anthropic's "Constitutional AI"~\cite{AnthropicConstitutionalAI}, runtime enforcement systems (e.g., AgentSpec~\cite{WangAgentSpec25}), privilege control (e.g., Progent~\cite{LianProgent25}), and cryptographic integrity from PGP~\cite{WikipediaPGP}. Its core novelty lies in its integrated, hierarchical architecture, providing an end-to-end pathway from abstract principles to adaptive rule generation and verifiable runtime enforcement.
+The ACGS-PGP framework synthesizes concepts like "compliance by design"~\cite{MartinezComplianceByDesign19}, Anthropic's "Constitutional AI"%~\cite{AnthropicConstitutionalAI}
+, runtime enforcement systems (e.g., AgentSpec~\cite{WangAgentSpec25}), privilege control (e.g., Progent~\cite{LianProgent25}), and cryptographic integrity from PGP~\cite{WikipediaPGP}. Its core novelty lies in its integrated, hierarchical architecture, providing an end-to-end pathway from abstract principles to adaptive rule generation and verifiable runtime enforcement.
 
 This paper proposes that the ACGS-PGP framework offers a promising pathway towards AI systems inherently aligned with human values, ethical norms, and legal requirements through a dynamic, verifiable, and constitutionally-grounded internal governance architecture. The key contributions of this framework, detailed in subsequent sections, include:
 \begin{itemize}
@@ -149,7 +150,8 @@ The remainder of this paper is structured as follows: Section~\ref{sec:related_w
 \label{sec:related_work}
 The ACGS-PGP framework builds upon several interconnected streams of research.
 
-\textbf{AI Governance Frameworks}: Existing frameworks like the NIST AI Risk Management Framework (AI RMF)~\cite{NISTAIRMF23} and ISO/IEC 42001~\cite{KPMGISO42001} provide high-level guidance for trustworthy AI. The EU AI Act establishes legal obligations~\cite{EUAIAct24}. ACGS-PGP aims to provide a technical operationalization layer for the principles and requirements articulated in such frameworks.
+\textbf{AI Governance Frameworks}: Existing frameworks like the NIST AI Risk Management Framework (AI RMF)~\cite{NISTAIRMF23} and ISO/IEC 42001%~\cite{KPMGISO42001}
+ provide high-level guidance for trustworthy AI. The EU AI Act establishes legal obligations~\cite{EUAIAct24}. ACGS-PGP aims to provide a technical operationalization layer for the principles and requirements articulated in such frameworks.
 
 \textbf{Constitutional AI and Value Alignment}: Anthropic's "Constitutional AI" uses a set of principles to guide LLM behavior during training (RLAIF)~\cite{BaiConstitutionalAI22}. ACGS-PGP expands this by proposing a dynamic, runtime constitutional system where principles are continuously interpreted and operationalized by a GS Engine. Value alignment research [e.g., \cite{KrishnamurthyValueAlignment23}] broadly seeks to ensure AI goals match human values; ACGS-PGP's AC is a mechanism for explicitly defining and enforcing these values.
 
@@ -245,28 +247,14 @@ The proposed validation would involve simulating AI agent environments for key d
 
 \begin{figure}[t]
   \centering
-  % Placeholder for a proper C4 diagram image.
-  % For now, just a box indicating where it would go.
-  \fbox{\begin{minipage}{0.9\columnwidth}
-    \centering
-    \vspace{2cm} % Adjust height as needed
-    \textbf{Figure 1: Conceptual C4 Level 2 Container Diagram of the ACGS-PGP Framework.}
-    \textit{(Detailed C4 diagrams are in Appendix~\ref{app:architecture}.)}
-    \vspace{2cm} % Adjust height as needed
-  \end{minipage}}
+  \includegraphics[width=0.9\columnwidth]{figures/figure1_c4_architecture.png}
   \caption{High-level C4 container view of the ACGS-PGP framework, showing key interacting modules. Full architectural details are provided in Appendix~\ref{app:architecture}.}
   \label{fig:c4_architecture}
 \end{figure}
 
 \begin{figure}[t]
   \centering
-  % Placeholder for a proper flowchart image.
-  \fbox{\begin{minipage}{0.9\columnwidth}
-    \centering
-    \vspace{2cm} % Adjust height as needed
-    \textbf{Figure 2: Conceptual Flowchart of Policy Compilation and Enforcement within ACGS-PGP.}
-    \vspace{2cm} % Adjust height as needed
-  \end{minipage}}
+  \includegraphics[width=0.9\columnwidth]{figures/figure2_policy_flowchart.png}
   \caption{Illustrative flowchart of the ACGS-PGP policy lifecycle, from AC principle interpretation by the GS Engine to runtime enforcement by the PGC, including feedback loops.}
   \label{fig:policy_flowchart}
 \end{figure}
@@ -444,9 +432,9 @@ The interaction flow for governing an AI action involves: (1) Action Proposal by
 \label{app:architecture_details_data_schemas}
 Key conceptual data structures include:
 \begin{itemize}
-    \item \textbf{Operational Governance Rule}: Fields like `Policy_ID`, `Version`, `AC_Principle_Refs`, `Trigger`, `Predicate_Logic`, `Enforcement_Actions`, `PGP_Signature_Rule`. (See Appendix~\ref{app:policy_examples_structure} for full structure).
+    \item \textbf{Operational Governance Rule}: Fields like \texttt{Policy\_ID}, \texttt{Version}, \texttt{AC\_Principle\_Refs}, \texttt{Trigger}, \texttt{Predicate\_Logic}, \texttt{Enforcement\_Actions}, \texttt{PGP\_Signature\_Rule}. (See Appendix~\ref{app:policy_examples_structure} for full structure).
     \item \textbf{Runtime Context Packet}: Contains \texttt{Timestamp}, \texttt{Requesting\_AI\_Agent\_ID}, \texttt{Proposed\_Action\_details}, \texttt{Environmental\_Variables}, and \texttt{User\_Attributes}.
-    \item \textbf{Audit Log Entry}: `Log_ID`, `Timestamp`, `Event_Source`, `Event_Type`, `Details`, `Outcome`, `PGP_Signature_Log_Entry`, `Trace_ID`.
+    \item \textbf{Audit Log Entry}: \texttt{Log\_ID}, \texttt{Timestamp}, \texttt{Event\_Source}, \texttt{Event\_Type}, \texttt{Details}, \texttt{Outcome}, \texttt{PGP\_Signature\_Log\_Entry}, \texttt{Trace\_ID}.
 \end{itemize}
 
 \section{Illustrative Full Policy Language Examples for the ACGS-PGP Framework}
@@ -459,22 +447,22 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
 \label{app:policy_examples_structure}
 % ... (Content from B - Policy Language Structure Key previously generated) ...
 \begin{itemize}
-    \item \textbf{Policy\_ID}: Unique machine-readable identifier.
-    \item \textbf{Policy\_Name}: Human-readable descriptive name.
-    \item \textbf{Version}: Version control for policy evolution.
-    \item \textbf{AC\_Principle\_Refs}: References to specific principles in the Artificial Constitution.
-    \item \textbf{Scope}: Defines applicability (AI systems, tasks, data types, user roles).
-    \item \textbf{Objective}: Primary governance goal of the policy.
-    \item \textbf{Trigger\_Event(s)}: Conditions activating policy evaluation.
-    \item \textbf{Context\_Parameters}: Variables influencing policy evaluation.
-    \item \textbf{Condition\_Logic}: Logical rules defining policy behavior.
-    \item \textbf{Action(s)\_Prescribed}: Specific PGC actions if conditions are met.
-    \item \textbf{Enforcement\_Mechanism\_Hook}: How PGC technically enforces/monitors.
-    \item \textbf{Escalation\_Path}: Procedures for violations or ambiguities.
-    \item \textbf{Accountability\_Responsibility}: Roles responsible for policy aspects.
-    \item \textbf{Rationale\_Justification}: Explanation of the policy's purpose.
-    \item \textbf{Dynamic\_Adaptation\_Hints (for GS Engine)}: Triggers for GS Engine to re-evaluate/adapt the rule.
-    \item \textbf{PGP\_Assurance\_Level}: Indication of PGP assurance applied.
+    \item \textbf{\texttt{Policy\_ID}}: Unique machine-readable identifier.
+    \item \textbf{\texttt{Policy\_Name}}: Human-readable descriptive name.
+    \item \textbf{\texttt{Version}}: Version control for policy evolution.
+    \item \textbf{\texttt{AC\_Principle\_Refs}}: References to specific principles in the Artificial Constitution.
+    \item \textbf{\texttt{Scope}}: Defines applicability (AI systems, tasks, data types, user roles).
+    \item \textbf{\texttt{Objective}}: Primary governance goal of the policy.
+    \item \textbf{\texttt{Trigger\_Event(s)}}: Conditions activating policy evaluation.
+    \item \textbf{\texttt{Context\_Parameters}}: Variables influencing policy evaluation.
+    \item \textbf{\texttt{Condition\_Logic}}: Logical rules defining policy behavior.
+    \item \textbf{\texttt{Action(s)\_Prescribed}}: Specific PGC actions if conditions are met.
+    \item \textbf{\texttt{Enforcement\_Mechanism\_Hook}}: How PGC technically enforces/monitors.
+    \item \textbf{\texttt{Escalation\_Path}}: Procedures for violations or ambiguities.
+    \item \textbf{\texttt{Accountability\_Responsibility}}: Roles responsible for policy aspects.
+    \item \textbf{\texttt{Rationale\_Justification}}: Explanation of the policy's purpose.
+    \item \textbf{\texttt{Dynamic\_Adaptation\_Hints (for GS Engine)}}: Triggers for GS Engine to re-evaluate/adapt the rule.
+    \item \textbf{\texttt{PGP\_Assurance\_Level}}: Indication of PGP assurance applied.
 \end{itemize}
 
 \subsection{Example B.1: Healthcare Chat Agent – Patient Data Access and Disclosure}
@@ -482,15 +470,15 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
 % ... (Full content from B.1 previously generated, including its sub-sections) ...
 \subsubsection{Policy Definition}
 \begin{itemize}
-    \item \textbf{Policy\_ID}: HCA-PHI-ACCESS-001
-    \item \textbf{Policy\_Name}: "Dynamic Access Control and Disclosure for Protected Health Information (PHI) by Healthcare Chat Agent"
-    \item \textbf{Version}: 1.0 (2025-05-24)
-    \item \textbf{AC\_Principle\_Refs}: AC-PRIVACY-001 (HIPAA Alignment), AC-BENEFICENCE-003, AC-TRANSPARENCY-002
-    \item \textbf{Scope}: AI System: "CareConnect" Chat Agent; Users: Patients, Clinicians; Data Types: PHI, De-identified Info.
-    \item \textbf{Objective}: "Ensure CareConnect agent only accesses/discloses PHI per consent, user role, minimum necessary disclosure, and HIPAA."
-    \item \textbf{Trigger\_Event(s)}: `on_data_access_request (requested_data_type: PHI_record_segment)`, `before_response_generation (response_content_type: includes_PHI)`
-    \item \textbf{Context\_Parameters}: `requesting_user_role`, `patient_consent_status_for_agent_access`, `requested_PHI_sensitivity_level`, `query_context_purpose`, `authentication_strength_level`
-    \item \textbf{Condition\_Logic (Conceptual Snippet for Patient Access)}:
+    \item \textbf{\texttt{Policy\_ID}}: HCA-PHI-ACCESS-001
+    \item \textbf{\texttt{Policy\_Name}}: "Dynamic Access Control and Disclosure for Protected Health Information (PHI) by Healthcare Chat Agent"
+    \item \textbf{\texttt{Version}}: 1.0 (2025-05-24)
+    \item \textbf{\texttt{AC\_Principle\_Refs}}: AC-PRIVACY-001 (HIPAA Alignment), AC-BENEFICENCE-003, AC-TRANSPARENCY-002
+    \item \textbf{\texttt{Scope}}: AI System: "CareConnect" Chat Agent; Users: Patients, Clinicians; Data Types: PHI, De-identified Info.
+    \item \textbf{\texttt{Objective}}: "Ensure CareConnect agent only accesses/discloses PHI per consent, user role, minimum necessary disclosure, and HIPAA."
+    \item \textbf{\texttt{Trigger\_Event(s)}}: \texttt{on\_data\_access\_request (requested\_data\_type: PHI\_record\_segment)}, \texttt{before\_response\_generation (response\_content\_type: includes\_PHI)}
+    \item \textbf{\texttt{Context\_Parameters}}: \texttt{requesting\_user\_role}, \texttt{patient\_consent\_status\_for\_agent\_access}, \texttt{requested\_PHI\_sensitivity\_level}, \texttt{query\_context\_purpose}, \texttt{authentication\_strength\_level}
+    \item \textbf{\texttt{Condition\_Logic (Conceptual Snippet for Patient Access)}}:
     \begin{verbatim}
     IF (Trigger_Event == on_data_access_request AND
         Context.requesting_user_role == 'PATIENT' AND
@@ -499,7 +487,7 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
     THEN Action_Allowed = TRUE
     ELSE ... (other conditions for clinicians, etc.)
     \end{verbatim}
-    \item \textbf{Action(s)\_Prescribed (Conceptual Snippet)}:
+    \item \textbf{\texttt{Action(s)\_Prescribed (Conceptual Snippet)}}:
     \begin{verbatim}
     IF Action_Allowed == TRUE THEN
         ALLOW_DATA_ACCESS;
@@ -510,25 +498,25 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
         NOTIFY_USER(message: "Access restricted...");
     END IF
     \end{verbatim}
-    \item \textbf{Dynamic\_Adaptation\_Hints}: `IF new_HIPAA_guidance_published THEN GS_review_HCA_PHI_ACCESS_policies`
-    \item \textbf{PGP\_Assurance\_Level}: HIGH
+    \item \textbf{\texttt{Dynamic\_Adaptation\_Hints}}: \texttt{IF new\_HIPAA\_guidance\_published THEN GS\_review\_HCA\_PHI\_ACCESS\_policies}
+    \item \textbf{\texttt{PGP\_Assurance\_Level}}: HIGH
 \end{itemize}
-*(... Other fields like Enforcement\_Mechanism\_Hook, Escalation\_Path, etc. would be detailed as in the full Appendix B draft ...)*
+*(... Other fields like \texttt{Enforcement\_Mechanism\_Hook}, \texttt{Escalation\_Path}, etc. would be detailed as in the full Appendix B draft ...)*
 
 \subsection{Example B.2: Autonomous Code Generation Tool – Security and Licensing Compliance}
 \label{app:policy_example_codegen}
 % ... (Full content from B.2 previously generated, including its sub-sections and tables B.2.3.A and B.2.3.B) ...
 \subsubsection{Policy Definition (Security Example)}
 \begin{itemize}
-    \item \textbf{Policy\_ID}: ACG-SEC-004
-    \item \textbf{Policy\_Name}: "Vulnerability Management and Dependency Control for AI-Generated Code"
-    \item \textbf{Version}: 1.1 (2025-05-24)
-    \item \textbf{AC\_Principle\_Refs}: AC-SECURITY-001 (Secure by Design), AC-ROBUSTNESS-001
-    \item \textbf{Scope}: AI System: "CodeCraft" Autonomous Code Generator; Output: Generated code snippets, libraries.
-    \item \textbf{Objective}: "Prohibit the generation or integration of code relying on deprecated or known-vulnerable dependencies."
-    \item \textbf{Trigger\_Event(s)}: `on_code_generation_request`, `before_dependency_suggestion`
-    \item \textbf{Context\_Parameters}: `requested_functionality`, `vulnerability_database_status (CVE_feed_last_updated)`, `dependency_candidate_name`, `dependency_candidate_version`
-    \item \textbf{Condition\_Logic (Conceptual Snippet)}:
+    \item \textbf{\texttt{Policy\_ID}}: ACG-SEC-004
+    \item \textbf{\texttt{Policy\_Name}}: "Vulnerability Management and Dependency Control for AI-Generated Code"
+    \item \textbf{\texttt{Version}}: 1.1 (2025-05-24)
+    \item \textbf{\texttt{AC\_Principle\_Refs}}: AC-SECURITY-001 (Secure by Design), AC-ROBUSTNESS-001
+    \item \textbf{\texttt{Scope}}: AI System: "CodeCraft" Autonomous Code Generator; Output: Generated code snippets, libraries.
+    \item \textbf{\texttt{Objective}}: "Prohibit the generation or integration of code relying on deprecated or known-vulnerable dependencies."
+    \item \textbf{\texttt{Trigger\_Event(s)}}: \texttt{on\_code\_generation\_request}, \texttt{before\_dependency\_suggestion}
+    \item \textbf{\texttt{Context\_Parameters}}: \texttt{requested\_functionality}, \texttt{vulnerability\_database\_status (CVE\_feed\_last\_updated)}, \texttt{dependency\_candidate\_name}, \texttt{dependency\_candidate\_version}
+    \item \textbf{\texttt{Condition\_Logic (Conceptual Snippet)}}:
     \begin{verbatim}
     // Assume Is_Vulnerable(lib, version, cve_db) checks against a CVE database
     IF (Trigger_Event == before_dependency_suggestion AND
@@ -537,7 +525,7 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
                       Context.vulnerability_database_status))
     THEN Suggestion_Blocked = TRUE
     \end{verbatim}
-    \item \textbf{Action(s)\_Prescribed (Conceptual Snippet)}:
+    \item \textbf{\texttt{Action(s)\_Prescribed (Conceptual Snippet)}}:
     \begin{verbatim}
     IF Suggestion_Blocked == TRUE THEN
         BLOCK_DEPENDENCY_SUGGESTION;
@@ -545,8 +533,8 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
         SUGGEST_ALTERNATIVE_LIBRARY(Context.requested_functionality);
     END IF
     \end{verbatim}
-    \item \textbf{Dynamic\_Adaptation\_Hints}: `IF new_CVE_batch_processed_by_vuln_db THEN GS_update_Is_Vulnerable_logic_references`
-    \item \textbf{PGP\_Assurance\_Level}: HIGH
+    \item \textbf{\texttt{Dynamic\_Adaptation\_Hints}}: \texttt{IF new\_CVE\_batch\_processed\_by\_vuln\_db THEN GS\_update\_Is\_Vulnerable\_logic\_references}
+    \item \textbf{\texttt{PGP\_Assurance\_Level}}: HIGH
 \end{itemize}
 *(... Other fields and the licensing policy examples would be detailed as in the full Appendix B draft ...)*
 
@@ -555,15 +543,15 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
 % ... (Full content from B.3 previously generated, including its sub-sections and tables B.3.3.A and B.3.3.B) ...
 \subsubsection{Policy Definition (Suitability Example)}
 \begin{itemize}
-    \item \textbf{Policy\_ID}: FIN-SUIT-004
-    \item \textbf{Policy\_Name}: "Algorithmic Suitability Matching and Rationale Generation for Robo-Advisor"
-    \item \textbf{Version}: 1.0 (2025-05-24)
-    \item \textbf{AC\_Principle\_Refs}: AC-FIDUCIARY-001 (Client Best Interest), AC-SUITABILITY-001, AC-TRANSPARENCY-003
-    \item \textbf{Scope}: AI System: "InvestBot" Robo-Advisor; Service: Investment Recommendations.
-    \item \textbf{Objective}: "Ensure investment recommendations systematically match client's comprehensive profile and generate a clear rationale."
-    \item \textbf{Trigger\_Event(s)}: `on_investment_recommendation_request`, `after_client_profile_update`
-    \item \textbf{Context\_Parameters}: `client_risk_tolerance_score`, `client_financial_goals_vector`, `client_time_horizon`, `market_conditions_summary`, `available_product_universe_risk_ratings`
-    \item \textbf{Condition\_Logic (Conceptual Snippet)}:
+    \item \textbf{\texttt{Policy\_ID}}: FIN-SUIT-004
+    \item \textbf{\texttt{Policy\_Name}}: "Algorithmic Suitability Matching and Rationale Generation for Robo-Advisor"
+    \item \textbf{\texttt{Version}}: 1.0 (2025-05-24)
+    \item \textbf{\texttt{AC\_Principle\_Refs}}: AC-FIDUCIARY-001 (Client Best Interest), AC-SUITABILITY-001, AC-TRANSPARENCY-003
+    \item \textbf{\texttt{Scope}}: AI System: "InvestBot" Robo-Advisor; Service: Investment Recommendations.
+    \item \textbf{\texttt{Objective}}: "Ensure investment recommendations systematically match client's comprehensive profile and generate a clear rationale."
+    \item \textbf{\texttt{Trigger\_Event(s)}}: \texttt{on\_investment\_recommendation\_request}, \texttt{after\_client\_profile\_update}
+    \item \textbf{\texttt{Context\_Parameters}}: \texttt{client\_risk\_tolerance\_score}, \texttt{client\_financial\_goals\_vector}, \texttt{client\_time\_horizon}, \texttt{market\_conditions\_summary}, \texttt{available\_product\_universe\_risk\_ratings}
+    \item \textbf{\texttt{Condition\_Logic (Conceptual Snippet)}}:
     \begin{verbatim}
     // Assume Calculate_Suitability_Score(profile, product_options) returns a score
     // Assume Generate_Rationale_Text(profile, recommendation) creates explanation
@@ -575,7 +563,7 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
     IF (Suitability_Score < Min_Acceptable_Suitability_Threshold)
     THEN Recommendation_Invalid = TRUE
     \end{verbatim}
-    \item \textbf{Action(s)\_Prescribed (Conceptual Snippet)}:
+    \item \textbf{\texttt{Action(s)\_Prescribed (Conceptual Snippet)}}:
     \begin{verbatim}
     IF Recommendation_Invalid == TRUE THEN
         BLOCK_RECOMMENDATION;
@@ -588,8 +576,8 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
         LOG_EVENT(type: RECOMMENDATION_MADE, details: ..., rationale_id: ...);
     END IF
     \end{verbatim}
-    \item \textbf{Dynamic\_Adaptation\_Hints}: `IF avg_client_comprehension_score_for_rationales < threshold THEN GS_trigger_review_of_Generate_Rationale_Text_module`
-    \item \textbf{PGP\_Assurance\_Level}: HIGH
+    \item \textbf{\texttt{Dynamic\_Adaptation\_Hints}}: \texttt{IF avg\_client\_comprehension\_score\_for\_rationales < threshold THEN GS\_trigger\_review\_of\_Generate\_Rationale\_Text\_module}
+    \item \textbf{\texttt{PGP\_Assurance\_Level}}: HIGH
 \end{itemize}
 *(... Other fields would be detailed as in the full Appendix B draft ...)*
 
@@ -597,68 +585,68 @@ This appendix demonstrates the operationalization of the ACGS-PGP framework's po
 \label{app:gs_pseudocode}
 This appendix provides high-level pseudocode for the core logic of the Self-Synthesizing (GS) Engine, illustrating how it might interpret the Artificial Constitution (AC), incorporate feedback, and generate/adapt operational governance rules.
 
-\begin{algorithm}[H] % Using H for "here" as it's in appendix
+\begin{algorithm}[htbp] % Using H for "here" as it's in appendix
 \DontPrintSemicolon
 \caption{GS Engine Rule Synthesis and Adaptation}\label{alg:gs_engine_appendix}
-\Input{Current\_AC\_Version, PGC\_Feedback\_Stream, External\_Context\_Stream, Human\_Oversight\_Directives}
-\Output{Updated\_Operational\_Rule\_Set}
+\Input{\texttt{Current\_AC\_Version}, \texttt{PGC\_Feedback\_Stream}, \texttt{External\_Context\_Stream}, \texttt{Human\_Oversight\_Directives}}
+\Output{\texttt{Updated\_Operational\_Rule\_Set}}
 \BlankLine
-Variables: Operational\_Rule\_Set, AC\_Interpreted\_Constraints, Rule\_Candidate\_Buffer, GS\_Learning\_Parameters\;
+Variables: \texttt{Operational\_Rule\_Set}, \texttt{AC\_Interpreted\_Constraints}, \texttt{Rule\_Candidate\_Buffer}, \texttt{GS\_Learning\_Parameters}\;
 \BlankLine
 Initialize():\;
-  \Indp AC\_Interpreted\_Constraints $\leftarrow$ \InterpretAC{Current\_AC\_Version}\;
-  Operational\_Rule\_Set $\leftarrow$ \LoadExistingRules{} \textbf{or} \GenerateBaselineRules{AC\_Interpreted\_Constraints}\;
-  \PGPSignRuleSet{Operational\_Rule\_Set}\;
-  \PushToPGC{Operational\_Rule\_Set}\;
+  \Indp \texttt{AC\_Interpreted\_Constraints} $\leftarrow$ \InterpretAC{\texttt{Current\_AC\_Version}}\;
+  \texttt{Operational\_Rule\_Set} $\leftarrow$ \LoadExistingRules{} \textbf{or} \GenerateBaselineRules{\texttt{AC\_Interpreted\_Constraints}}\;
+  \PGPSignRuleSet{\texttt{Operational\_Rule\_Set}}\;
+  \PushToPGC{\texttt{Operational\_Rule\_Set}}\;
 \Indm
 Main\_Loop():\;
   \Indp \While{True}{
-    Event $\leftarrow$ \WaitForEvent{PGC\_Feedback, External\_Context\_Update, Human\_Directive, Scheduled\_Review\_Trigger}\;
+    Event $\leftarrow$ \WaitForEvent{\texttt{PGC\_Feedback}, \texttt{External\_Context\_Update}, \texttt{Human\_Directive}, \texttt{Scheduled\_Review\_Trigger}}\;
     \Switch{Event.type}{
-      \Case{PGC\_Feedback}{
-        Affected\_Rules $\leftarrow$ \IdentifyRulesFromFeedback{Event.data, Operational\_Rule\_Set}\;
-        \ForEach{Rule in Affected\_Rules}{
-          \If{Rule.Performance\_Degraded or Event.data.Indicates\_Ineffectiveness}{
-            Candidate $\leftarrow$ \AdaptRule{Rule, AC\_Interpreted\_Constraints, Event.data.Context, Event.data, GS\_Learning\_Parameters}\;
+      \Case{\texttt{PGC\_Feedback}}{
+        \texttt{Affected\_Rules} $\leftarrow$ \IdentifyRulesFromFeedback{Event.data, \texttt{Operational\_Rule\_Set}}\;
+        \ForEach{Rule in \texttt{Affected\_Rules}}{
+          \If{\texttt{Rule.Performance\_Degraded} or \texttt{Event.data.Indicates\_Ineffectiveness}}{
+            Candidate $\leftarrow$ \AdaptRule{Rule, \texttt{AC\_Interpreted\_Constraints}, \texttt{Event.data.Context}, Event.data, \texttt{GS\_Learning\_Parameters}}\;
             \AddToBuffer{Candidate}\;
           }
         }
       }
-      \Case{External\_Context\_Update}{
-        Relevant\_AC $\leftarrow$ \MapContextToAC{Event.data, Current\_AC\_Version}\;
-        AC\_Interpreted\_Constraints $\leftarrow$ \UpdateInterpretation{Relevant\_AC}\;
-        Impacted\_Rules $\leftarrow$ \IdentifyImpactedRules{Operational\_Rule\_Set, AC\_Interpreted\_Constraints}\;
-        \ForEach{Rule in Impacted\_Rules}{
-            Candidate $\leftarrow$ \ResynthesizeRule{Rule.Original\_Intent, AC\_Interpreted\_Constraints, Event.data}\;
+      \Case{\texttt{External\_Context\_Update}}{
+        \texttt{Relevant\_AC} $\leftarrow$ \MapContextToAC{Event.data, \texttt{Current\_AC\_Version}}\;
+        \texttt{AC\_Interpreted\_Constraints} $\leftarrow$ \UpdateInterpretation{\texttt{Relevant\_AC}}\;
+        \texttt{Impacted\_Rules} $\leftarrow$ \IdentifyImpactedRules{\texttt{Operational\_Rule\_Set}, \texttt{AC\_Interpreted\_Constraints}}\;
+        \ForEach{Rule in \texttt{Impacted\_Rules}}{
+            Candidate $\leftarrow$ \ResynthesizeRule{\texttt{Rule.Original\_Intent}, \texttt{AC\_Interpreted\_Constraints}, Event.data}\;
             \AddToBuffer{Candidate}\;
         }
-        New\_Needs $\leftarrow$ \IdentifyNewRuleNeeds{AC\_Interpreted\_Constraints, Event.data}\;
-        \ForEach{Need in New\_Needs}{
-            Candidate $\leftarrow$ \SynthesizeNewRule{Need, AC\_Interpreted\_Constraints, Event.data}\;
+        \texttt{New\_Needs} $\leftarrow$ \IdentifyNewRuleNeeds{\texttt{AC\_Interpreted\_Constraints}, Event.data}\;
+        \ForEach{Need in \texttt{New\_Needs}}{
+            Candidate $\leftarrow$ \SynthesizeNewRule{Need, \texttt{AC\_Interpreted\_Constraints}, Event.data}\;
             \AddToBuffer{Candidate}\;
         }
       }
-      \Case{Human\_Directive}{
-        \ProcessHumanDirective{Event.data, Operational\_Rule\_Set, Rule\_Candidate\_Buffer}\;
+      \Case{\texttt{Human\_Directive}}{
+        \ProcessHumanDirective{Event.data, \texttt{Operational\_Rule\_Set}, \texttt{Rule\_Candidate\_Buffer}}\;
       }
-      \Case{Scheduled\_Review\_Trigger}{
-        Rules\_To\_Review $\leftarrow$ \SelectRulesForProactiveReview{Operational\_Rule\_Set}\;
-         \ForEach{Rule in Rules\_To\_Review}{
-            Candidate $\leftarrow$ \ResynthesizeRule{Rule.Original_Intent, AC\_Interpreted\_Constraints, Global\_Context}\;
+      \Case{\texttt{Scheduled\_Review\_Trigger}}{
+        \texttt{Rules\_To\_Review} $\leftarrow$ \SelectRulesForProactiveReview{\texttt{Operational\_Rule\_Set}}\;
+         \ForEach{Rule in \texttt{Rules\_To\_Review}}{
+            Candidate $\leftarrow$ \ResynthesizeRule{\texttt{Rule.Original\_Intent}, \texttt{AC\_Interpreted\_Constraints}, \texttt{Global\_Context}}\;
             \AddToBuffer{Candidate}\;
         }
       }
     }
-    \If{not \IsEmpty{Rule\_Candidate\_Buffer}}{
-      Validated $\leftarrow$ \ValidateRuleCandidates{Rule\_Candidate\_Buffer, AC\_Interpreted\_Constraints, Operational\_Rule\_Set}\;
-      Approved $\leftarrow$ \RequestHumanApprovalIfNeeded{Validated, Human\_Oversight\_Directives}\;
+    \If{not \IsEmpty{\texttt{Rule\_Candidate\_Buffer}}}{
+      Validated $\leftarrow$ \ValidateRuleCandidates{\texttt{Rule\_Candidate\_Buffer}, \texttt{AC\_Interpreted\_Constraints}, \texttt{Operational\_Rule\_Set}}\;
+      Approved $\leftarrow$ \RequestHumanApprovalIfNeeded{Validated, \texttt{Human\_Oversight\_Directives}}\;
       \If{not \IsEmpty{Approved}}{
-        \UpdateOperationalRuleSet{Operational\_Rule\_Set, Approved}\;
-        \PGPSignRuleSet{Operational\_Rule\_Set}\;
-        \PushToPGC{Operational\_Rule\_Set}\;
+        \UpdateOperationalRuleSet{\texttt{Operational\_Rule\_Set}, Approved}\;
+        \PGPSignRuleSet{\texttt{Operational\_Rule\_Set}}\;
+        \PushToPGC{\texttt{Operational\_Rule\_Set}}\;
         \LogGSAction{"Rules Updated", Approved}\;
       }
-      \ClearBuffer{Rule\_Candidate\_Buffer}\;
+      \ClearBuffer{\texttt{Rule\_Candidate\_Buffer}}\;
     }
   }
 \Indm
@@ -702,7 +690,7 @@ This appendix provides conceptual examples of how user prompts or high-level nat
 \begin{itemize}
     \item \textbf{NL Policy Statement (from an organizational policy document ingested by GS Engine)}: "Patient medical history related to mental health conditions should only be accessible to authorized psychiatrists or psychologists directly involved in the patient's current treatment, and only after explicit patient consent for this specific type of data is verified for the current encounter."
     \item \textbf{Relevant AC Principles (Hypothetical Refs)}: AC-PRIVACY-001 (HIPAA Alignment - Sensitive Data), AC-CONSENT-001 (Explicit Consent for Sensitive Info).
-    \item \textbf{GS Engine - Derived Operational Rule Components (Conceptual for HCA-PHI-ACCESS-XXX in Appendix B.1)}:
+    \item \textbf{GS Engine - Derived Operational Rule Components (Conceptual for \texttt{HCA-PHI-ACCESS-XXX} in Appendix B.1)}:
         \begin{verbatim}
         // Component for Condition_Logic
         IF (Context.requested_PHI_sensitivity_level == 'MENTAL_HEALTH_HIGH' AND
