@@ -58,8 +58,24 @@ async def test_constitutional_council_implementation():
         print("\n1. Creating a test principle...")
         principle_data = {
             "name": "Data Privacy Principle",
-            "description": "Personal data must be processed lawfully, fairly, and transparently",
-            "content": "All data processing operations SHALL implement privacy-by-design principles and ensure user consent is obtained before processing personal data."
+            "description": "Personal data must be processed lawfully, fairly, and transparently.",
+            "content": "All data processing operations SHALL implement privacy-by-design principles and ensure user consent is obtained before processing personal data.",
+            "priority_weight": 0.75,
+            "scope": ["user_data", "pii_processing", "ai_systems"],
+            "normative_statement": "Data subjects have a right to control their personal data. Systems processing personal data must ensure confidentiality, integrity, and availability.",
+            "constraints": {
+                "data_minimization": True,
+                "purpose_limitation": True,
+                "retention_period_max_days": 365
+            },
+            "rationale": "To uphold individual privacy rights and ensure trustworthy data handling practices in accordance with GDPR and CCPA principles.",
+            "keywords": ["privacy", "data protection", "user consent", "gdpr", "ccpa"],
+            "category": "Data Governance and Privacy",
+            "validation_criteria_nl": "Verify that user consent is explicitly obtained before data collection. Check if data is encrypted at rest and in transit. Ensure there is a mechanism for users to request data deletion.",
+            "constitutional_metadata": {
+                "related_articles": ["Art. 8 ECHR", "GDPR Chapter 3"],
+                "compliance_framework": "ISO 27701"
+            }
         }
         
         result = await client.request("POST", "/api/v1/principles/", ADMIN_TOKEN, principle_data)
@@ -75,11 +91,10 @@ async def test_constitutional_council_implementation():
         meta_rule_data = {
             "rule_type": "amendment_procedure",
             "name": "Constitutional Amendment Procedure",
-            "description": "Defines how AC principles can be modified",
+            "description": "Defines how AC principles can be modified, including voting thresholds and stakeholder involvement.",
             "rule_definition": {
-                "threshold": 0.67,
-                "stakeholder_roles": ["admin", "constitutional_council"],
-                "decision_mechanism": "supermajority_vote"
+                "procedure_details": "Standard amendment process with council voting.",
+                "min_council_members_for_quorum": 5
             },
             "threshold": "0.67",
             "stakeholder_roles": ["admin", "constitutional_council"],
@@ -105,12 +120,12 @@ async def test_constitutional_council_implementation():
         amendment_data = {
             "principle_id": principle_id,
             "amendment_type": "modify",
-            "proposed_changes": "Updated privacy requirements for AI systems",
-            "justification": "Alignment with emerging AI governance standards",
-            "proposed_content": "All data processing operations SHALL implement privacy-by-design principles, ensure user consent is obtained before processing personal data, and provide algorithmic transparency for AI-driven decisions.",
+            "proposed_changes": "Update and enhance the existing principle content based on new standards.",
+            "justification": "Alignment with emerging governance standards and best practices.",
+            "proposed_content": "All data processing operations SHALL implement privacy-by-design principles, ensure user consent is obtained before processing personal data, and provide algorithmic transparency for AI-driven decisions. Regular audits must be performed.",
             "consultation_period_days": 30,
             "public_comment_enabled": True,
-            "stakeholder_groups": ["citizens", "experts", "affected_parties"]
+            "stakeholder_groups": ["citizens", "experts", "affected_parties", "regulatory_bodies"]
         }
         
         result = await client.request("POST", "/api/v1/constitutional-council/amendments", COUNCIL_TOKEN, amendment_data)
