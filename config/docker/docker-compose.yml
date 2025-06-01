@@ -20,6 +20,22 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # Task 7: Redis for parallel processing and caching
+  redis:
+    image: redis:7-alpine
+    container_name: acgs_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   alembic-runner:
     build:
       context: ../.. # Build context is the root directory
@@ -127,11 +143,20 @@ services:
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
+      # Task 7: Parallel processing configuration
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+      - PARALLEL_MAX_CONCURRENT=${PARALLEL_MAX_CONCURRENT:-50}
+      - PARALLEL_BATCH_SIZE=${PARALLEL_BATCH_SIZE:-25}
+      - ENABLE_WEBSOCKET_STREAMING=${ENABLE_WEBSOCKET_STREAMING:-true}
     depends_on:
       ac_service:
         condition: service_started # Or healthy if healthcheck is added to ac_service
       integrity_service:
         condition: service_started # Or healthy
+      redis:
+        condition: service_healthy # Wait for Redis to be ready
     volumes:
       - ../../src/backend/fv_service:/app
       - ../../src/backend/shared:/app/shared
@@ -257,5 +282,6 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   prometheus_data:
   grafana_data:

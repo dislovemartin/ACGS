@@ -46,11 +46,41 @@ async def on_startup():
     print(f"API Version: {config.get('api_version')}")
     print(f"Debug Mode: {config.get('debug')}")
 
+    # Task 7: Initialize parallel validation pipeline
+    try:
+        from app.core.parallel_validation_pipeline import parallel_pipeline
+        from shared.celery_integration import initialize_celery_integration
+
+        # Initialize Celery integration
+        celery_available = await initialize_celery_integration()
+        if celery_available:
+            print("Celery integration initialized for parallel processing")
+        else:
+            print("Celery not available - using local parallel processing")
+
+        print("Parallel validation pipeline initialized")
+
+    except Exception as e:
+        print(f"Warning: Failed to initialize parallel pipeline: {e}")
+
 @app.on_event("shutdown")
 async def on_shutdown():
     # Gracefully close HTTPX clients
     await ac_service_client.close()
     await integrity_service_client.close()
+
+    # Task 7: Shutdown parallel validation pipeline
+    try:
+        from app.core.parallel_validation_pipeline import parallel_pipeline
+        from shared.celery_integration import shutdown_celery_integration
+
+        await parallel_pipeline.shutdown()
+        await shutdown_celery_integration()
+        print("Parallel validation pipeline shutdown complete")
+
+    except Exception as e:
+        print(f"Warning: Error during parallel pipeline shutdown: {e}")
+
     print("FV Service shutdown: HTTP clients closed.")
 
 @app.get("/")

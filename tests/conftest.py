@@ -58,7 +58,7 @@ def test_config():
 # Database Mocking and Fixtures
 # =============================================================================
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_database():
     """Mock database session for testing with proper cleanup."""
     from unittest.mock import AsyncMock
@@ -78,7 +78,7 @@ async def mock_database():
     await mock_session.close()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def isolated_database_session():
     """Create an isolated database session for testing with automatic cleanup."""
     import tempfile
@@ -362,15 +362,15 @@ def test_bias_detection_data():
 # Async Testing Utilities
 # =============================================================================
 
-@pytest.fixture
-def event_loop():
+@pytest_asyncio.fixture
+async def event_loop():
     """Create an instance of the default event loop for the test session."""
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_client():
     """Async HTTP client for testing FastAPI applications with cleanup."""
     try:
@@ -462,7 +462,7 @@ def cleanup_after_test():
             del sys.modules[module]
 
 
-@pytest.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True)
 async def comprehensive_test_teardown():
     """Comprehensive teardown procedures to prevent test pollution."""
     # Store initial state
