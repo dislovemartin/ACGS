@@ -175,4 +175,8 @@ node_modules/
 .DS_Store
 # Task files
 tasks.json
-tasks/ 
+tasks/
+
+# Large archive files
+*.zip
+ACGS.zip

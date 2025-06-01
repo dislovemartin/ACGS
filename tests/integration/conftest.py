@@ -77,9 +77,90 @@ async def mock_db_session():
 # Test client fixture for HTTP testing
 @pytest.fixture
 async def test_client():
-    """Create test HTTP client."""
+    """Create test HTTP client with proper cleanup."""
     if ASYNC_DEPS_AVAILABLE:
         async with AsyncClient() as client:
             yield client
     else:
         yield None
+
+
+@pytest.fixture(autouse=True)
+async def integration_test_cleanup():
+    """Cleanup for integration tests to prevent pollution."""
+    import gc
+    import tempfile
+    from pathlib import Path
+
+    # Track resources
+    temp_files = []
+    temp_dirs = []
+
+    yield {
+        'temp_files': temp_files,
+        'temp_dirs': temp_dirs
+    }
+
+    # Cleanup temporary files created during integration tests
+    for temp_file in temp_files:
+        try:
+            if Path(temp_file).exists():
+                Path(temp_file).unlink()
+        except Exception as e:
+            print(f"Warning: Failed to remove temp file {temp_file}: {e}")
+
+    # Cleanup temporary directories
+    for temp_dir in temp_dirs:
+        try:
+            if Path(temp_dir).exists():
+                import shutil
+                shutil.rmtree(temp_dir)
+        except Exception as e:
+            print(f"Warning: Failed to remove temp directory {temp_dir}: {e}")
+
+    # Clean up integration test result files
+    result_files = [
+        "phase2_test_results.json",
+        "phase3_test_results.json",
+        "integration_test_results.json",
+        "alphaevolve_test_results.json"
+    ]
+
+    for result_file in result_files:
+        try:
+            if Path(result_file).exists():
+                Path(result_file).unlink()
+        except Exception as e:
+            print(f"Warning: Failed to remove result file {result_file}: {e}")
+
+    # Force garbage collection
+    gc.collect()
+
+
+@pytest.fixture
+def integration_temp_manager(integration_test_cleanup):
+    """Temporary file manager for integration tests."""
+    import tempfile
+    from pathlib import Path
+
+    def create_temp_file(suffix="", prefix="integration_test_", content=None):
+        """Create temporary file for integration testing."""
+        fd, path = tempfile.mkstemp(suffix=suffix, prefix=prefix)
+        os.close(fd)
+
+        if content is not None:
+            Path(path).write_text(content)
+
+        integration_test_cleanup['temp_files'].append(path)
+        return path
+
+    def create_temp_dir(suffix="", prefix="integration_test_"):
+        """Create temporary directory for integration testing."""
+        path = tempfile.mkdtemp(suffix=suffix, prefix=prefix)
+        integration_test_cleanup['temp_dirs'].append(path)
+        return path
+
+    return {
+        'create_file': create_temp_file,
+        'create_dir': create_temp_dir
+    }

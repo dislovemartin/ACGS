@@ -1,0 +1,112 @@
+{
+  "test_amendment_votes": [
+    {
+      "amendment_id": 1,
+      "user_id": 1,
+      "vote": "for",
+      "reasoning": "This amendment improves AI transparency and aligns with democratic values",
+      "cast_at": "2024-01-15T14:30:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 1,
+      "user_id": 2,
+      "vote": "for",
+      "reasoning": "Enhanced privacy protections are essential for quantum computing era",
+      "cast_at": "2024-01-15T15:45:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 1,
+      "user_id": 3,
+      "vote": "against",
+      "reasoning": "The proposed changes may be too restrictive for current AI implementations",
+      "cast_at": "2024-01-15T16:20:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 2,
+      "user_id": 1,
+      "vote": "for",
+      "reasoning": "Cross-border data transfer requirements are crucial for international compliance",
+      "cast_at": "2024-01-16T09:15:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 2,
+      "user_id": 4,
+      "vote": "for",
+      "reasoning": "This amendment addresses important gaps in our current privacy framework",
+      "cast_at": "2024-01-16T10:30:00Z",
+      "voter_role": "policy_manager",
+      "weight": 0.8
+    },
+    {
+      "amendment_id": 3,
+      "user_id": 2,
+      "vote": "for",
+      "reasoning": "Specific fairness metrics will improve algorithmic accountability",
+      "cast_at": "2024-01-17T11:00:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 3,
+      "user_id": 5,
+      "vote": "abstain",
+      "reasoning": "Need more technical analysis before making a decision on specific metrics",
+      "cast_at": "2024-01-17T13:45:00Z",
+      "voter_role": "auditor",
+      "weight": 0.6
+    },
+    {
+      "amendment_id": 4,
+      "user_id": 1,
+      "vote": "for",
+      "reasoning": "Transparency principle priority should be elevated given regulatory trends",
+      "cast_at": "2024-01-18T08:30:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 4,
+      "user_id": 3,
+      "vote": "for",
+      "reasoning": "Higher transparency priority aligns with public accountability requirements",
+      "cast_at": "2024-01-18T09:15:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 4,
+      "user_id": 6,
+      "vote": "for",
+      "reasoning": "Transparency is fundamental to democratic AI governance",
+      "cast_at": "2024-01-18T10:00:00Z",
+      "voter_role": "policy_manager",
+      "weight": 0.8
+    },
+    {
+      "amendment_id": 5,
+      "user_id": 2,
+      "vote": "against",
+      "reasoning": "The reliability requirement serves a distinct purpose from safety principles",
+      "cast_at": "2024-01-19T14:20:00Z",
+      "voter_role": "constitutional_council",
+      "weight": 1.0
+    },
+    {
+      "amendment_id": 5,
+      "user_id": 7,
+      "vote": "against",
+      "reasoning": "Removing this requirement could create gaps in system validation",
+      "cast_at": "2024-01-19T15:30:00Z",
+      "voter_role": "auditor",
+      "weight": 0.6
+    }
+  ]
+}

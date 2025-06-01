@@ -5,6 +5,7 @@ from .database import Base, metadata, get_async_db, async_engine, AsyncSessionLo
 from . import models
 from . import schemas
 from . import utils
+from .utils import ACGSConfig, get_config, reset_config
 from .security_middleware import add_security_headers # Assuming this function exists
 
 # You can optionally define __all__ to control what `from shared import *` imports
@@ -17,5 +18,8 @@ __all__ = [
     "models",
     "schemas",
     "utils",
+    "ACGSConfig",
+    "get_config",
+    "reset_config",
     "add_security_headers",
 ]

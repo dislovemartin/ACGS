@@ -305,6 +305,15 @@ uvicorn[standard]==0.34.2 \
 z3-solver==4.12.2.0 \
     --hash=sha256:03921d3021cb6e5dbeaeb94634132a5fbf5403748aa21774efac4047e633af1e
     # via -r backend/fv_service/requirements.txt
+# HuggingFace Fairness Indicators and bias detection libraries
+fairlearn==0.10.0
+scikit-learn==1.5.2
+numpy==1.26.4
+pandas==2.2.3
+# Shared module dependencies
+httpx==0.28.1
+python-jose[cryptography]==3.4.0
+alembic==1.14.0
 sqlalchemy[asyncio]==2.0.36 \
     --hash=sha256:0b3f4c438e37d22b83e640f825ef0f37b95db9aa2d68203f2c9549375d0b2260 \
     --hash=sha256:2196208432deebdfe3b22185d46b08bd8e5d1a1f94302a5d1c78dd3d6b90015c
