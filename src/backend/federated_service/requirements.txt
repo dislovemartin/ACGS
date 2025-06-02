@@ -21,7 +21,7 @@ python-jose[cryptography]==3.3.0
 # Federated learning and privacy
 numpy==1.24.4
 scipy==1.10.1
-scikit-learn==1.5.1
+scikit-learn==1.6.1
 
 # Differential privacy
 opacus==1.4.0
