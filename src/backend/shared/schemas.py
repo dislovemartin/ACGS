@@ -6,9 +6,7 @@ from uuid import UUID # For UUID validation if used in models
 
 # Base Pydantic model for common settings
 class BaseSchema(BaseModel):
-    class Config:
-        # from_attributes = True # Replaced by from_attributes = True in Pydantic V2
-        from_attributes = True # Use this for Pydantic V2
+    model_config = {"from_attributes": True}
 
 # Token Schemas (originally from auth_service/app/schemas/token.py)
 class Token(BaseSchema):
@@ -33,8 +31,7 @@ class RefreshTokenSchema(RefreshTokenCreate):
     created_at: datetime
     is_revoked: bool
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 # User Schemas (originally from auth_service/app/schemas/user.py)
