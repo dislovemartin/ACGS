@@ -43,7 +43,7 @@ aioredis==2.0.1
 
 # Logging and utilities
 structlog==23.2.0
-python-multipart==0.0.18
+python-multipart==0.0.20
 
 # Testing
 pytest==7.4.3
