@@ -16,6 +16,7 @@ from enum import Enum
 import numpy as np
 import json
 import hashlib
+import re
 from datetime import datetime, timezone
 
 # Core dependencies
@@ -25,8 +26,10 @@ from .llm_integration import get_llm_client
 # Enhanced dependencies for reliability framework
 try:
     import redis
-    from langchain.llms import OpenAI
-    from langchain.chat_models import ChatAnthropic
+    from langchain.llms import OpenAI, Cohere
+    from langchain.chat_models import ChatAnthropic # Assuming ChatCohere might exist or Cohere uses base LLM
+    # For Gemini, we might need a specific LangChain integration or a custom client via get_llm_client
+    # from langchain_google_genai import ChatGoogleGenerativeAI # Example if using langchain-google-genai
     from langchain.prompts import PromptTemplate
     from jinja2 import Template
     from sentence_transformers import SentenceTransformer
@@ -60,33 +63,45 @@ class LLMReliabilityConfig:
     """Enhanced configuration for LLM reliability framework."""
     # Core reliability settings
     target_reliability: ReliabilityLevel = ReliabilityLevel.SAFETY_CRITICAL
-    ensemble_size: int = 3  # Number of models in ensemble
-    consensus_threshold: float = 0.8  # Agreement threshold for consensus
+    ensemble_size: int = 5  # Number of models in ensemble (1 primary + 4 validators)
+    consensus_threshold: float = 0.8  # Agreement threshold for intermediate consensus steps
     bias_detection_enabled: bool = True
     semantic_validation_enabled: bool = True
     fallback_strategy: str = "conservative"  # "conservative", "majority", "expert"
     max_retries: int = 3
     timeout_seconds: int = 30
-    confidence_threshold: float = 0.95
+    # Updated to match protocol's UltraReliableConsensus.confidence_threshold
+    confidence_threshold: float = 0.999
 
     # Enhanced features for >99.9% reliability
     multi_model_validation_enabled: bool = True
-    ensemble_voting_enabled: bool = True
+    ensemble_voting_enabled: bool = True # This will be part of the new consensus logic
     counterfactual_testing_enabled: bool = True
     proactive_bias_mitigation: bool = True
     nli_validation_enabled: bool = True
     prometheus_metrics_enabled: bool = True
+    formal_verification_enabled: bool = False # Placeholder for now
 
     # Model configuration
-    primary_model: str = "gpt-4"
-    secondary_models: List[str] = field(default_factory=lambda: ["claude-3", "cohere-command"])
+    primary_model: str = "gpt-4-turbo" # Protocol: Constitutional prompting and primary synthesis
+    secondary_models: List[str] = field(default_factory=lambda: [
+        "claude-3.5-sonnet",      # Protocol: Adversarial validation and edge case detection
+        "cohere-command-r-plus", # Protocol: Logical consistency verification
+        "gemini-1.5-pro",        # Protocol: Semantic similarity validation (using 1.5 pro)
+        "local-finetuned-model"  # Protocol: Domain-specific validation
+    ])
     model_weights: Dict[str, float] = field(default_factory=lambda: {
-        "gpt-4": 0.5, "claude-3": 0.3, "cohere-command": 0.2
+        "gpt-4-turbo": 0.4,          # Primary synthesizer
+        "claude-3.5-sonnet": 0.15,   # Validator
+        "cohere-command-r-plus": 0.15, # Validator
+        "gemini-1.5-pro": 0.15,      # Validator
+        "local-finetuned-model": 0.15 # Validator
     })
 
     # Thresholds
     bias_threshold: float = 0.3
-    semantic_threshold: float = 0.7
+    # Updated to match protocol's UltraReliableConsensus.semantic_threshold
+    semantic_threshold: float = 0.95
     reliability_target: float = 0.999  # >99.9% reliability target
 
     # Performance settings
@@ -102,6 +117,7 @@ class LLMReliabilityConfig:
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     cohere_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None # For Gemini Pro
 
 
 @dataclass
@@ -154,6 +170,20 @@ class ReliabilityMetrics:
         hallucination_penalty = self.hallucination_rate * 0.3
 
         return max(0.0, core_score - bias_penalty - hallucination_penalty)
+
+
+@dataclass
+class UltraReliableResult:
+    """Result from ultra-reliable consensus framework."""
+    policy: Optional[LLMStructuredOutput]
+    confidence: float
+    validation_path: str  # "automated_consensus", "expert_review", "failed_synthesis"
+    requires_human_review: bool
+    error_message: Optional[str] = None
+    synthesis_details: Optional[Dict[str, Any]] = None
+    validation_details: Optional[Dict[str, Any]] = None
+    formal_verification_status: Optional[Dict[str, Any]] = None
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class PrometheusMetricsCollector:
@@ -295,115 +325,651 @@ class EnhancedMultiModelValidator:
         self.performance_history = []
 
     async def initialize(self):
-        """Initialize multiple LLM models for ensemble validation."""
+        """Initialize multiple LLM models for ensemble validation based on config."""
         if not ENHANCED_DEPENDENCIES_AVAILABLE:
-            logger.warning("Enhanced dependencies not available, falling back to basic validation")
-            return
+            logger.warning("Enhanced dependencies (e.g., LangChain specific clients) not fully available. Some models may use fallback.")
+            # We can still try to initialize models that don't rely on missing specific imports
 
-        # Initialize primary model (GPT-4)
-        if self.config.openai_api_key:
+        all_model_names = [self.config.primary_model] + self.config.secondary_models
+        
+        for model_name in all_model_names:
+            weight = self.config.model_weights.get(model_name)
+            if weight is None:
+                logger.warning(f"Weight not defined for model {model_name}, skipping.")
+                continue
+
+            client = None
+            model_type = "unknown"
+
             try:
-                self.models["gpt-4"] = {
-                    "client": OpenAI(openai_api_key=self.config.openai_api_key),
-                    "weight": self.config.model_weights.get("gpt-4", 0.5),
-                    "type": "openai"
-                }
-                logger.info("Initialized GPT-4 model")
-            except Exception as e:
-                logger.warning(f"Failed to initialize GPT-4: {e}")
-
-        # Initialize Claude model
-        if self.config.anthropic_api_key:
-            try:
-                self.models["claude-3"] = {
-                    "client": ChatAnthropic(anthropic_api_key=self.config.anthropic_api_key),
-                    "weight": self.config.model_weights.get("claude-3", 0.3),
-                    "type": "anthropic"
-                }
-                logger.info("Initialized Claude-3 model")
-            except Exception as e:
-                logger.warning(f"Failed to initialize Claude-3: {e}")
-
-        # Fallback to basic models if enhanced models not available
-        if not self.models:
-            logger.info("Using fallback models for ensemble validation")
-            self.models = {
-                "primary": {"client": get_llm_client(), "weight": 0.5, "type": "fallback"},
-                "secondary": {"client": get_llm_client(), "weight": 0.3, "type": "fallback"},
-                "tertiary": {"client": get_llm_client(), "weight": 0.2, "type": "fallback"}
-            }
-
-        logger.info(f"Initialized {len(self.models)} models for ensemble validation")
-
-    async def validate_with_ensemble(
-        self,
-        input_data: LLMInterpretationInput
-    ) -> Tuple[LLMStructuredOutput, ReliabilityMetrics]:
-        """Enhanced ensemble validation with caching and advanced metrics."""
-        start_time = time.time()
-        request_id = hashlib.md5(f"{input_data.principle_id}_{start_time}".encode()).hexdigest()[:8]
-
-        # Check cache first
-        cached_response = await self.cache_manager.get_cached_response(input_data)
-        if cached_response:
-            logger.info(f"Cache hit for request {request_id}")
-            metrics = self._create_cached_metrics(start_time, request_id)
-            return cached_response, metrics
-
-        # Get responses from all models
-        responses = []
-        errors = []
-        response_times = []
-
-        for model_name, model_info in self.models.items():
-            model_start = time.time()
-            try:
-                if model_info["type"] == "fallback":
-                    response = await model_info["client"].get_structured_interpretation(input_data)
+                if "gpt-4" in model_name and self.config.openai_api_key:
+                    client = OpenAI(openai_api_key=self.config.openai_api_key, model_name=model_name)
+                    model_type = "openai"
+                    logger.info(f"Initialized OpenAI model: {model_name}")
+                elif "claude-3" in model_name and self.config.anthropic_api_key:
+                    # Langchain's ChatAnthropic might take model_name in constructor or via a specific method
+                    client = ChatAnthropic(anthropic_api_key=self.config.anthropic_api_key, model_name=model_name)
+                    model_type = "anthropic"
+                    logger.info(f"Initialized Anthropic model: {model_name}")
+                elif "cohere-command" in model_name and self.config.cohere_api_key:
+                    client = Cohere(cohere_api_key=self.config.cohere_api_key, model=model_name)
+                    model_type = "cohere"
+                    logger.info(f"Initialized Cohere model: {model_name}")
+                elif "gemini" in model_name and self.config.gemini_api_key:
+                    # Placeholder: LangChain's Google GenAI integration would be used here
+                    # For now, using get_llm_client as a stand-in, assuming it can handle Gemini
+                    # client = ChatGoogleGenerativeAI(model_name=model_name, google_api_key=self.config.gemini_api_key)
+                    client = get_llm_client(llm_type="gemini", model_name=model_name, api_key=self.config.gemini_api_key)
+                    model_type = "gemini"
+                    logger.info(f"Initialized Gemini model (via get_llm_client): {model_name}")
+                elif "local-finetuned-model" in model_name:
+                    # Placeholder for local model loading logic
+                    # This might involve loading from a path or a specific local API
+                    client = get_llm_client(llm_type="local", model_name=model_name) # Assuming get_llm_client can handle this
+                    model_type = "local"
+                    logger.info(f"Initialized Local Fine-tuned Model (via get_llm_client): {model_name}")
                 else:
-                    # Use LangChain models for enhanced providers
-                    response = await self._call_langchain_model(model_info["client"], input_data)
+                    logger.warning(f"Unsupported model or missing API key for: {model_name}. Attempting fallback.")
+                    # Attempt generic fallback if specific client fails or isn't defined
+                    client = get_llm_client(model_name=model_name) # Generic client
+                    model_type = "fallback_generic"
+                    logger.info(f"Initialized Fallback model (via get_llm_client): {model_name}")
 
-                model_time = time.time() - model_start
-                response_times.append(model_time)
-
-                responses.append({
-                    "model": model_name,
-                    "response": response,
-                    "weight": model_info["weight"],
-                    "response_time": model_time,
-                    "type": model_info["type"]
-                })
-                logger.debug(f"Model {model_name} responded in {model_time:.3f}s")
-
+                if client:
+                    self.models[model_name] = {
+                        "client": client,
+                        "weight": weight,
+                        "type": model_type
+                    }
             except Exception as e:
-                errors.append(f"Model {model_name}: {str(e)}")
-                logger.warning(f"Model {model_name} failed: {e}")
+                logger.error(f"Failed to initialize model {model_name}: {e}")
 
-        if not responses:
-            return await self._handle_complete_failure(input_data, errors, request_id)
+        if not self.models:
+            logger.error("No models could be initialized. LLM Reliability Framework will not function correctly.")
+            # Fallback to a single basic model if all else fails, to prevent complete breakdown
+            try:
+                logger.info("Attempting to initialize a single default fallback model.")
+                default_client = get_llm_client()
+                self.models["default_fallback"] = {
+                    "client": default_client,
+                    "weight": 1.0,
+                    "type": "default_fallback_emergency"
+                }
+                logger.info("Initialized a single default fallback model.")
+            except Exception as e_fallback:
+                logger.critical(f"CRITICAL: Failed to initialize even a single default fallback model: {e_fallback}")
+        
+        logger.info(f"Successfully initialized {len(self.models)} models for ensemble validation.")
 
-        # Analyze consensus with enhanced algorithms
-        consensus_result = await self._analyze_enhanced_consensus(responses)
+    async def achieve_ultra_reliable_consensus(
+        self,
+        # Adapting input_data to represent principle and context for now.
+        # In a full implementation, these would be more structured types
+        # like ConstitutionalPrinciple and SynthesisContext from the protocol.
+        input_data: LLMInterpretationInput, # Contains principle_id, principle_text, context
+        # TODO: Define ConstitutionalPrinciple and SynthesisContext dataclasses
+        # principle: ConstitutionalPrinciple,
+        # context: SynthesisContext
+    ) -> UltraReliableResult:
+        """
+        Achieve >99.9% reliable policy synthesis through a multi-stage consensus framework,
+        aligning with the research protocol's UltraReliableConsensus class.
+        """
+        start_time = time.time()
+        # Using principle_id from input_data for request_id generation
+        request_id = hashlib.md5(f"{getattr(input_data, 'principle_id', 'unknown_principle')}_{start_time}".encode()).hexdigest()[:8]
+        
+        # For now, principle_text is directly from input_data
+        principle_text = getattr(input_data, 'principle_text', '')
+        synthesis_context = getattr(input_data, 'context', None)
 
-        # Calculate comprehensive reliability metrics
-        metrics = self._calculate_enhanced_metrics(
-            responses, errors, response_times, time.time() - start_time,
-            consensus_result, request_id
+
+        # TODO: Cache check for UltraReliableResult if applicable at this higher level
+
+        # Stage 1: Multi-model synthesis (Parallel synthesis by multiple models)
+        # `responses` here are the initial synthesis attempts from various models.
+        synthesis_results, synthesis_errors, synthesis_metrics_details = await self._parallel_synthesis(input_data, request_id)
+
+        if not synthesis_results:
+            logger.error(f"Request {request_id}: All models failed during initial synthesis stage.")
+            # Create a basic ReliabilityMetrics for logging if needed
+            # metrics = self._calculate_enhanced_metrics([], synthesis_errors, [], time.time() - start_time, LLMStructuredOutput(interpretations=[], raw_llm_response=""), request_id)
+            # self.performance_history.append(metrics) # Log failure
+            return UltraReliableResult(
+                policy=None,
+                confidence=0.0,
+                validation_path="failed_synthesis",
+                requires_human_review=True,
+                error_message=f"All models failed initial synthesis: {'; '.join(synthesis_errors)}"
+            )
+
+        # Stage 2: Cross-validation matrix
+        # Each synthesis_result is validated by other models.
+        validation_matrix = await self._cross_validate_results(synthesis_results, principle_text, request_id)
+
+        # Stage 3: Semantic consistency check (using EnhancedSemanticFaithfulnessValidator)
+        # This should check each synthesis_result against the original principle.
+        semantic_scores = await self._validate_semantic_consistency(
+            synthesis_results, principle_text, request_id
         )
 
-        # Cache successful response
-        if metrics.success_rate > 0.8:
-            await self.cache_manager.cache_response(input_data, consensus_result)
+        # Stage 4: Formal verification where applicable (Placeholder)
+        formal_verification_results = await self._attempt_formal_verification(
+            synthesis_results, principle_text, request_id
+        )
 
-        # Store performance history
-        self.performance_history.append(metrics)
-        if len(self.performance_history) > 1000:  # Keep last 1000 requests
-            self.performance_history = self.performance_history[-1000:]
+        # Stage 5: Consensus decision
+        # This is the core logic to determine the final policy and confidence.
+        # It will use validation_matrix, semantic_scores, formal_verification_results.
+        final_policy, final_confidence, consensus_details = await self._weighted_consensus_decision(
+            synthesis_results, validation_matrix, semantic_scores, formal_verification_results, request_id
+        )
+        
+        # TODO: Calculate comprehensive ReliabilityMetrics based on the entire process
+        # metrics = self._calculate_overall_reliability_metrics(...)
+        # self.performance_history.append(metrics)
+        # self.cache_manager.cache_response(...) # Cache the final UltraReliableResult if successful
 
-        return consensus_result, metrics
+        if final_policy and final_confidence >= self.config.confidence_threshold:
+            logger.info(f"Request {request_id}: Automated consensus achieved with confidence {final_confidence:.4f}")
+            return UltraReliableResult(
+                policy=final_policy, # This should be the chosen LLMStructuredOutput or similar
+                confidence=final_confidence,
+                validation_path="automated_consensus",
+                requires_human_review=False,
+                synthesis_details=consensus_details
+            )
+        else:
+            logger.warning(f"Request {request_id}: Automated consensus failed or confidence too low ({final_confidence:.4f}). Escalating.")
+            # Pass all gathered information to the escalation process
+            return await self._escalate_to_expert_review(
+                synthesis_results, validation_matrix, semantic_scores, formal_verification_results,
+                final_policy, final_confidence, principle_text, synthesis_context, request_id
+            )
 
-    async def _call_langchain_model(self, model_client, input_data: LLMInterpretationInput) -> LLMStructuredOutput:
+    async def _parallel_synthesis(
+        self,
+        input_data: LLMInterpretationInput,
+        request_id: str
+    ) -> Tuple[List[Dict[str, Any]], List[str], Dict[str, Any]]:
+        """
+        Stage 1: Perform synthesis using multiple configured models in parallel.
+        Returns a list of synthesis results, a list of errors, and metrics details.
+        Each synthesis result includes the model name, the LLMStructuredOutput, weight, etc.
+        """
+        logger.info(f"Request {request_id}: Starting Stage 1 - Parallel Synthesis with {len(self.models)} models.")
+        responses_data = [] # To store successful responses with their metadata
+        errors = []
+        response_times_map = {} # model_name: time
+
+        if not self.models:
+            logger.error(f"Request {request_id}: No models available for parallel synthesis.")
+            return [], ["No models configured"], {"synthesis_attempts": 0}
+
+        tasks_with_model_names = []
+        for model_name, model_info in self.models.items():
+            # Create a coroutine that, when awaited, returns (model_name, result_of_call)
+            async def task_wrapper(m_name, m_info, i_data, r_id):
+                try:
+                    res = await self._call_individual_model_for_synthesis(m_name, m_info, i_data, r_id)
+                    return m_name, res # res is (LLMStructuredOutput, float_time) or None if exception handled inside
+                except Exception as e:
+                    return m_name, e # Return the exception associated with the model name
+
+            tasks_with_model_names.append(task_wrapper(model_name, model_info, input_data, request_id))
+        
+        # Gather results. Each item in `gathered_results` will be (model_name, actual_result_or_exception)
+        gathered_results = await asyncio.gather(*tasks_with_model_names, return_exceptions=False) # Exceptions are handled in task_wrapper
+
+        for model_name, result in gathered_results:
+            model_info = self.models[model_name] # Get model_info again using the returned model_name
+            if isinstance(result, Exception):
+                error_message = f"Model {model_name}: {str(result)}"
+                errors.append(error_message)
+                logger.warning(f"Request {request_id}: Model {model_name} failed during synthesis: {result}")
+            elif result and isinstance(result, tuple) and len(result) == 2: # result is (response_output, response_time)
+                response_output, response_time = result
+                if response_output and isinstance(response_output, LLMStructuredOutput):
+                    response_times_map[model_name] = response_time
+                    responses_data.append({
+                        "model_name": model_name,
+                        "synthesis_output": response_output,
+                        "weight": model_info["weight"],
+                        "type": model_info["type"],
+                        "response_time": response_time
+                    })
+                    logger.debug(f"Request {request_id}: Model {model_name} synthesized in {response_time:.3f}s")
+                else:
+                    error_message = f"Model {model_name}: Invalid synthesis output format received."
+                    errors.append(error_message)
+                    logger.warning(f"Request {request_id}: {error_message} Output: {response_output}")
+            else:
+                # This case should ideally not be reached if _call_individual_model_for_synthesis always returns a tuple or raises
+                error_message = f"Model {model_name}: Unexpected result format from _call_individual_model_for_synthesis: {result}"
+                errors.append(error_message)
+                logger.error(f"Request {request_id}: {error_message}")
+
+        metrics_details = {"response_times_map": response_times_map, "synthesis_attempts": len(self.models)}
+        logger.info(f"Request {request_id}: Stage 1 - Parallel Synthesis completed. Successes: {len(responses_data)}, Failures: {len(errors)}")
+        return responses_data, errors, metrics_details
+
+    async def _call_individual_model_for_synthesis(
+        self, model_name: str, model_info: Dict, input_data: LLMInterpretationInput, request_id: str
+    ) -> Tuple[LLMStructuredOutput, float]: # Ensure it always returns this tuple or raises
+        """Helper to call a single model and record its time, returns (response, time) or raises exception."""
+        model_start_time = time.time()
+        logger.debug(f"Request {request_id}: Calling model {model_name} (type: {model_info.get('type', 'unknown')}) for synthesis.")
+        
+        try:
+            response_output: Optional[LLMStructuredOutput] = None
+            client = model_info.get("client")
+
+            if not client:
+                logger.error(f"Request {request_id}: No client found for model {model_name}.")
+                raise ValueError(f"Client not initialized for model {model_name}")
+
+            # Construct a specific prompt for synthesis if needed, or use a generic one.
+            # The current input_data (LLMInterpretationInput) is assumed to be suitable.
+            
+            model_type = model_info.get("type", "unknown")
+
+            if model_type in ["openai", "anthropic", "cohere"]: # LangChain models
+                if not hasattr(self, '_call_langchain_model'): # Defensive check
+                    logger.error(f"Request {request_id}: _call_langchain_model method missing.")
+                    raise NotImplementedError("_call_langchain_model is not implemented.")
+                response_output = await self._call_langchain_model(client, input_data, model_name)
+            elif model_type in ["fallback_generic", "default_fallback_emergency", "local", "gemini", "fallback"]:
+                if not hasattr(client, 'get_structured_interpretation'):
+                    logger.error(f"Request {request_id}: Client for model {model_name} (type {model_type}) does not have get_structured_interpretation method.")
+                    raise NotImplementedError(f"get_structured_interpretation not implemented for {model_type} client.")
+                response_output = await client.get_structured_interpretation(input_data)
+            else:
+                logger.error(f"Request {request_id}: Unknown model type '{model_type}' for model {model_name}.")
+                raise ValueError(f"Unknown model type '{model_type}' for {model_name}")
+            
+            if not response_output or not isinstance(response_output, LLMStructuredOutput):
+                logger.error(f"Request {request_id}: Model {model_name} returned invalid output type: {type(response_output)}. Expected LLMStructuredOutput.")
+                # Create a default error response to avoid downstream issues if possible, or raise
+                raise ValueError(f"Model {model_name} returned invalid output type.")
+
+            model_response_time = time.time() - model_start_time
+            logger.debug(f"Request {request_id}: Model {model_name} responded in {model_response_time:.3f}s.")
+            return response_output, model_response_time
+            
+        except Exception as e:
+            # Log the specific exception and model name before re-raising
+            logger.error(f"Request {request_id}: Exception during synthesis call for model {model_name} (type: {model_info.get('type', 'unknown')}): {type(e).__name__} - {e}", exc_info=True)
+            raise # Re-raise the caught exception to be handled by the caller (_parallel_synthesis)
+
+    async def _cross_validate_results(
+        self,
+        synthesis_results: List[Dict[str, Any]],
+        principle_text: str,
+        request_id: str
+    ) -> Dict[str, Any]:
+        """
+        Stage 2: Perform cross-validation of synthesis results.
+        Each synthesis is validated by other models in the ensemble.
+        Returns a validation matrix or similar structure.
+        """
+        logger.info(f"Request {request_id}: Starting Stage 2 - Cross-Validation.")
+        validation_matrix = {} # e.g., {synthesizer_model_name: {validator_model_name: validation_score/result}}
+        
+        validation_tasks = []
+
+        for synth_item in synthesis_results:
+            synthesizer_model_name = synth_item["model_name"]
+            synthesized_policy_text = synth_item["synthesis_output"].raw_llm_response
+            # Initialize the entry for the synthesizer model to avoid KeyError later if all its validations fail
+            validation_matrix[synthesizer_model_name] = {}
+
+
+            for validator_model_name, validator_model_info in self.models.items():
+                if validator_model_name == synthesizer_model_name: # A model doesn't validate its own synthesis
+                    continue
+                
+                # Prepare task for concurrent execution
+                validation_tasks.append(
+                    self._perform_single_cross_validation(
+                        synthesizer_model_name, validator_model_name, validator_model_info,
+                        principle_text, synthesized_policy_text, request_id
+                    )
+                )
+        
+        cross_validation_run_results = await asyncio.gather(*validation_tasks, return_exceptions=True)
+
+        for result_item in cross_validation_run_results:
+            if isinstance(result_item, Exception):
+                logger.error(f"Request {request_id}: Error during a cross-validation task: {result_item}")
+                # Decide how to handle individual validator failures, e.g., mark as low score or skip
+                # For now, we log and the specific synth_name/validator_name pair won't get an entry or will have error.
+            elif result_item:
+                synth_name, validator_name, val_score, val_comment = result_item
+                if synth_name not in validation_matrix:
+                     validation_matrix[synth_name] = {} # Should have been initialized
+                validation_matrix[synth_name][validator_name] = {
+                    "score": val_score,
+                    "comment": val_comment
+                }
+        
+        logger.info(f"Request {request_id}: Stage 2 - Cross-Validation completed.")
+        return validation_matrix
+
+    async def _perform_single_cross_validation(
+        self, synthesizer_model_name: str, validator_model_name: str, validator_model_info: Dict,
+        principle_text: str, synthesized_policy_text: str, request_id: str
+    ) -> Tuple[str, str, float, str]:
+        """Helper for a single cross-validation call."""
+        try:
+            # This prompt asks the validator to assess the synthesized policy against the original principle.
+            validation_prompt_text = (
+                f"Original Constitutional Principle: \"{principle_text}\"\n\n"
+                f"Proposed Policy (synthesized by '{synthesizer_model_name}'): \"{synthesized_policy_text}\"\n\n"
+                f"Task: As the '{validator_model_name}' model, evaluate the Proposed Policy based on the Original Constitutional Principle. \n"
+                f"1. Is the Proposed Policy a faithful interpretation of the Original Principle? (Yes/No/Partially)\n"
+                f"2. Is the Proposed Policy logically consistent with the Original Principle? (Yes/No/Partially)\n"
+                f"3. Provide an overall alignment score from 0.0 (no alignment) to 1.0 (perfect alignment).\n"
+                f"4. Briefly justify your score and highlight any misalignments or inconsistencies.\n\n"
+                f"Respond ONLY with a JSON object containing 'faithful' (string), 'consistent' (string), 'score' (float), and 'justification' (string)."
+            )
+            
+            validation_input = LLMInterpretationInput(
+                principle_id=f"validation_{request_id}_{synthesizer_model_name}_by_{validator_model_name}",
+                principle_text=validation_prompt_text,
+                context = {"role": "validation", "original_principle_preview": principle_text[:100]+"...", "policy_under_review_preview": synthesized_policy_text[:100]+"..."}
+            )
+            
+            # Use _call_individual_model_for_synthesis to get LLMStructuredOutput
+            validation_llm_output, _ = await self._call_individual_model_for_synthesis(validator_model_name, validator_model_info, validation_input, request_id)
+            
+            parsed_validation = self._parse_structured_validation_response(validation_llm_output.raw_llm_response, validator_model_name, synthesizer_model_name, request_id)
+            validation_score = parsed_validation.get("score", 0.0)
+            validation_comment = parsed_validation.get("justification", "Automated validation placeholder")
+
+            logger.debug(f"Request {request_id}: {validator_model_name} validated {synthesizer_model_name}'s policy, score: {validation_score:.2f}")
+            return synthesizer_model_name, validator_model_name, validation_score, validation_comment
+        except Exception as e:
+            logger.error(f"Request {request_id}: Error during cross-validation by {validator_model_name} for {synthesizer_model_name}: {e}")
+            return synthesizer_model_name, validator_model_name, 0.0, f"Validation error: {e}"
+
+    def _parse_structured_validation_response(self, raw_response: str, validator_name: str, synthesizer_name: str, request_id: str) -> Dict[str, Any]:
+        """ Parses a structured JSON validation response from an LLM. """
+        try:
+            # Attempt to find JSON block if the response is not pure JSON
+            json_start = raw_response.find('{')
+            json_end = raw_response.rfind('}') + 1
+            if json_start != -1 and json_end != -1 and json_end > json_start:
+                json_str = raw_response[json_start:json_end]
+            else:
+                json_str = raw_response # Assume it might be pure JSON
+
+            data = json.loads(json_str)
+            score = float(data.get("score", 0.0))
+            justification = data.get("justification", "N/A")
+            # Could also extract 'faithful' and 'consistent' if needed
+            return {"score": score, "justification": justification}
+        except json.JSONDecodeError as e:
+            logger.warning(f"Request {request_id}: Failed to parse JSON validation response from {validator_name} for {synthesizer_name}: {e}. Raw: {raw_response[:200]}")
+            # Fallback: try to extract score with regex if JSON parsing fails
+            import re
+            match = re.search(r"score[\s:]*([0-9.]+)", raw_response, re.IGNORECASE)
+            if match:
+                try:
+                    return {"score": float(match.group(1)), "justification": "Extracted score via regex after JSON parse failure."}
+                except ValueError:
+                    pass # Score not a float
+            return {"score": 0.0, "justification": "Could not parse validation response."}
+        except Exception as e: # Catch other potential errors like float conversion
+            logger.warning(f"Request {request_id}: Error processing validation response from {validator_name} for {synthesizer_name}: {e}. Raw: {raw_response[:200]}")
+            return {"score": 0.0, "justification": f"Error processing validation: {e}"}
+
+
+    async def _validate_semantic_consistency(
+        self,
+        synthesis_results: List[Dict[str, Any]],
+        principle_text: str,
+        request_id: str
+    ) -> Dict[str, Any]:
+        """
+        Stage 3: Validate semantic consistency of each synthesis against the original principle.
+        Uses EnhancedSemanticFaithfulnessValidator.
+        Returns a dictionary of semantic scores for each synthesis.
+        """
+        logger.info(f"Request {request_id}: Starting Stage 3 - Semantic Consistency Validation.")
+        semantic_scores = {} # {synthesizer_model_name: faithfulness_score_details}
+        
+        if not hasattr(self, 'faithfulness_validator') or not isinstance(self.faithfulness_validator, EnhancedSemanticFaithfulnessValidator):
+            logger.error(f"Request {request_id}: EnhancedSemanticFaithfulnessValidator not initialized in EnhancedMultiModelValidator. Skipping semantic consistency.")
+            for synthesis_item in synthesis_results:
+                model_name = synthesis_item["model_name"]
+                semantic_scores[model_name] = {"overall_score": 0.0, "error": "Faithfulness validator not available."}
+            return semantic_scores
+
+        validation_tasks = []
+        for synthesis_item in synthesis_results:
+            model_name = synthesis_item["model_name"]
+            
+            # Ensure synthesis_output exists and has raw_llm_response
+            if "synthesis_output" not in synthesis_item or not hasattr(synthesis_item["synthesis_output"], 'raw_llm_response'):
+                logger.warning(f"Request {request_id}: Missing 'synthesis_output' or 'raw_llm_response' for model {model_name} in semantic consistency check. Skipping.")
+                semantic_scores[model_name] = {"overall_score": 0.0, "error": "Missing synthesis output for validation."}
+                continue
+
+            policy_text = synthesis_item["synthesis_output"].raw_llm_response
+            
+            # Create a partial or lambda to pass model_name along with the task result
+            async def task_with_model_name(p_text, pol_text, m_name):
+                res = await self.faithfulness_validator.validate_faithfulness_comprehensive(p_text, pol_text)
+                return m_name, res
+
+            validation_tasks.append(task_with_model_name(principle_text, policy_text, model_name))
+        
+        if not validation_tasks:
+            logger.info(f"Request {request_id}: No valid synthesis results to perform semantic consistency validation on.")
+            return semantic_scores
+
+        faithfulness_run_results = await asyncio.gather(*validation_tasks, return_exceptions=True)
+
+        for result_item in faithfulness_run_results:
+            if isinstance(result_item, Exception):
+                # This error is from asyncio.gather itself or an unhandled exception in task_with_model_name
+                logger.error(f"Request {request_id}: General error during semantic consistency gathering: {result_item}")
+                # We don't know which model this was for without more context, so we can't assign it.
+                # This indicates a problem with the task setup or an unexpected error.
+            elif result_item:
+                model_name, faithfulness_details = result_item
+                if isinstance(faithfulness_details, Exception): # Exception from validate_faithfulness_comprehensive
+                    logger.error(f"Request {request_id}: Error during semantic consistency for {model_name}: {faithfulness_details}")
+                    semantic_scores[model_name] = {"overall_score": 0.0, "error": str(faithfulness_details)}
+                else:
+                    semantic_scores[model_name] = faithfulness_details
+                    logger.debug(f"Request {request_id}: Semantic score for {model_name}'s policy: {faithfulness_details.get('overall_score', 0.0):.2f}")
+            
+        logger.info(f"Request {request_id}: Stage 3 - Semantic Consistency Validation completed with {len(semantic_scores)} results.")
+        return semantic_scores
+
+    async def _attempt_formal_verification(
+        self,
+        synthesis_results: List[Dict[str, Any]],
+        principle_text: str, # Or a more structured ConstitutionalPrinciple
+        request_id: str
+    ) -> Dict[str, Any]:
+        """
+        Stage 4: Attempt formal verification where applicable.
+        Placeholder implementation.
+        """
+        logger.info(f"Request {request_id}: Starting Stage 4 - Formal Verification (Placeholder).")
+        if not self.config.formal_verification_enabled:
+            logger.info(f"Request {request_id}: Formal verification is disabled by config.")
+            return {res["model_name"]: {"verified": False, "reason": "disabled", "details": None} for res in synthesis_results}
+
+        formal_verification_results = {}
+        for synthesis_item in synthesis_results:
+            model_name = synthesis_item["model_name"]
+            # policy_to_verify = synthesis_item["synthesis_output"]
+            # In a real scenario, this would involve translating policy to a formal language (e.g., SMT-LIB)
+            # and using a solver like Z3.
+            formal_verification_results[model_name] = {
+                "verified": False, # Placeholder
+                "reason": "Not yet implemented",
+                "details": None
+            }
+            logger.debug(f"Request {request_id}: Formal verification for {model_name}'s policy (stubbed).")
+        
+        logger.info(f"Request {request_id}: Stage 4 - Formal Verification (Placeholder) completed.")
+        return formal_verification_results
+
+    async def _weighted_consensus_decision(
+        self,
+        synthesis_results: List[Dict[str, Any]],
+        validation_matrix: Dict[str, Dict[str, Dict[str, Any]]],
+        semantic_scores: Dict[str, Dict[str, Any]],
+        formal_verification_results: Dict[str, Dict[str, Any]],
+        request_id: str
+    ) -> Tuple[Optional[LLMStructuredOutput], float, Dict[str, Any]]:
+        """
+        Stage 5: Make a consensus decision based on all gathered evidence.
+        Calculates final policy and confidence.
+        """
+        logger.info(f"Request {request_id}: Starting Stage 5 - Weighted Consensus Decision.")
+        
+        candidate_policies = []
+        if not synthesis_results:
+            logger.error(f"Request {request_id}: No synthesis results provided to _weighted_consensus_decision.")
+            return None, 0.0, {"reason": "No synthesis results"}
+
+        for synth_item in synthesis_results:
+            model_name = synth_item["model_name"]
+            policy_output = synth_item["synthesis_output"]
+            base_weight = synth_item.get("weight", self.config.model_weights.get(model_name, 0.1))
+            
+            semantic_consistency_score = semantic_scores.get(model_name, {}).get("overall_score", 0.0)
+            
+            cross_val_data_for_model = validation_matrix.get(model_name, {})
+            cross_val_scores_list = [
+                val_data.get("score", 0.0)
+                for val_data in cross_val_data_for_model.values() if isinstance(val_data, dict) # Ensure val_data is a dict
+            ]
+            avg_cross_val_score = np.mean(cross_val_scores_list) if cross_val_scores_list else 0.0
+            
+            formally_verified = formal_verification_results.get(model_name, {}).get("verified", False)
+            formal_verification_bonus = 0.15 if formally_verified else 0.0
+
+            w_semantic = 0.50
+            w_cross_val = 0.30
+            w_base_model = 0.05
+            w_formal_verif = 0.15
+
+            combined_score = (
+                semantic_consistency_score * w_semantic +
+                avg_cross_val_score * w_cross_val +
+                base_weight * w_base_model +
+                formal_verification_bonus
+            )
+            combined_score = min(combined_score, 1.0) # Cap score at 1.0
+            
+            candidate_policies.append({
+                "model_name": model_name,
+                "policy_output": policy_output,
+                "final_score": combined_score,
+                "details": {
+                    "base_model_weight_contribution": base_weight * w_base_model,
+                    "semantic_score_contribution": semantic_consistency_score * w_semantic,
+                    "avg_cross_val_score_contribution": avg_cross_val_score * w_cross_val,
+                    "formal_verification_bonus": formal_verification_bonus,
+                    "raw_semantic_score": semantic_consistency_score,
+                    "raw_avg_cross_val_score": avg_cross_val_score,
+                    "raw_base_weight": base_weight,
+                    "formally_verified": formally_verified
+                }
+            })
+            logger.debug(f"Request {request_id}: Candidate {model_name}, combined_score: {combined_score:.4f}")
+
+        if not candidate_policies:
+            logger.error(f"Request {request_id}: No candidate policies after scoring in consensus decision.")
+            return None, 0.0, {"reason": "No candidates scored"}
+
+        best_candidate = max(candidate_policies, key=lambda x: x["final_score"])
+        
+        final_policy_output = best_candidate["policy_output"]
+        final_confidence = best_candidate["final_score"]
+
+        consensus_details = {
+            "chosen_policy_model": best_candidate["model_name"],
+            "chosen_policy_confidence": final_confidence,
+            "all_candidate_scores": {
+                cp["model_name"]: cp["final_score"] for cp in candidate_policies
+            },
+            "chosen_policy_scoring_breakdown": best_candidate["details"]
+        }
+        
+        logger.info(f"Request {request_id}: Stage 5 - Weighted Consensus Decision completed. Best: {best_candidate['model_name']}, Confidence: {final_confidence:.4f}")
+        return final_policy_output, final_confidence, consensus_details
+
+    async def _escalate_to_expert_review(
+        self,
+        synthesis_results: List[Dict[str, Any]],
+        validation_matrix: Dict[str, Any],
+        semantic_scores: Dict[str, Any],
+        formal_verification_results: Dict[str, Any],
+        current_best_policy: Optional[LLMStructuredOutput],
+        current_confidence: float,
+        principle_text: str,
+        context: Optional[str],
+        request_id: str
+    ) -> UltraReliableResult:
+        """
+        Handle escalation to expert review when automated consensus is insufficient.
+        """
+        logger.warning(f"Request {request_id}: Escalating to expert review. Confidence: {current_confidence:.4f}")
+        
+        best_policy_model_name = "N/A"
+        if current_best_policy:
+            for sr in synthesis_results:
+                # Ensure 'synthesis_output' exists and is comparable
+                if sr.get("synthesis_output") == current_best_policy:
+                    best_policy_model_name = sr["model_name"]
+                    break
+            if best_policy_model_name == "N/A":
+                 best_policy_model_name = "Consensus (below threshold)"
+
+        escalation_details = {
+            "reason": "Automated consensus confidence below threshold or no policy selected.",
+            "current_confidence": current_confidence,
+            "current_best_policy_model": best_policy_model_name,
+            "principle_text": principle_text,
+            "context": context,
+            "synthesis_results_summary": [
+                {
+                    "model": res["model_name"],
+                    "output_preview": res.get("synthesis_output").raw_llm_response[:150]+"..." if res.get("synthesis_output") else "N/A",
+                    "response_time": res.get("response_time")
+                } for res in synthesis_results
+            ],
+            "validation_matrix_summary": {
+                synth_model: {
+                    validator: details.get("score") if isinstance(details, dict) else "N/A"
+                    for validator, details in val_data.items()
+                } for synth_model, val_data in validation_matrix.items()
+            },
+            "semantic_scores_summary": {
+                model: data.get("overall_score") if isinstance(data, dict) else "N/A"
+                for model, data in semantic_scores.items()
+            },
+            "formal_verification_summary": formal_verification_results,
+        }
+
+        return UltraReliableResult(
+            policy=current_best_policy,
+            confidence=current_confidence,
+            validation_path="expert_review_required",
+            requires_human_review=True,
+            synthesis_details=escalation_details,
+            error_message="Automated consensus confidence below threshold or no policy selected; expert review required."
+        )
+
+
+    async def _call_langchain_model(self, model_client, input_data: LLMInterpretationInput, model_name_for_log: str = "") -> LLMStructuredOutput:
         """Call LangChain model and convert response to our format."""
         try:
             # Create prompt for the model
@@ -1147,7 +1713,42 @@ class EnhancedLLMReliabilityFramework:
 
         try:
             # Multi-model validation with enhanced ensemble
-            output, metrics = await self.multi_model_validator.validate_with_ensemble(input_data)
+            # Multi-model validation using the new ultra-reliable consensus method
+            # The request_id for the overall process_with_reliability context
+            process_request_id = hashlib.md5(f"{getattr(input_data, 'principle_id', 'unknown_principle')}_{start_time}_process".encode()).hexdigest()[:8]
+            
+            ultra_reliable_result = await self.multi_model_validator.achieve_ultra_reliable_consensus(input_data)
+
+            output: LLMStructuredOutput
+            if ultra_reliable_result.policy and isinstance(ultra_reliable_result.policy, LLMStructuredOutput):
+                output = ultra_reliable_result.policy
+            elif ultra_reliable_result.policy:
+                # If policy is some other type, wrap or handle appropriately.
+                logger.warning(f"Request {process_request_id}: Policy from consensus is not LLMStructuredOutput, type: {type(ultra_reliable_result.policy)}. Wrapping.")
+                output = LLMStructuredOutput(interpretations=[], raw_llm_response=str(ultra_reliable_result.policy))
+            else: # No policy could be synthesized or agreed upon
+                logger.error(f"Request {process_request_id}: No policy synthesized by ultra-reliable consensus. Error: {ultra_reliable_result.error_message}")
+                output = LLMStructuredOutput(interpretations=[], raw_llm_response=ultra_reliable_result.error_message or "No policy synthesized.")
+
+            # Construct ReliabilityMetrics from UltraReliableResult and other process details
+            metrics = ReliabilityMetrics(
+                success_rate=1.0 if ultra_reliable_result.policy and not ultra_reliable_result.requires_human_review else 0.0,
+                consensus_rate=ultra_reliable_result.confidence,
+                bias_detection_rate=0.0, # To be updated by bias_detector
+                semantic_faithfulness_score=0.0, # To be updated by faithfulness_validator
+                average_response_time=time.time() - start_time,
+                error_rate=1.0 if ultra_reliable_result.error_message and not ultra_reliable_result.policy else 0.0,
+                fallback_usage_rate=1.0 if ultra_reliable_result.requires_human_review else 0.0,
+                confidence_score=ultra_reliable_result.confidence,
+                request_id=process_request_id,
+                model_agreement_score=ultra_reliable_result.synthesis_details.get("chosen_policy_scoring_breakdown", {}).get("raw_avg_cross_val_score", ultra_reliable_result.confidence) if ultra_reliable_result.synthesis_details else ultra_reliable_result.confidence,
+                cache_hit_rate=0.0 # Assuming no top-level cache hit for this new structure yet
+            )
+            
+            if ultra_reliable_result.requires_human_review:
+                logger.warning(f"Request {process_request_id}: Policy synthesis requires human review. Path: {ultra_reliable_result.validation_path}. Message: {ultra_reliable_result.error_message}")
+            elif not ultra_reliable_result.policy and ultra_reliable_result.error_message:
+                 logger.error(f"Request {process_request_id}: Policy synthesis failed. Path: {ultra_reliable_result.validation_path}. Error: {ultra_reliable_result.error_message}")
 
             # Enhanced bias detection and mitigation
             if self.config.bias_detection_enabled:
@@ -1324,3 +1925,46 @@ class EnhancedLLMReliabilityFramework:
 class LLMReliabilityFramework(EnhancedLLMReliabilityFramework):
     """Backward compatibility alias for the enhanced framework."""
     pass
+
+
+@dataclass
+class UltraReliableResult:
+    """
+    Represents the outcome of the ultra-reliable consensus process,
+    aligning with the research protocol.
+    """
+    policy: Any  # Could be LLMStructuredOutput or specific policy object
+    confidence: float
+    validation_path: str  # e.g., "automated_consensus", "expert_review"
+    requires_human_review: bool
+    synthesis_details: Optional[Dict[str, Any]] = field(default_factory=dict) # For intermediate results, validation matrix etc.
+    error_message: Optional[str] = None
+
+
+@dataclass
+class ConstitutionalPrinciple:
+    """
+    Represents a constitutional principle to be interpreted or synthesized into policy.
+    Aligns with the research protocol's concept.
+    """
+    id: str
+    text: str
+    version: Optional[str] = None
+    source: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict) # E.g., keywords, related principles
+
+
+@dataclass
+class SynthesisContext:
+    """
+    Provides context for the policy synthesis process.
+    Aligns with the research protocol's concept.
+    """
+    domain: Optional[str] = None  # E.g., "healthcare", "finance"
+    jurisdiction: Optional[str] = None # E.g., "EU", "US-CA"
+    target_audience: Optional[str] = None # E.g., "developers", "end_users"
+    application_scenario: Optional[str] = None # Specific use case
+    historical_data: Optional[List[Dict[str, Any]]] = field(default_factory=list) # Past interpretations or issues
+    related_policies: Optional[List[str]] = field(default_factory=list) # IDs or texts of related policies
+    custom_instructions: Optional[str] = None # Specific instructions for this synthesis task
+    metadata: Dict[str, Any] = field(default_factory=dict)

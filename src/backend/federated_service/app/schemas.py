@@ -4,7 +4,7 @@ Pydantic schemas for Federated Evaluation Service
 Defines request/response models for federated evaluation API endpoints.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
 from enum import Enum
@@ -54,8 +54,8 @@ class NodeConfiguration(BaseModel):
     api_key: Optional[str] = Field(None, description="API key for authentication")
     capabilities: Dict[str, Any] = Field(default_factory=dict, description="Node capabilities and metadata")
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "platform_type": "cloud_openai",
                 "endpoint_url": "https://api.openai.com/v1",
@@ -67,6 +67,7 @@ class NodeConfiguration(BaseModel):
                 }
             }
         }
+    }
 
 
 class FederatedEvaluationRequest(BaseModel):
@@ -79,14 +80,15 @@ class FederatedEvaluationRequest(BaseModel):
         description="Privacy requirements for evaluation"
     )
     
-    @validator('target_platforms')
+    @field_validator('target_platforms')
+    @classmethod
     def validate_platforms(cls, v):
         if not v:
             raise ValueError("At least one target platform must be specified")
         return v
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "policy_content": "package acgs.policy\n\nallow {\n    input.action == \"read\"\n    input.user.role == \"admin\"\n}",
                 "evaluation_criteria": {
@@ -101,6 +103,7 @@ class FederatedEvaluationRequest(BaseModel):
                 }
             }
         }
+    }
 
 
 class EvaluationMetrics(BaseModel):
@@ -187,9 +190,10 @@ class AggregationConfigRequest(BaseModel):
     min_participants: int = Field(2, ge=1, le=10)
     max_participants: int = Field(10, ge=1, le=50)
     
-    @validator('max_participants')
-    def validate_max_participants(cls, v, values):
-        if 'min_participants' in values and v < values['min_participants']:
+    @field_validator('max_participants')
+    @classmethod
+    def validate_max_participants(cls, v, info):
+        if hasattr(info, 'data') and 'min_participants' in info.data and v < info.data['min_participants']:
             raise ValueError("max_participants must be >= min_participants")
         return v
 
@@ -223,3 +227,31 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     request_id: Optional[str] = None
+
+
+# Legacy aliases for backward compatibility with test scripts
+PolicyEvaluationRequest = FederatedEvaluationRequest
+
+
+class FederatedLearningRequest(BaseModel):
+    """Request for federated learning coordination."""
+    min_participants: int = Field(..., ge=2, description="Minimum number of participants required")
+    max_participants: int = Field(..., ge=2, description="Maximum number of participants allowed")
+    aggregation_method: AggregationMethod = Field(
+        AggregationMethod.FEDERATED_AVERAGING,
+        description="Method for aggregating results"
+    )
+    privacy_budget: float = Field(1.0, ge=0.1, le=10.0, description="Privacy budget for differential privacy")
+    timeout_seconds: int = Field(300, ge=30, le=3600, description="Timeout for federated operation")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "min_participants": 3,
+                "max_participants": 10,
+                "aggregation_method": "federated_averaging",
+                "privacy_budget": 1.0,
+                "timeout_seconds": 300
+            }
+        }
+    }

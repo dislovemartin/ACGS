@@ -20,10 +20,18 @@ if not logger.hasHandlers():
 
 
 class MockLLMClient:
-    async def get_structured_interpretation(self, query: LLMInterpretationInput) -> LLMStructuredOutput:
+    async def get_structured_interpretation(self, query: LLMInterpretationInput, wina_gating_mask: Optional[Dict[str, bool]] = None) -> LLMStructuredOutput:
         interpretations: List[LLMSuggestedRule] = []
         raw_llm_response = f"Mock interpretation for principle {query.principle_id}: {query.principle_content[:30]}..."
         logger.info(f"MockLLMClient: Processing query for principle ID {query.principle_id}")
+        if wina_gating_mask:
+            logger.info(f"MockLLMClient: Received WINA gating mask: {wina_gating_mask}")
+            # In a real scenario, this mask would influence the mock response generation.
+            # For example, if a key concept related to a neuron in the mask is 'off',
+            # the mock might avoid generating rules related to that concept.
+            # For now, just logging its presence.
+            raw_llm_response += f" (WINA Gating Applied: {len(wina_gating_mask)} rules)"
+
 
         # Example: If principle mentions "user access control based on roles"
         if "user" in query.principle_content.lower() and "role" in query.principle_content.lower():
@@ -54,11 +62,16 @@ class MockLLMClient:
         logger.info(f"MockLLMClient: Generated {len(interpretations)} interpretation(s).")
         return LLMStructuredOutput(interpretations=interpretations, raw_llm_response=raw_llm_response)
 
-    async def get_constitutional_synthesis(self, synthesis_input) -> 'ConstitutionalSynthesisOutput':
+    async def get_constitutional_synthesis(self, synthesis_input, wina_gating_mask: Optional[Dict[str, bool]] = None) -> 'ConstitutionalSynthesisOutput':
         """Mock implementation of constitutional synthesis."""
         from ..schemas import ConstitutionalSynthesisOutput, ConstitutionallyCompliantRule, ConstitutionalComplianceInfo
 
         logger.info(f"MockLLMClient: Performing mock constitutional synthesis for context '{synthesis_input.context}'")
+        raw_response_addition = ""
+        if wina_gating_mask:
+            logger.info(f"MockLLMClient: Received WINA gating mask for CS: {wina_gating_mask}")
+            raw_response_addition = f" (WINA Gating Applied to CS: {len(wina_gating_mask)} rules)"
+
 
         # Mock constitutional context
         mock_constitutional_context = {
@@ -114,7 +127,7 @@ class MockLLMClient:
                 "synthesis_method": "mock_constitutional_prompting",
                 "target_format": synthesis_input.target_format
             },
-            raw_llm_response=f"Mock constitutional synthesis for context '{synthesis_input.context}'"
+            raw_llm_response=f"Mock constitutional synthesis for context '{synthesis_input.context}'{raw_response_addition}"
         )
 
 
@@ -157,11 +170,22 @@ class GroqLLMClient:
             logger.error(f"Failed to initialize Groq client: {e}")
             self.client = None
 
-    def _construct_prompt(self, query: LLMInterpretationInput) -> str:
+    def _construct_prompt(self, query: LLMInterpretationInput, wina_gating_mask: Optional[Dict[str, bool]] = None) -> str:
         # Similar prompt construction as RealLLMClient but optimized for Llama models
+        wina_directive = ""
+        if wina_gating_mask:
+            active_neurons = [nid for nid, active in wina_gating_mask.items() if active]
+            inactive_neurons = [nid for nid, active in wina_gating_mask.items() if not active]
+            wina_directive = f"\nWINA Gating Instructions:\n"
+            if active_neurons:
+                wina_directive += f"- Prioritize concepts related to: {', '.join(active_neurons)}\n"
+            if inactive_neurons:
+                wina_directive += f"- De-emphasize concepts related to: {', '.join(inactive_neurons)}\n"
+            wina_directive += "Adjust your interpretation based on these WINA directives to optimize for computational efficiency while maintaining accuracy.\n"
+
         prompt = f"""
 You are an AI assistant specialized in constitutional AI governance. Your task is to interpret constitutional principles and convert them into structured logical rules.
-
+{wina_directive}
 Constitutional Principle (ID: {query.principle_id}):
 {query.principle_content}
 
@@ -191,12 +215,12 @@ Focus on creating logical rules that capture the essence of the constitutional p
         return prompt
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def get_structured_interpretation(self, query: LLMInterpretationInput) -> LLMStructuredOutput:
+    async def get_structured_interpretation(self, query: LLMInterpretationInput, wina_gating_mask: Optional[Dict[str, bool]] = None) -> LLMStructuredOutput:
         if not self.client:
             logger.error("GroqLLMClient is not configured with an API key. Cannot make API calls.")
             return LLMStructuredOutput(interpretations=[], raw_llm_response="GroqLLMClient not configured.")
 
-        prompt = self._construct_prompt(query)
+        prompt = self._construct_prompt(query, wina_gating_mask)
         logger.info(f"GroqLLMClient: Sending request to Groq for principle ID {query.principle_id}. Prompt length: {len(prompt)}")
         logger.debug(f"GroqLLMClient: Prompt for P{query.principle_id}:\n{prompt}")
 
@@ -378,12 +402,13 @@ Focus on creating logical rules that capture the essence of the constitutional p
             # If it's a permanent error (e.g. bad prompt, unparseable response), might not want to retry.
             raise # Reraise to potentially trigger tenacity if it's a type of error covered by retry policy
 
-    async def get_constitutional_synthesis(self, synthesis_input) -> 'ConstitutionalSynthesisOutput':
+    async def get_constitutional_synthesis(self, synthesis_input, wina_gating_mask: Optional[Dict[str, bool]] = None) -> 'ConstitutionalSynthesisOutput':
         """
         Perform constitutional synthesis using constitutional prompting methodology.
 
         Args:
             synthesis_input: ConstitutionalSynthesisInput containing synthesis parameters
+            wina_gating_mask: Optional WINA gating mask to influence prompt generation
 
         Returns:
             ConstitutionalSynthesisOutput with constitutionally compliant rules
@@ -402,18 +427,38 @@ Focus on creating logical rules that capture the essence of the constitutional p
 
         try:
             # Build constitutional context
+            # The constitutional_prompt_builder might also need to be WINA-aware if principles themselves are modified by WINA
+            # For now, assuming it provides standard context, and gating is applied at LLM call.
             constitutional_context = await constitutional_prompt_builder.build_constitutional_context(
                 context=synthesis_input.context,
                 category=synthesis_input.category,
                 auth_token=synthesis_input.auth_token
             )
 
-            # Build constitutional prompt
-            constitutional_prompt = constitutional_prompt_builder.build_constitutional_prompt(
+            # Build constitutional prompt - this is where wina_gating_mask can be integrated
+            # by modifying how constitutional_prompt_builder.build_constitutional_prompt works,
+            # or by augmenting the prompt string afterwards.
+            # For simplicity, we'll augment the prompt string here if mask is present.
+            
+            base_constitutional_prompt = constitutional_prompt_builder.build_constitutional_prompt(
                 constitutional_context=constitutional_context,
                 synthesis_request=synthesis_input.synthesis_request,
                 target_format=synthesis_input.target_format
             )
+
+            wina_directive_cs = ""
+            if wina_gating_mask:
+                active_neurons = [nid for nid, active in wina_gating_mask.items() if active]
+                inactive_neurons = [nid for nid, active in wina_gating_mask.items() if not active]
+                wina_directive_cs = f"\nWINA Gating Instructions for Constitutional Synthesis:\n"
+                if active_neurons:
+                    wina_directive_cs += f"- Prioritize synthesis aspects related to: {', '.join(active_neurons)}\n"
+                if inactive_neurons:
+                    wina_directive_cs += f"- De-emphasize synthesis aspects related to: {', '.join(inactive_neurons)}\n"
+                wina_directive_cs += "Adjust your synthesis based on these WINA directives.\n"
+            
+            constitutional_prompt = base_constitutional_prompt + wina_directive_cs
+
 
             logger.info(f"RealLLMClient: Performing constitutional synthesis for context '{synthesis_input.context}'. Prompt length: {len(constitutional_prompt)}")
             logger.debug(f"RealLLMClient: Constitutional prompt:\n{constitutional_prompt}")
@@ -509,14 +554,16 @@ def get_llm_client():
         return _mock_llm_client_instance
 
 
-async def query_llm_for_structured_output(input_data: LLMInterpretationInput) -> LLMStructuredOutput:
+async def query_llm_for_structured_output(input_data: LLMInterpretationInput, wina_gating_mask: Optional[Dict[str, bool]] = None) -> LLMStructuredOutput:
     """
     Helper function to query the chosen LLM for structured interpretation.
+    Accepts an optional WINA gating mask.
     """
     client = get_llm_client()
     logger.info(f"Using LLM client: {client.__class__.__name__}")
     try:
-        return await client.get_structured_interpretation(input_data)
+        # Pass the gating mask to the client's method
+        return await client.get_structured_interpretation(input_data, wina_gating_mask=wina_gating_mask)
     except RetryError as e: # Catch tenacity's RetryError after all attempts fail
         logger.error(f"LLM query failed after multiple retries for principle {input_data.principle_id}: {e}")
         # Return a default error response or re-raise a custom application exception
@@ -531,16 +578,18 @@ async def query_llm_for_structured_output(input_data: LLMInterpretationInput) ->
             raw_llm_response=f"Unexpected error during LLM query: {e}"
         )
 
-async def query_llm_for_constitutional_synthesis(synthesis_input) -> 'ConstitutionalSynthesisOutput':
+async def query_llm_for_constitutional_synthesis(synthesis_input, wina_gating_mask: Optional[Dict[str, bool]] = None) -> 'ConstitutionalSynthesisOutput':
     """
     Helper function to query the chosen LLM for constitutional synthesis.
+    Accepts an optional WINA gating mask.
     """
     from ..schemas import ConstitutionalSynthesisOutput
 
     client = get_llm_client()
     logger.info(f"Using LLM client for constitutional synthesis: {client.__class__.__name__}")
     try:
-        return await client.get_constitutional_synthesis(synthesis_input)
+        # Pass the gating mask to the client's method
+        return await client.get_constitutional_synthesis(synthesis_input, wina_gating_mask=wina_gating_mask)
     except Exception as e:
         logger.error(f"An unexpected error occurred during constitutional synthesis for context {synthesis_input.context}: {e}")
         return ConstitutionalSynthesisOutput(

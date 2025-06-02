@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Query, Body
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 # EC service imports
 from ...core.wina_oversight_coordinator import (
@@ -51,14 +51,16 @@ class OversightRequestModel(BaseModel):
     wina_optimization_enabled: bool = Field(default=True, description="Whether to enable WINA optimization")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
     
-    @validator('oversight_type')
+    @field_validator('oversight_type')
+    @classmethod
     def validate_oversight_type(cls, v):
         valid_types = [context.value for context in ECOversightContext]
         if v not in valid_types:
             raise ValueError(f"Invalid oversight_type. Must be one of: {valid_types}")
         return v
-    
-    @validator('priority_level')
+
+    @field_validator('priority_level')
+    @classmethod
     def validate_priority_level(cls, v):
         valid_priorities = ["normal", "high", "critical"]
         if v not in valid_priorities:
@@ -77,9 +79,11 @@ class ReportingPeriodModel(BaseModel):
     start_time: Optional[datetime] = Field(default=None, description="Start time for reporting period")
     end_time: Optional[datetime] = Field(default=None, description="End time for reporting period")
     
-    @validator('end_time')
-    def validate_end_time(cls, v, values):
-        if v and 'start_time' in values and values['start_time'] and v <= values['start_time']:
+    @field_validator('end_time')
+    @classmethod
+    def validate_end_time(cls, v, info):
+        if (v and hasattr(info, 'data') and 'start_time' in info.data and
+            info.data['start_time'] and v <= info.data['start_time']):
             raise ValueError("end_time must be after start_time")
         return v
 
