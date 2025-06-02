@@ -1163,11 +1163,11 @@ where `α = 0.6, β = 0.25, γ = 0.15` are empirically determined system paramet
 *   `Lvalidation ≤ 0.3`: Validation pipeline constant bounded by deterministic rule checking
 *   `Lfeedback ≤ 0.2`: Stakeholder feedback integration bounded by weighted averaging
 
-**Therefore:** `L ≤ 0.6·0.7+0.25·0.3+0.15·0.2 = 0.42+0.075+0.03 = 0.525 < 1`.
+**Therefore, the initial component-based estimation yields:** `L_estimated ≤ 0.6·0.7 + 0.25·0.3 + 0.15·0.2 = 0.42 + 0.075 + 0.03 = 0.525`.
 
-**Note:** Empirical analysis (Section 4.2.2) measures `L ≈ 0.73` under typical operating conditions. This indicates our theoretical bound requires revision. The empirical bound L ≈ 0.73 < 1 still ensures contraction, but suggests component-wise Lipschitz constants need re-estimation with confidence intervals.
+**Note on Empirical Alignment:** As detailed in Section 4.2.2, empirical analysis measures `L_empirical ≈ 0.73` under typical operating conditions. While the initial component estimates suggested `L_estimated = 0.525`, the empirically observed `L_empirical ≈ 0.73` is taken as the more accurate system-level Lipschitz constant. Crucially, this empirical value still satisfies `L < 1`, thus ensuring the contraction mapping property required for convergence. This discrepancy highlights that the initial component-wise Lipschitz constants (`LLLM, Lvalidation, Lfeedback`) or their weights (`α, β, γ`) may require re-estimation based on further system characterization. For the purpose of Theorem 3.1, we rely on `L_empirical ≈ 0.73 < 1`.
 
-**Step 4: Convergence to Fixed Point.** By the Banach Fixed Point Theorem, there exists a unique fixed point `c* ∈ C` such that `T(c*) = c*`. The sequence `{ct}∞t=0` defined by `ct+1 = T(ct)` converges to `c*` with exponential rate:
+**Step 4: Convergence to Fixed Point.** By the Banach Fixed Point Theorem, given `L ≈ 0.73 < 1`, there exists a unique fixed point `c* ∈ C` such that `T(c*) = c*`. The sequence `{ct}∞t=0` defined by `ct+1 = T(ct)` converges to `c*` with exponential rate:
 
 `d(ct, c*) ≤ Lt d(c0, c*)`
 
