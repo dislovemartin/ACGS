@@ -1,0 +1,131 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+
+\usepackage{threeparttable}
+\usepackage{tabularx}
+\usepackage{arydshln}
+\usepackage{booktabs}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[english]{babel}
+\usepackage{pdfrender}
+\newcommand*{\boldcheckmark}{%
+  \textpdfrender{
+    TextRenderingMode=FillStroke,
+    LineWidth=.5pt, % half of the line width is outside the normal glyph
+  }{\checkmark}%
+}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{cleveref}
+\hypersetup{colorlinks}
+\usepackage{mathtools}
+\usepackage{dpr}
+\usepackage{fec}
+\usepackage{enumerate}
+\usepackage{subcaption}
+\usepackage{algorithm,algpseudocode}
+\usepackage{makecell}
+\usepackage{comment}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{siunitx,tabularx,ragged2e} % ,booktabs
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{pifont}
+\usepackage{soul}
+\usepackage{epstopdf}
+\usepackage{blindtext}
+\usepackage{fancyvrb}
+\usepackage{multirow, booktabs}
+\usepackage{cleveref}
+\usepackage{hhline}
+\usepackage{textcomp}
+\usepackage{tcolorbox}
+\usepackage{MnSymbol}
+\usepackage{amssymb,fge}
+\usepackage{setspace}
+\usepackage{subcaption}
+\usepackage{bbding}
+\usepackage{cleveref}
+\usepackage{hhline}
+%Import the natbib package and sets a bibliography  and citation styles
+\usepackage{natbib}
+\bibliographystyle{abbrvnat}
+\setcitestyle{authoryear,open={(},close={)}} %Citation-related commands
+
+
+\definecolor{darkpastelgreen}{rgb}{0.01, 0.75, 0.24}
+\definecolor{electriccrimson}{rgb}{1.0, 0.0, 0.25}
+\definecolor{navyblue}{rgb}{0.0, 0.0, 0.75}
+\newcommand{\ie}{\textit{i.e.}}
+\newcommand{\eg}{\textit{e.g.}}
+% \newcommand{\tc}[1]{{\color{blue}#1}}
+% \newcommand{\dz}[1]{{\color{electriccrimson}DZ: #1}}
+% \newcommand{\dzc}[1]{\colorbox{yellow}{\color{electriccrimson}DZ: #1}}
+% \newcommand{\csh}[1]{{\color{navyblue}SC: #1}}
+% \newcommand{\jk}[1]{{\color{darkpastelgreen}JK: #1}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\algacro}{WINA{}}
+
+\newcommand{\ycell}[1]{\colorbox{yellow!60}{\strut #1}}
+
+\newcommand{\cmark}{\textcolor{green!70!black}{\small\ding{51}}}
+\newcommand{\xmark}{\textcolor{red}{\small\ding{55}}}
+
+\title{\algacro{}: Weight Informed Neuron Activation for Accelerating Large Language Model Inference}
+
+
+\author{
+Sihan Chen$^{2\ddagger}$\thanks{Primary author, \texttt{\url{chensihan@ruc.edu.cn}}.}\ \ \ Dan Zhao$^{3\S}$\ Jongwoo Ko$^{1}$\ \  Colby Banbury$^{1}$\ \  Huiping Zhuang$^{4}$\ \  Luming Liang$^{1}$\ \  Tianyi Chen$^{1\ddagger}$\thanks{Corresponding author, \texttt{\url{Tianyi.Chen@microsoft.com}}.}\\
+$^1$Microsoft\quad $^2$Renmin University of China\quad $^3$New York University\quad $^4$South China University of Technology\\
+$\ddagger$Equal contributions.\quad $\S$ Work is done at Microsoft.
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The growing computational demands of large language models (LLMs) make efficient inference and activation strategies increasingly critical. While recent approaches, such as Mixture-of-Experts (MoE), leverage selective activation but require specialized training, training-free sparse activation methods offer broader applicability and superior resource efficiency through their plug-and-play design. However, many existing methods rely solely on hidden state magnitudes to determine activation,  resulting in high approximation errors and suboptimal inference accuracy. To address these limitations, we propose \textbf{\algacro{}} (\textbf{W}eight \textbf{I}nformed \textbf{N}euron \textbf{A}ctivation), a novel, simple, and training-free sparse activation framework that jointly considers hidden state magnitudes and the column-wise $\ell_2$-norms of weight matrices. We show that this leads to a sparsification strategy that obtains optimal approximation error bounds with theoretical guarantees tighter than existing techniques. Empirically, \algacro{} also outperforms state-of-the-art methods (\eg, TEAL) by up to 2.94\% in average performance at the same sparsity levels, across a diverse set of LLM architectures and datasets. These results position \algacro{} as a new performance frontier for training-free sparse activation in LLM inference, advancing training-free sparse activation methods and setting a robust baseline for efficient inference. The source code is available at \url{https://github.com/microsoft/wina}.
+\end{abstract}
+
+\input{01_introduction}
+\input{02_related}
+\input{03_method}
+\input{04_experiments}
+\input{05_conclusion}
+
+
+% \clearpage
+\bibliography{reference}
+\bibliographystyle{plain}
+
+\clearpage
+\appendix
+
+%\input{appendix}
+\input{proof_lemma_3.1}
+\input{proof_theorem_3.2}
+\input{proof_lemma_3.4}
+\input{proof_theorem_3.5}
+\input{limitations}
+
+\end{document}
