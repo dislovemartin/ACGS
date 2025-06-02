@@ -1,0 +1,86 @@
+# OPA Configuration for ACGS-PGP Task 8: Incremental Policy Compilation
+# Optimized for performance and incremental compilation capabilities
+
+services:
+  authz:
+    url: http://localhost:8181
+
+bundles:
+  authz:
+    resource: "/policies"
+    persist: true
+    polling:
+      min_delay_seconds: 10
+      max_delay_seconds: 20
+    signing:
+      keyid: "acgs_pgp_key"
+      scope: "write"
+
+decision_logs:
+  console: true
+  reporting:
+    min_delay_seconds: 5
+    max_delay_seconds: 10
+
+status:
+  console: true
+  service: authz
+
+plugins:
+  health:
+    service: authz
+
+# Performance optimizations for incremental compilation
+caching:
+  inter_query_builtin_cache:
+    max_size_bytes: 100000000  # 100MB cache for built-in functions
+
+# Distributed tracing for performance monitoring
+distributed_tracing:
+  type: grpc
+  address: localhost:4317
+  service_name: acgs-opa
+  sample_percentage: 100
+
+# Server configuration
+server:
+  encoding:
+    gzip:
+      min_length: 1024
+  diagnostic:
+    addr: 0.0.0.0:8282
+    
+# Storage configuration for policy persistence
+storage:
+  disk:
+    directory: /data
+    auto_create: true
+    partitions:
+      - /policies
+      - /data
+
+# Compiler optimizations
+compiler:
+  # Enable partial evaluation for better performance
+  partial_evaluation: true
+  # Optimize for incremental compilation
+  incremental: true
+  # Enable strict mode for better error detection
+  strict: true
+
+# Metrics configuration for Prometheus integration
+metrics:
+  prometheus:
+    http_request_duration_seconds:
+      buckets:
+        - 0.005
+        - 0.01
+        - 0.025
+        - 0.05
+        - 0.1
+        - 0.25
+        - 0.5
+        - 1
+        - 2.5
+        - 5
+        - 10

@@ -3,6 +3,7 @@ Constitutional Prompting Module for ACGS-PGP Phase 1
 
 This module implements constitutional prompting methodology that systematically
 integrates AC principles as constitutional context in LLM prompts for policy synthesis.
+Enhanced with WINA-informed constitutional principle updates for optimization.
 """
 
 import logging
@@ -10,16 +11,45 @@ from typing import List, Dict, Any, Optional
 from ..schemas import ACPrinciple
 from ..services.ac_client import ac_service_client
 
+# Import WINA constitutional integration
+try:
+    from shared.wina.constitutional_integration import (
+        WINAConstitutionalPrincipleAnalyzer,
+        WINAConstitutionalUpdateService
+    )
+    WINA_AVAILABLE = True
+except ImportError:
+    WINA_AVAILABLE = False
+    logger.warning("WINA constitutional integration not available")
+
 logger = logging.getLogger(__name__)
 
 
 class ConstitutionalPromptBuilder:
     """
     Builds constitutional prompts that integrate AC principles as constitutional context
-    for LLM-based policy synthesis.
+    for LLM-based policy synthesis. Enhanced with WINA-informed constitutional updates.
     """
-    
-    def __init__(self):
+
+    def __init__(self, enable_wina_integration: bool = True):
+        """
+        Initialize the Constitutional Prompt Builder.
+
+        Args:
+            enable_wina_integration: Whether to enable WINA constitutional integration
+        """
+        self.enable_wina_integration = enable_wina_integration and WINA_AVAILABLE
+
+        # Initialize WINA services if available
+        if self.enable_wina_integration:
+            self.wina_analyzer = WINAConstitutionalPrincipleAnalyzer()
+            self.wina_update_service = WINAConstitutionalUpdateService(analyzer=self.wina_analyzer)
+            logger.info("WINA constitutional integration enabled")
+        else:
+            self.wina_analyzer = None
+            self.wina_update_service = None
+            logger.info("WINA constitutional integration disabled")
+
         self.constitutional_preamble = """
 You are an AI Constitutional Interpreter for the ACGS-PGP (AI Compliance Governance System - Policy Generation Platform).
 Your role is to synthesize governance policies that are constitutionally compliant with the established AC (Artificial Constitution) principles.
@@ -27,6 +57,11 @@ Your role is to synthesize governance policies that are constitutionally complia
 CONSTITUTIONAL FRAMEWORK:
 The AC principles provided below form the constitutional foundation that MUST guide all policy synthesis.
 Each principle has priority weights, scope definitions, and normative statements that constrain policy generation.
+
+WINA OPTIMIZATION CONTEXT:
+When WINA (Weight Informed Neuron Activation) optimization is enabled, constitutional principles may include
+efficiency optimization constraints that balance performance gains with constitutional compliance.
+These WINA-informed principles ensure that LLM optimization maintains constitutional integrity."""
 
 CONSTITUTIONAL COMPLIANCE REQUIREMENTS:
 1. All generated policies MUST align with the constitutional principles
@@ -343,6 +378,203 @@ If principles conflict, resolve using this hierarchy:
 """
         
         return instructions
+
+    async def build_wina_enhanced_constitutional_context(
+        self,
+        context: str,
+        category: Optional[str] = None,
+        auth_token: Optional[str] = None,
+        optimization_context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Build WINA-enhanced constitutional context with optimization analysis.
+
+        Args:
+            context: The target context for policy synthesis
+            category: Optional category filter for principles
+            auth_token: Authentication token for AC service
+            optimization_context: WINA optimization context
+
+        Returns:
+            Enhanced constitutional context with WINA analysis
+        """
+        # Build base constitutional context
+        constitutional_context = await self.build_constitutional_context(context, category, auth_token)
+
+        # Add WINA enhancements if available
+        if self.enable_wina_integration and self.wina_analyzer:
+            try:
+                # Set default optimization context
+                if not optimization_context:
+                    optimization_context = {
+                        "target_gflops_reduction": 0.5,
+                        "min_accuracy_retention": 0.95,
+                        "optimization_mode": "conservative",
+                        "context": context
+                    }
+
+                # Analyze principles for WINA optimization
+                wina_analysis_results = {}
+                principles = constitutional_context.get('principles', [])
+
+                for principle in principles:
+                    try:
+                        analysis = await self.wina_analyzer.analyze_principle_for_wina_optimization(
+                            principle, optimization_context
+                        )
+                        wina_analysis_results[str(principle.get('id'))] = analysis
+
+                    except Exception as e:
+                        logger.error(f"WINA analysis failed for principle {principle.get('id')}: {e}")
+                        wina_analysis_results[str(principle.get('id'))] = {
+                            "error": str(e),
+                            "optimization_potential": 0.0
+                        }
+
+                # Add WINA enhancements to constitutional context
+                constitutional_context.update({
+                    "wina_enabled": True,
+                    "wina_analysis": wina_analysis_results,
+                    "optimization_context": optimization_context,
+                    "wina_summary": self._build_wina_summary(wina_analysis_results),
+                    "optimization_recommendations": self._build_optimization_recommendations(wina_analysis_results)
+                })
+
+                logger.info(f"Enhanced constitutional context with WINA analysis for {len(principles)} principles")
+
+            except Exception as e:
+                logger.error(f"WINA enhancement failed: {e}")
+                constitutional_context["wina_enabled"] = False
+                constitutional_context["wina_error"] = str(e)
+        else:
+            constitutional_context["wina_enabled"] = False
+
+        return constitutional_context
+
+    def _build_wina_summary(self, wina_analysis_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Build summary of WINA analysis results."""
+        if not wina_analysis_results:
+            return {"total_principles": 0, "optimization_potential": 0.0}
+
+        total_principles = len(wina_analysis_results)
+        high_potential = len([r for r in wina_analysis_results.values()
+                             if r.get("optimization_potential", 0) > 0.7])
+        medium_potential = len([r for r in wina_analysis_results.values()
+                               if 0.4 <= r.get("optimization_potential", 0) <= 0.7])
+        low_potential = len([r for r in wina_analysis_results.values()
+                            if r.get("optimization_potential", 0) < 0.4])
+
+        avg_potential = sum(r.get("optimization_potential", 0) for r in wina_analysis_results.values()) / total_principles
+
+        return {
+            "total_principles": total_principles,
+            "high_potential_count": high_potential,
+            "medium_potential_count": medium_potential,
+            "low_potential_count": low_potential,
+            "average_optimization_potential": avg_potential,
+            "optimization_feasible": avg_potential > 0.3
+        }
+
+    def _build_optimization_recommendations(self, wina_analysis_results: Dict[str, Any]) -> List[str]:
+        """Build optimization recommendations based on WINA analysis."""
+        recommendations = []
+
+        if not wina_analysis_results:
+            return ["No WINA analysis available"]
+
+        high_potential_principles = [
+            principle_id for principle_id, analysis in wina_analysis_results.items()
+            if analysis.get("optimization_potential", 0) > 0.7
+        ]
+
+        if high_potential_principles:
+            recommendations.append(f"Consider aggressive WINA optimization for principles: {', '.join(high_potential_principles)}")
+
+        safety_critical_principles = [
+            principle_id for principle_id, analysis in wina_analysis_results.items()
+            if "safety_critical_principle" in analysis.get("risk_factors", [])
+        ]
+
+        if safety_critical_principles:
+            recommendations.append(f"Implement additional safety monitoring for: {', '.join(safety_critical_principles)}")
+
+        recommendations.append("Monitor constitutional compliance continuously during optimization")
+        recommendations.append("Implement fallback mechanisms for optimization failures")
+
+        return recommendations
+
+    def build_wina_enhanced_constitutional_prompt(
+        self,
+        constitutional_context: Dict[str, Any],
+        synthesis_request: str,
+        target_format: str = "datalog"
+    ) -> str:
+        """
+        Build WINA-enhanced constitutional prompt with optimization context.
+
+        Args:
+            constitutional_context: WINA-enhanced constitutional context
+            synthesis_request: The specific synthesis request
+            target_format: Target format for generated policies
+
+        Returns:
+            WINA-enhanced constitutional prompt for LLM
+        """
+        # Build base prompt
+        base_prompt = self.build_constitutional_prompt(constitutional_context, synthesis_request, target_format)
+
+        # Add WINA enhancements if available
+        if constitutional_context.get("wina_enabled", False):
+            wina_section = self._build_wina_optimization_section(constitutional_context)
+
+            # Insert WINA section before synthesis instructions
+            prompt_parts = base_prompt.split("SYNTHESIS INSTRUCTIONS:")
+            if len(prompt_parts) == 2:
+                enhanced_prompt = f"{prompt_parts[0]}\n{wina_section}\n\nSYNTHESIS INSTRUCTIONS:{prompt_parts[1]}"
+            else:
+                enhanced_prompt = f"{base_prompt}\n\n{wina_section}"
+        else:
+            enhanced_prompt = base_prompt
+
+        return enhanced_prompt
+
+    def _build_wina_optimization_section(self, constitutional_context: Dict[str, Any]) -> str:
+        """Build WINA optimization section for constitutional prompt."""
+        wina_summary = constitutional_context.get("wina_summary", {})
+        optimization_recommendations = constitutional_context.get("optimization_recommendations", [])
+        optimization_context = constitutional_context.get("optimization_context", {})
+
+        section = f"""
+WINA OPTIMIZATION CONTEXT:
+Optimization Mode: {optimization_context.get('optimization_mode', 'conservative')}
+Target GFLOPs Reduction: {optimization_context.get('target_gflops_reduction', 0.5)}
+Minimum Accuracy Retention: {optimization_context.get('min_accuracy_retention', 0.95)}
+
+OPTIMIZATION ANALYSIS SUMMARY:
+- Total Principles Analyzed: {wina_summary.get('total_principles', 0)}
+- High Optimization Potential: {wina_summary.get('high_potential_count', 0)}
+- Medium Optimization Potential: {wina_summary.get('medium_potential_count', 0)}
+- Low Optimization Potential: {wina_summary.get('low_potential_count', 0)}
+- Average Optimization Potential: {wina_summary.get('average_optimization_potential', 0.0):.3f}
+- Optimization Feasible: {wina_summary.get('optimization_feasible', False)}
+
+OPTIMIZATION RECOMMENDATIONS:
+"""
+
+        for i, recommendation in enumerate(optimization_recommendations, 1):
+            section += f"{i}. {recommendation}\n"
+
+        section += """
+WINA CONSTITUTIONAL CONSTRAINTS:
+When generating policies, ensure that:
+1. WINA optimization constraints are included where applicable
+2. Efficiency gains do not compromise constitutional compliance
+3. Fallback mechanisms are specified for optimization failures
+4. Performance monitoring requirements are included
+5. Constitutional fidelity is maintained during optimization
+"""
+
+        return section
 
 
 # Global instance for use across the GS service

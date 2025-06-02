@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request # Added Request
 from typing import List, Optional
+from datetime import datetime
 
 from ... import schemas # Relative imports for app directory
 from ...core.policy_manager import policy_manager # Global policy manager instance
@@ -7,6 +8,13 @@ from ...core.datalog_engine import datalog_engine # Global Datalog engine instan
 from ...core.secure_execution import apply_pet_transformation, execute_in_mock_tee # Mock PET/TEE
 from ...core.auth import require_policy_evaluation_triggerer, User # Placeholder auth
 from ...core.limiter import limiter # Import the limiter
+from ...core.wina_enforcement_optimizer import (
+    get_wina_enforcement_optimizer,
+    EnforcementContext,
+    WINAEnforcementOptimizer
+)
+from ...core.opa_client import get_opa_client
+from ...core.wina_policy_compiler import WINAPolicyCompiler
 
 router = APIRouter()
 
@@ -114,3 +122,138 @@ async def evaluate_policy_query(
         reason=reason,
         matching_rules=matching_rules_info
     )
+
+
+@router.post("/evaluate-wina", response_model=schemas.PolicyQueryResponse, status_code=status.HTTP_200_OK)
+@limiter.limit("30/minute")
+async def evaluate_policy_query_with_wina(
+    request: Request,
+    policy_query_payload: schemas.PolicyQueryRequest,
+    current_user: User = Depends(require_policy_evaluation_triggerer)
+):
+    """
+    Evaluates a policy query using WINA-optimized enforcement for enhanced performance.
+
+    This endpoint leverages WINA (Weight Informed Neuron Activation) optimization
+    to provide more efficient policy enforcement while maintaining constitutional compliance.
+    """
+    try:
+        # Get WINA enforcement optimizer
+        wina_optimizer = await get_wina_enforcement_optimizer()
+
+        # Initialize WINA components if not already done
+        if not wina_optimizer.opa_client:
+            opa_client = await get_opa_client()
+            wina_policy_compiler = WINAPolicyCompiler(enable_wina=True)
+            await wina_optimizer.initialize(opa_client, wina_policy_compiler)
+
+        # Get active policies
+        active_rules = await policy_manager.get_active_rules()
+
+        # Create enforcement context
+        context = EnforcementContext(
+            user_id=policy_query_payload.context.user.get("id", "unknown"),
+            action_type=policy_query_payload.context.action.get("type", "unknown"),
+            resource_id=policy_query_payload.context.resource.get("id", "unknown"),
+            environment_factors=policy_query_payload.context.environment or {},
+            priority_level=policy_query_payload.context.get("priority", "normal"),
+            constitutional_requirements=policy_query_payload.context.get("constitutional_requirements", []),
+            performance_constraints=policy_query_payload.context.get("performance_constraints", {})
+        )
+
+        # Perform WINA-optimized enforcement
+        wina_result = await wina_optimizer.optimize_enforcement(
+            context=context,
+            policies=active_rules,
+            optimization_hints=policy_query_payload.context.get("optimization_hints")
+        )
+
+        # Convert WINA result to standard response format
+        matching_rules_info = None
+        if wina_result.matching_rules:
+            matching_rules_info = [
+                {
+                    "id": f"rule_{i}",
+                    "content": str(rule.get("node", {})),
+                    "location": rule.get("location", {})
+                }
+                for i, rule in enumerate(wina_result.matching_rules)
+            ]
+
+        # Add WINA-specific information to the reason
+        enhanced_reason = wina_result.reason
+        if wina_result.optimization_applied:
+            enhanced_reason += f" (WINA-optimized: {wina_result.enforcement_metrics.strategy_used.value})"
+        if wina_result.constitutional_compliance:
+            enhanced_reason += " [Constitutional compliance verified]"
+
+        return schemas.PolicyQueryResponse(
+            decision=wina_result.decision,
+            reason=enhanced_reason,
+            matching_rules=matching_rules_info,
+            # Add WINA-specific metadata if the schema supports it
+            metadata={
+                "wina_optimization_applied": wina_result.optimization_applied,
+                "enforcement_time_ms": wina_result.enforcement_metrics.enforcement_time_ms,
+                "strategy_used": wina_result.enforcement_metrics.strategy_used.value,
+                "constitutional_compliance": wina_result.constitutional_compliance,
+                "confidence_score": wina_result.confidence_score,
+                "performance_improvement": wina_result.enforcement_metrics.performance_improvement,
+                "wina_insights": wina_result.wina_insights
+            } if hasattr(schemas.PolicyQueryResponse, 'metadata') else None
+        )
+
+    except Exception as e:
+        # Fallback to standard enforcement if WINA fails
+        print(f"WINA enforcement failed, falling back to standard: {e}")
+
+        # Fallback to original implementation
+        await policy_manager.get_active_rules()
+
+        user_id = policy_query_payload.context.user.get("id", "_")
+        resource_id = policy_query_payload.context.resource.get("id", "_")
+        action_type = policy_query_payload.context.action.get("type", "_")
+
+        target_query = f"allow('{user_id}', '{action_type}', '{resource_id}')"
+        query_results = datalog_engine.query(target_query)
+
+        decision = "permit" if query_results else "deny"
+        reason = f"Action '{action_type}' on resource '{resource_id}' by user '{user_id}' is {'permitted' if query_results else 'denied'} by policy (fallback enforcement)"
+
+        return schemas.PolicyQueryResponse(
+            decision=decision,
+            reason=reason,
+            matching_rules=None
+        )
+
+
+@router.get("/wina-performance", status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
+async def get_wina_performance_metrics(
+    request: Request,
+    current_user: User = Depends(require_policy_evaluation_triggerer)
+):
+    """
+    Get WINA enforcement performance metrics and statistics.
+
+    Returns comprehensive performance data including enforcement times,
+    strategy distribution, constitutional compliance rates, and optimization effectiveness.
+    """
+    try:
+        # Get WINA enforcement optimizer
+        wina_optimizer = await get_wina_enforcement_optimizer()
+
+        # Get performance summary
+        performance_summary = wina_optimizer.get_performance_summary()
+
+        return {
+            "status": "success",
+            "wina_performance_metrics": performance_summary,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve WINA performance metrics: {str(e)}"
+        )

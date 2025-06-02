@@ -100,11 +100,14 @@ class PaperValidator:
         
         tex_content = self.main_tex.read_text(encoding='utf-8')
         
-        # Extract labels
-        labels = set(re.findall(r'\\label\{([^}]+)\}', tex_content))
+        # Extract labels (standalone and within environments like lstlisting)
+        standalone_labels = set(re.findall(r'\\label\{([^}]+)\}', tex_content))
+        # More flexible regex for lstlisting labels
+        lstlisting_labels = set(re.findall(r'label=([^,\]]+)', tex_content))
+        labels = standalone_labels | lstlisting_labels
         
-        # Extract references
-        refs = set(re.findall(r'\\[Cc]?ref\{([^}]+)\}', tex_content))
+        # Extract references (including \ref, \Cref, \cref)
+        refs = set(re.findall(r'\\(?:[Cc]ref|ref)\{([^}]+)\}', tex_content))
         
         # Check for missing labels
         missing_labels = refs - labels

@@ -337,3 +337,19 @@ async def update_ac_conflict_resolution(db: AsyncSession, conflict_id: int, conf
         await db.commit()
         await db.refresh(db_conflict)
     return db_conflict
+
+async def delete_ac_conflict_resolution(db: AsyncSession, conflict_id: int) -> bool:
+    """Delete a conflict resolution by ID."""
+    db_conflict = await get_ac_conflict_resolution(db, conflict_id)
+    if db_conflict:
+        await db.delete(db_conflict)
+        await db.commit()
+        return True
+    return False
+
+async def get_ac_principles_by_ids(db: AsyncSession, principle_ids: List[int]) -> List[models.ACPrinciple]:
+    """Get multiple AC principles by their IDs."""
+    result = await db.execute(
+        select(models.ACPrinciple).filter(models.ACPrinciple.id.in_(principle_ids))
+    )
+    return result.scalars().all()

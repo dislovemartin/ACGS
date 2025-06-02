@@ -1,0 +1,55 @@
+{
+  "max_attempts": 5,
+  "max_tokens": 4000,
+  "temperature": 0.7,
+  "enable_self_improvement": true,
+  "enable_requesty_integration": true,
+  "archive_solutions": true,
+  "use_novelty_selection": true,
+  "performance_threshold": 0.85,
+  "language_specific_configs": {
+    "python": {
+      "test_timeout": 300,
+      "max_file_size": 50000,
+      "preferred_strategies": ["test_driven_fix", "incremental_improvement"]
+    },
+    "javascript": {
+      "test_timeout": 180,
+      "max_file_size": 30000,
+      "preferred_strategies": ["error_resolution", "fine_tuning"]
+    },
+    "rust": {
+      "test_timeout": 600,
+      "max_file_size": 100000,
+      "preferred_strategies": ["comprehensive_refactor", "incremental_improvement"]
+    },
+    "go": {
+      "test_timeout": 240,
+      "max_file_size": 40000,
+      "preferred_strategies": ["test_driven_fix", "error_resolution"]
+    },
+    "cpp": {
+      "test_timeout": 900,
+      "max_file_size": 150000,
+      "preferred_strategies": ["comprehensive_refactor", "test_driven_fix"]
+    },
+    "java": {
+      "test_timeout": 400,
+      "max_file_size": 80000,
+      "preferred_strategies": ["incremental_improvement", "fine_tuning"]
+    }
+  },
+  "evolution_parameters": {
+    "mutation_rate": 0.1,
+    "crossover_probability": 0.3,
+    "selection_pressure": 0.8,
+    "diversity_weight": 0.2,
+    "performance_weight": 0.8
+  },
+  "logging": {
+    "level": "INFO",
+    "max_log_size_mb": 50,
+    "backup_count": 10,
+    "enable_detailed_tracing": true
+  }
+}

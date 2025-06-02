@@ -1,5 +1,12 @@
 {
   "tasks": {
     "build": "N/A"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Augment.vscode-augment"
+      ]
+    }
   }
 }
