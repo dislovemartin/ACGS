@@ -934,8 +934,7 @@ We implement systematic bias detection using counterfactual analysis, embedding 
 
 \begin{figure}[htbp]
 	\centering
-	% \includegraphics[width=0.9\columnwidth,height=0.25\textheight,keepaspectratio]{fig4_rules_success.png}
-    \fbox{\parbox[c][0.25\textheight][c]{\dimexpr0.9\columnwidth-2\fboxsep-2\fboxrule\relax}{\centering Placeholder for Figure: fig4\_rules\_success.png \\ \footnotesize This bar chart would display rule synthesis success rates for CP-SAFETY-001, CP-EFFICIENCY-001, and CP-FORMAT-001, with error bars.}}
+	\includegraphics[width=\linewidth,keepaspectratio]{Figure 3_ Rule Synthesis Success Rate per Principle.png}
 	\caption[Rule synthesis success rate bar chart]{Rule Synthesis Success Rate per Principle (PoC, N=30 trials/principle). Bar chart displaying the success rates for CP-SAFETY-001 (93.3\%), CP-EFFICIENCY-001 (83.3\%), and CP-FORMAT-001 (73.3\%). Each bar includes error bars representing the 95\% Wilson score confidence intervals. \textit{*Complex principles require human review in 24.1\% of cases.} This chart is designed to be colorblind-safe using distinct patterns or monochrome variations if colors are used.}
 	\label{fig:rule_synthesis_chart}
 	\Description{Bar chart: Rule Synthesis Success Rate per Principle (Proof of Concept, N=30 trials per principle). Three principles are shown: CP-SAFETY-001 with a success rate of approximately 93.3\% , CP-EFFICIENCY-001 with approximately 83.3\% , and CP-FORMAT-001 with approximately 73.3\% . Error bars indicate 95\% Wilson score confidence intervals. A note states that complex principles require human review in 24.1\% of cases. The chart uses distinct shades of blue for each bar.}
@@ -947,8 +946,7 @@ Two runs (100 generations each) evolving arithmetic expressions: unguided vs. go
 
 \begin{figure}[htbp]
 	\centering
-	% \includegraphics[width=0.9\columnwidth,height=0.25\textheight,keepaspectratio]{fig5_compliance_generations.png}
-    \fbox{\parbox[c][0.25\textheight][c]{\dimexpr0.9\columnwidth-2\fboxsep-2\fboxrule\relax}{\centering Placeholder for Figure: fig5\_compliance\_generations.png \\ \footnotesize This line graph would show constitutional compliance over generations for Unguided vs. Governed Evolution.}}
+	\includegraphics[width=\linewidth,keepaspectratio]{Figure 4_ Constitutional Compliance Over Generations.png}
 	\caption[Constitutional compliance over generations line chart]{Constitutional Compliance Over Generations (PoC). ``Unguided Evolution'' compliance flat $\sim$30\%. ``Governed Evolution'' compliance rises from $\sim$40\% to $>$95\% by gen 25, sustained. This chart is designed to be colorblind-safe using distinct line styles or markers.}
 	\label{fig:compliance_over_generations}
 	\Description{Line graph: Constitutional Compliance Over Generations (Proof of Concept). The X-axis represents Generations (0 to 100). The Y-axis represents Constitutional Compliance (\% ). Two lines are plotted: 'Unguided Evolution' (dashed blue line) shows relatively flat compliance around 30-40\% . 'Governed Evolution (AlphaEvolve-ACGS)' (solid orange line) starts around 40\%  and rapidly increases to over 95\%  by generation 25, then remains stable at that high level.}
@@ -1110,6 +1108,14 @@ To address scalability and real-world applicability concerns, we conducted an ex
 	\item \textbf{Fairness Performance}: Consistent fairness scores $>$8.0/10 across domains with bias detection
 	\item \textbf{Performance Degradation}: Graceful degradation with increased complexity (sub-linear latency growth maintained)
 \end{itemize}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth,keepaspectratio]{Figure_5_compliance_generations.png}
+	\caption{Aggregate compliance metrics over evolutionary runs, synthesizing constitutional fidelity, dispute frequency, and rule conflict resolution across all evaluation domains.}
+	\label{fig:compliance-trends}
+	\Description{Aggregate compliance trend chart showing constitutional fidelity metrics over evolutionary generations across multiple domains. The chart demonstrates the system's ability to maintain high compliance rates while managing dispute frequency and rule conflicts across diverse application areas. The visualization uses colorblind-safe design patterns to distinguish between different metrics and domains.}
+\end{figure}
 
 \section{Discussion}
 \label{sec:discussion}
@@ -1422,7 +1428,7 @@ S. Decomposer, V. Transformer, and D. Reducer. 2024.
 \newblock \emph{Transactions on Model Compression} 3, 2 (2024), 50--65.
 
 \bibitem{ConstitutionalCompliance2024}
-C. Complier, C. Integrator, and C. Verifier. 2024.
+C. Compiler, C. Integrator, and C. Verifier. 2024.
 \newblock Ensuring Constitutional Compliance in AI Systems.
 \newblock \emph{AI Governance Review} 1, 1 (2024), 30--45.
 
