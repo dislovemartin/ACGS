@@ -61,7 +61,7 @@ wiremock==2.6.1                        # Service virtualization
 
 # Cryptographic testing
 cryptography==44.0.1                   # Cryptographic testing utilities
-pycryptodome==3.19.1                   # Additional crypto testing
+pycryptodome==3.23.0                   # Additional crypto testing
 
 # LLM and AI testing mocks
 openai==1.3.7                          # OpenAI API mocking
