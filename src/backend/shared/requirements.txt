@@ -14,5 +14,5 @@ httpx==0.25.2
 # WINA (Weight Informed Neuron Activation) Dependencies
 numpy==1.24.3
 scipy==1.11.4
-torch==2.1.0
-scikit-learn==1.3.2
+torch==2.7.0
+scikit-learn==1.5.1
