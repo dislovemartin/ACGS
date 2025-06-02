@@ -41,7 +41,7 @@ pytest-security==0.1.1                 # Security testing utilities
 bandit==1.7.5                          # Security linting
 
 # Performance and load testing
-locust==2.17.0                         # Load testing framework
+locust==2.37.0                         # Load testing framework
 memory-profiler==0.61.0                # Memory usage profiling
 
 # Validation and schema testing
