@@ -1,0 +1,10 @@
+\section{Conclusion}\label{sec:conclusion}
+
+In this paper, we introduce \algacro{}, a training-free sparse activation framework that selects active neurons based on both hidden state magnitudes and the column-wise $\ell_2$-norms of subsequent weight matrices. By combining these two signals, \algacro{} addresses key limitations of prior methods such as TEAL, which rely solely on hidden state magnitudes and often suffer from suboptimal sparsity-performance trade-offs and distribution mismatch across layers.
+
+Our theoretical analysis demonstrates that \algacro{} achieves a tighter bound on approximation error compared to existing approaches, under mild assumptions. To bridge the gap between theoretical guarantees and practical deployment in pre-trained LLMs, we further adopted a tensor transformation protocol that enforces column-orthogonality in weight matrices without altering model output.
+Our extensive experiments across multiple LLM architectures and benchmarks also validate \algacro{}’s superior performance under controlled sparsity settings, establishing it as a new state-of-the-art in the domain of training-free sparse activation.
+
+
+% \textbf{Limitations and Future Work.} Our work presents several limitations that warrant discussion. Most notably, the theoretical proof of \algacro{}'s superiority over competing algorithms relies on potentially over-strong assumptions. A key concern is our assumption of independence between weight matrices, which may not fully hold in practice given that all matrices are jointly optimized during pre-training. Future researcha may develope more adaptive criteria selection mechanisms.
+% }

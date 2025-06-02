@@ -1,0 +1,9 @@
+\section{Resources Used \& Limitations}
+\label{sec:resources_limitations}
+
+The total run time of our experiments were run using two A100 80GB GPUs for a couple of days. 
+
+In terms of limitations, we focus the comparisons of our approach with current leading methodologies for sparse activation (i.e., TEAL~\citep{liu2024trainingfreeactivationsparsitylarge} and CATS~\citep{lee2024catscontextuallyawarethresholdingsparsity}). Naturally, we are unable to compare with all existing sparse activation methodologies and prior works, but, instead, we use these TEAL and CATS as they currently represent the current upper bound of optimal performance-efficiency trade-offs; as such, we use these approaches to compare against in order to ensure our performance tests and comparisons are robust and fair.
+
+% Other limitations include the theoretical categorization of our methodology; as discussed in detail in Section \ref{sec:algo}, the relevant weight tensors and layers of LLMs can violate the column-wise orthogonality condition as assumed in our theoretical proofs and framework. Therefore, to bridge this gap and ensure our theory still properly applies and characterizes the optimality of our methodology, we include a procedure that transforms the model first as described in both Section \ref{sec:algo} as well as in a detailed walkthrough of the transformation algorithm in Appendix \ref{sec:orthogonal_tensor_transform}. This way, we ensure that our overall methodology not only works well in practice against current leading sparse activation approaches, but also still enjoys the benefits of possessing better error bounds over other approaches like TEAL.
+

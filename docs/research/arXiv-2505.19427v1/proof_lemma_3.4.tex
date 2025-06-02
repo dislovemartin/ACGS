@@ -1,0 +1,25 @@
+\section{Proof of Lemma 3.4}
+
+\paragraph{Proof.} 
+Let $\Delta$ be the error term of the output via sparse activation parameterized with $\bm{g}$, 
+$$
+\Delta_{\bm{g}} = W(\bm{x} \odot (1 - \bm{g})) = \sum_{i=1}^{d} W_{i,:} \bm{x}_i \odot(1 - \bm{g}_{i}).
+$$
+Using a Taylor expansion and ignoring higher-order terms (assuming $ \Delta_{i}$ is small), the output deviation given an activation function $f$ is:
+$$
+f(W_{i,:}\bm{x} + \Delta_{\bm{g},i}) - f(W_{i,:}\bm{x}) \approx \Grad^\top f(W_{:,i}\bm{x}) \Delta_i.
+$$
+Thus, the expected squared output deviation between the original output and the gated output approximates to:
+\begin{align*}
+	e_{\bm{g}}&=\E{\left\|f(W\bm{x} + \Delta_{\bm{g}}) - f(W\bm{x})\right\|^2} \\
+	&= \E{\|\sum_{i=1}^d f(W_{i,:}\bm{x} + \Delta_{\bm{g},i}) - f(W_{i,:}\bm{x})\|^2} \\
+	&\approx \mathbb{E}\left[\|\sum_{i=1}^d \Grad f(W_{i,:}\bm{x})\Delta_{\bm{g}, i}\|^2\right]\\
+	&= \sum_{i=1}^d \E [\Grad^2 f(W_{i,:}\bm{x})\Delta_{\bm{g}, i}^2]\\
+	&=\sum_{i=1}^d \E [\Grad^2 f(W_{i,:}\bm{x})(W_{i,:} \bm{x}_i\odot (1 - \bm{g}_{i}))^2]\\
+	&=\sum_{i=1}^d \E [\Grad^2 f(W_{i,:}\bm{x})] \sum_{i=1}^d\E (W_{i,:} \bm{x}_i\odot (1 - \bm{g}_{i}))^2\\
+	&=\sum_{i=1}^d \E [\Grad^2 f(W_{i,:}\bm{x})] \sum_{i\in \mathcal{I}^{=0}(\bm{g})}^d\E[\bm{c}_i^2 \bm{x}_i^2]
+\end{align*}
+Because \algacro{} sparsification select the $k$ smallest $\bm{x}_j^2 \bm{c}_j^2$ terms to zero, we have that
+\begin{align}
+	e_\text{\algacro{}}\leq e_\text{TEAL}.
+\end{align}

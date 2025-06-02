@@ -1,0 +1,38 @@
+\section{Proof of Lemma 3.1}
+
+\paragraph{Proof.} 
+
+Let $\mathcal{I}^{=0}(\bm{x}):=\{i| \bm{x}_i=0\}$ be the set of indices of zero elements at $\bm{x}$. The output deviation between the original network output and the gated output via a general-format sparsification is:
+
+\begin{align*}
+	\norm{W(\bm{x}_{\mathcal{I}^{=0}} - \bm{x})}^2 &= \left\| \sum_{i\in \mathcal{I}^{=0}} \bm{x}_i W_{:,i} \right\|_2^2 \\
+	&= \left( \sum_{i\in \mathcal{I}^{=0}} x_i W_{:,i} \right)^{\top} \left( \sum_{i\in \mathcal{I}^{=0}} \bm{x}_i W_{:,i} \right) \\
+	&= \sum_{j \in  \mathcal{I}^{=0}} \sum_{i \in  \mathcal{I}^{=0}} \bm{x}_j \bm{x}_i W_{:,j}^\top W_{:,i} \\
+	&= \sum_{i \in  \mathcal{I}^{=0}} \bm{x}_i^2 \| W_{:,i} \|_2^2 + \sum_{i\neq j  \in  \mathcal{I}^{=0}} \bm{x}_j \bm{x}_i W_{:,j}^\top W_{:,i}
+\end{align*}
+
+The expected output deviation for \algacro{} is:
+
+% \begin{align}\label{equ}
+	% e_{\text{TEAL}} &= \E{\norm{Wx_{\text{TEAL}} - Wx }^2} \\
+	% &= \sum_{j \in  Z_{\text{TEAL}}} \mathbb{E}[x_j^2 \| W_{:,j} \|_2^2] + \sum_{i \neq j \in  Z_{\text{TEAL}}} \mathbb{E}[x_j x_i W_{:,j}^T W_{:,i}]
+	% \end{align}
+
+% Similarly, the expected output deviation for \algacro{} sparsification is:
+
+\begin{align*}
+	e_{\text{\algacro{}}} &= \norm{W\bm{x}_{\mathcal{I}^{=0}_{\text{\algacro{}}}} - W\bm{x}}^2 \\
+	&= \sum_{i \in \mathcal{I}^{=0}_{\text{\algacro{}}}} \bm{x}_i^2 \| W_{:,i} \|_2^2 + \sum_{i \neq j \in \mathcal{I}^{=0}_{\text{\algacro{}}}} \bm{x}_j \bm{x}_i W_{:,j}^\top W_{:,i}.
+\end{align*}
+
+Since $W$ is assumed to be column orthogonal, the cross-term expectations vanish, and the expected output error is determined solely by the main term:
+$$
+e_{\text{\algacro{}}} = \sum_{i \in \mathcal{I}^{=0}_{\text{\algacro{}}}} \bm{x}_i^2 \| W_{:,i} \|_2^2.
+$$
+
+Because \algacro{} sparsification sets the $k$ smallest $|\bm{x}_i\bm{c}_i|$ terms to zero, we have the mask of \algacro{} reaches out the lower bound of approximation error for a single layer network, \ie,
+\begin{equation}
+	\bm{g}_{\text{\algacro{}}}(\bm{x})=\argmin_{\bm{g}\in\{0,1\}^{n}}\quad \norm{W(\bm{x}\odot \bm{g} - \bm{x})}^2.
+\end{equation}
+
+Thus, the above indicates that \algacro{} sparsification achieves the tight lower bound of the approximation error, including those of TEAL and CATS. 

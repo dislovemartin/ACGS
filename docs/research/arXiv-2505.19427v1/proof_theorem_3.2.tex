@@ -1,0 +1,102 @@
+\section{Proof of Theorem 3.2}
+
+\paragraph{Proof.} We prove this by mathematical induction. 
+\paragraph{Step 1: Base case $N=2$.} The output error for sparse activation parameterized via mask $\bm{g}$ is:
+\begin{align*}\label{equ}
+	&\norm{\bm{y}_{\bm{g}}^{(2)} - \bm{y}^{(2)}} \\
+	= &\norm{W^{(2)} (\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)}) - W^{(2)} \bm{y}^{(1)}} \\
+	= &\norm{W^{(2)} (\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)}) - W^{(2)}\bm{y}_{\bm{g}}^{(1)} + W^{(2)}\bm{y}_{\bm{g}}^{(1)}-W^{(2)} \bm{y}^{(1)}} \\
+	= &\norm{W^{(2)}{(\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}}^{(1)})} + W^{(2)}{(\bm{y}_{\bm{g}}^{(1)} - \bm{y}^{(1)})}}\\
+	= &\norm{W^{(2)}{(\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}}^{(1)}}) + W^{(2)}(W^{(1)} \bm{x}\odot \bm{g}^{(1)} - W^{(1)} \bm{x})}
+\end{align*}
+Let: 
+$$
+\Delta^{(1)} = \text{diag}(\bm{g}^{(1)} - 1),\quad \Delta^{(2)} = \text{diag}(\bm{g}^{(2)} - 1), \quad M^{(1)} = \text{diag}(\bm{g}^{(1)}).
+$$
+Then, let $\bm{v}$ and $\bm{u}$ be 
+\begin{align*}
+	\bm{v} &=W^{(2)}(\bm{y}_{\bm{g}}^{(1)}\odot(\bm{g}^{(2)}-{1}))\\
+	&=W^{(2)}(W^{(1)}(\bm{x}\odot \bm{g}^{(1)})\odot(\bm{g}^{(2)}-1)) \\
+	&=W^{(2)}\Delta^{(2)}W^{(1)}M^{(1)}\bm{x}\\
+	\bm{u} &=W^{(2)}W^{(1)}(\bm{x}\odot(\bm{g}^{(1)}-1))\\
+	&=W^{(2)}W^{(1)}\Delta^{(1)}\bm{x}. \\
+\end{align*}
+Since $\E{\norm{\bm{u} + \bm{v}}^2} = \E{\norm{\bm{u}}^2} + \E{\norm{\bm{v}}^2} + 2\E{(\bm{u}^\top\bm{v})}$, the expected value of the cross-term is:
+\begin{align*}
+	\E[\bm{u}^\top\bm{v}] &= \E[\bm{x}^\top\Delta^{(1)}(W^{(1)})^\top(W^{(2)})^\top(W^{(2)})\Delta^{(2)}W^{(1)}M^{(1)}\bm{x}] \\
+	&= \E[\text{tr}(W^{(2)}\Delta^{(2)}W^{(1)}M^{(1)}\bm{x}\bm{x}^\top\Delta^{(1)}(W^{(1)})^\top(W^{(2)})^\top)] \\
+	&= \text{tr}\left(W^{(2)}\E[\Delta^{(2)}]W^{(1)}\E[M^{(1)}\Delta^{(1)}]\E[\bm{x}\bm{x}^\top](W^{(1)})^\top(W^{(2)})^\top\right)
+\end{align*} 
+Since $\E[M_1\Delta_1]=\E[\bm{g}^{(1)}\odot(\bm{g}^{(1)}-1)]=0$, the cross-term expectation $\E[\bm{u}^\top\bm{v}]$ is zero. Thus, the expected output deviation via sparse activation $\bm{g}$,
+\begin{equation}
+	\begin{split}
+		e^{(2)}&=\E[\norm{\bm{u}+\bm{v}}^2]\\    
+		&=\E[\norm{W^{(2)}{(\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}}^{(1)}})}^2] +\E[\norm{W^{(2)}(W^{(1)} \bm{x}\odot \bm{g}^{(1)} - W^{(1)} \bm{x})}^2]
+	\end{split}
+\end{equation}
+Upon Lemma~\ref{lemma.single_layer}, we have that
+$$
+\mathbb{E}[\| W^{(2)}(W^{(1)} \bm{x}\odot \bm{g}_{\text{\algacro{}}}^{(1)} - W^{(1)} \bm{x}) \|^2] \leq \mathbb{E}[\| W^{(2)}(W^{(1)} \bm{x}\odot \bm{g}_{\text{TEAL}}^{(1)} - W^{(1)} \bm{x}) \|^2]
+$$
+Next, we compare $\mathbb{E}[\|W^{(2)}(\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}}^{(1)})\|^2]$ given $\bm{g}_\text{\algacro{}}^{(2)}$ and $\bm{g}_\text{TEAL}^{(2)}$.
+\begin{align*}
+	&\ \mathbb{E}[\|W^{(2)}(\bm{y}_{\bm{g}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}}^{(1)})\|^2]\\
+	=&\ \E[{\sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(2)})}\sum_{i\in \mathcal{I}^{=0}(\bm{g}^{(2)})} \bm{y}_j^{(1)}\bm{y}_i^{(1)}\,(W_{:,j}^{(2)})^\top W_{:,i}^{(2)}}]\\
+	= &\E[{\sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(2)})} (\bm{y}_j^{(1)})^2\|W_{:,j}^{(2)}\|^2 + \sum_{\substack{i,j\in \mathcal{I}^{=0}(\bm{g}^{(2)})\\i\neq j}} \bm{y}_j^{(1)}\bm{y}_i^{(1)}\,(W_{:,j}^{(2)})^T W_{:,i}^{(2)}}]\\
+	= &\ \sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(2)})}{(\bm{c}_j^{(2)})^2\E{(\bm{y}_{j}^{(1)})^2}} + \sum_{\substack{i,j\in \mathcal{I}^{=0}(\bm{g}^{(2)})\\i\neq j}}({W_{:,j}^{(2)})^\top W_{:,i}^{(2)}\E[{\bm{y}_j^{(1)}\bm{y}_i^{(1)}}]}\\
+	= &\ \sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(2)})}{(\bm{c}_j^{(2)})^2\E{(\bm{y}_{j}^{(1)})^2}},
+\end{align*}
+where the last line is due to $W^{(2)}$ is column-orthogonal, the cross-term's expectation is zero.
+
+Because \algacro{} sparsification sets the $k$ smallest $(\bm{y}_j^{(1)}c_j^{(2)})^2$ terms to zero, we have:
+$$
+\mathbb{E}[\|W^{(2)}(\bm{y}_{\bm{g}_\text{\algacro{}}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}_\text{\algacro{}}}^{(1)})\|^2]\leq \mathbb{E}[\|W^{(2)}(\bm{y}_{\bm{g}_\text{TEAL}}^{(1)} \odot \bm{g}^{(2)} - \bm{y}_{\bm{g}_{\text{TEAL}}}^{(1)})\|^2]
+$$
+Therefore, we have that 
+$$
+e_{\text{\algacro{}}}^{(2)}\leq e_{\text{TEAL}}^{(2)}.
+$$
+\paragraph{Step 2: Inductive proof for $N>2$.}
+Assume for some $N\ge2$ that
+$$
+e_{\text{\algacro{}}}^{(N)}\leq e_{\text{TEAL}}^{(N)}.
+$$
+Define the exact output of $(N+1)$ layer network:
+$$
+\bm{y} = W^{(N+1)} \bm{y}^{(N)}, \quad \bm{y}^{(N)} = W^{(N)}\cdots W^{(1)}\bm{x}
+$$
+The output via mask $\bm{g}^{(N+1)}$ is that
+\begin{align*}
+	&\ \bm{y}_{\bm{g}}^{(N+1)} - \bm{y} \\
+	=\ &\ W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} \odot \bm{g}^{(N+1)}) - W^{(N+1)}\bm{y}^{(N)} \\
+	=\ &\ W^{(N+1)}((\bm{y}_{\bm{g}}^{(N)} \odot \bm{g}^{(N+1)} ) - \bm{y}_{\bm{g}}^{(N)}) + W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} - \bm{y}^{(N)})
+\end{align*}
+The expected output deviation is:
+\begin{equation}
+	e_{\bm{g}}^{N+1}=\E\|W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} \odot \bm{g}^{(N+1)} - \bm{y}_{\bm{g}}^{(N)})\|^2 + \E\|W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} - \bm{y}^{(N)})\|^2,
+\end{equation}
+the cross-term zeros out because of the assumption. 
+
+Upon induction assumption, for the second term, we have that 
+\begin{equation}
+	\E\|W^{(N+1)}(\bm{y}_{\bm{g}_\text{\algacro{}}}^{(N)} - \bm{y}^{(N)})\|^2\leq \E\|W^{(N+1)}(\bm{y}_{\bm{g}_\text{TEAL}}^{(N)} - \bm{y}^{(N)})\|^2.
+\end{equation}
+For the first term, we have that 
+\begin{align*}
+	&\ \mathbb{E}[\|W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} \odot \bm{g}^{(N+1)} - \bm{y}_{\bm{g}}^{(N)})\|^2]\\
+	=&\ \E[{\sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(N+1)})}\sum_{i\in \mathcal{I}^{=0}(\bm{g}^{(N+1)})} \bm{y}_j^{(N)}\bm{y}_i^{(N)}\,(W_{:,j}^{(N+1)})^\top W_{:,i}^{(N+1)}}]\\
+	= &\ \sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(N+1)})}{(\bm{c}_j^{(N+1)})^2\E{(\bm{y}_{j}^{(N)})^2}} + \sum_{\substack{i,j\in \mathcal{I}^{=0}(\bm{g}^{(N+1)})\\i\neq j}}({W_{:,j}^{(N+1)})^\top W_{:,i}^{(N+1)}\E[{\bm{y}_j^{(N)}\bm{y}_i^{(N)}}]}\\
+	= &\ \sum_{j\in \mathcal{I}^{=0}(\bm{g}^{(N+1)})}{(\bm{c}_j^{(N+1)})^2\E{(\bm{y}_{j}^{(N)})^2}},
+\end{align*}
+where the last line is due to $W^{(N+1)}$ is column-orthogonal, the cross-term's expectation is zero.
+
+Since \algacro{} retains the $k$ largest $|\bm{y}_j^{(N)}\bm{c}_j^{N+1}|$, thus:
+\begin{equation}
+	\mathbb{E}[\|W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} \odot \bm{g}_\text{\algacro{}}^{(N+1)} - \bm{y}_{\bm{g}}^{(N)})\|^2]\leq \mathbb{E}[\|W^{(N+1)}(\bm{y}_{\bm{g}}^{(N)} \odot \bm{g}_\text{TEAL}^{(N+1)} - \bm{y}_{\bm{g}}^{(N)})\|^2].
+\end{equation}
+Consequently, we reach the conclusion that
+\begin{align}
+	e_\text{\algacro{}}^{(N+1)}\leq e_\text{TEAL}^{(N+1)}.
+\end{align}
+
+
