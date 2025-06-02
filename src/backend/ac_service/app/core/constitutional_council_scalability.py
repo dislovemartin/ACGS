@@ -81,23 +81,47 @@ class RapidCoEvolutionHandler:
         # Redis client for caching and metrics
         self.redis_client = None
 
-        # Prometheus metrics
-        self.amendment_processing_time = Histogram(
-            'acgs_amendment_processing_seconds',
-            'Time spent processing amendments',
-            ['urgency_level', 'constitutional_significance']
-        )
+        # Prometheus metrics - use global registry to avoid duplicates
+        try:
+            self.amendment_processing_time = Histogram(
+                'acgs_amendment_processing_seconds',
+                'Time spent processing amendments',
+                ['urgency_level', 'constitutional_significance']
+            )
+        except ValueError:
+            # Metric already exists, get existing one
+            from prometheus_client import REGISTRY
+            for collector in REGISTRY._collector_to_names:
+                if hasattr(collector, '_name') and collector._name == 'acgs_amendment_processing_seconds':
+                    self.amendment_processing_time = collector
+                    break
 
-        self.active_amendments_gauge = Gauge(
-            'acgs_active_amendments_total',
-            'Number of active amendments'
-        )
+        try:
+            self.active_amendments_gauge = Gauge(
+                'acgs_active_amendments_total',
+                'Number of active amendments'
+            )
+        except ValueError:
+            # Metric already exists, get existing one
+            from prometheus_client import REGISTRY
+            for collector in REGISTRY._collector_to_names:
+                if hasattr(collector, '_name') and collector._name == 'acgs_active_amendments_total':
+                    self.active_amendments_gauge = collector
+                    break
 
-        self.co_evolution_events = Counter(
-            'acgs_co_evolution_events_total',
-            'Total co-evolution events',
-            ['event_type', 'urgency_level']
-        )
+        try:
+            self.co_evolution_events = Counter(
+                'acgs_co_evolution_events_total',
+                'Total co-evolution events',
+                ['event_type', 'urgency_level']
+            )
+        except ValueError:
+            # Metric already exists, get existing one
+            from prometheus_client import REGISTRY
+            for collector in REGISTRY._collector_to_names:
+                if hasattr(collector, '_name') and collector._name == 'acgs_co_evolution_events_total':
+                    self.co_evolution_events = collector
+                    break
 
     async def initialize(self):
         """Initialize Redis client and metrics collection."""

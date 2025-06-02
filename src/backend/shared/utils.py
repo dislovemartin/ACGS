@@ -4,8 +4,12 @@ import logging
 import os
 from datetime import datetime, timezone, timedelta
 import re
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field, field_validator
+from enum import Enum
+import json
+from pathlib import Path
 
 # Setup basic logger
 # In a real application, you'd likely use a more sophisticated logging setup,
@@ -123,6 +127,124 @@ class Paginator:
             "items_on_page": len(self.get_page_items())
         }
 
+# Enhanced Configuration Management with Pydantic Validation
+
+class Environment(str, Enum):
+    """Environment types for configuration profiles."""
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    TESTING = "testing"
+
+
+class DatabaseConfig(BaseModel):
+    """Database configuration with validation."""
+    url: str = Field(..., description="Database connection URL")
+    echo_log: bool = Field(False, description="Enable SQL query logging")
+    pool_size: int = Field(10, ge=1, le=50, description="Connection pool size")
+    max_overflow: int = Field(20, ge=0, le=100, description="Maximum overflow connections")
+
+    @field_validator('url')
+    @classmethod
+    def validate_database_url(cls, v):
+        if not v.startswith(('postgresql://', 'postgresql+asyncpg://', 'sqlite://')):
+            raise ValueError("Database URL must use supported scheme")
+        return v
+
+
+class ServiceUrlsConfig(BaseModel):
+    """Service URLs configuration with validation."""
+    auth: str = Field(..., description="Authentication service URL")
+    ac: str = Field(..., description="Adaptive Constitution service URL")
+    integrity: str = Field(..., description="Integrity service URL")
+    fv: str = Field(..., description="Formal Verification service URL")
+    gs: str = Field(..., description="Governance Synthesis service URL")
+    pgc: str = Field(..., description="Policy Generation & Compliance service URL")
+
+    @field_validator('auth', 'ac', 'integrity', 'fv', 'gs', 'pgc')
+    @classmethod
+    def validate_service_url(cls, v):
+        if not v.startswith(('http://', 'https://')):
+            raise ValueError("Service URL must start with http:// or https://")
+        return v
+
+
+class SecurityConfig(BaseModel):
+    """Security configuration with validation."""
+    jwt_secret_key: str = Field(..., min_length=32, description="JWT secret key")
+    jwt_algorithm: str = Field("HS256", description="JWT signing algorithm")
+    jwt_access_token_expire_minutes: int = Field(30, ge=1, le=1440, description="Access token expiry")
+    jwt_refresh_token_expire_days: int = Field(7, ge=1, le=30, description="Refresh token expiry")
+    cors_origins: List[str] = Field(default_factory=list, description="CORS allowed origins")
+
+    @field_validator('jwt_secret_key')
+    @classmethod
+    def validate_jwt_secret(cls, v, info):
+        # Allow default secret key in testing environment
+        if hasattr(info, 'context') and info.context and info.context.get('environment') == 'testing':
+            return v
+        if v == 'your-secret-key-change-in-production':
+            raise ValueError("JWT secret key must be changed from default value")
+        return v
+
+
+class AIModelConfig(BaseModel):
+    """AI model configuration with validation."""
+    primary: str = Field("claude-3-7-sonnet-20250219", description="Primary AI model")
+    research: str = Field("sonar-pro", description="Research AI model")
+    fallback: str = Field("claude-3-5-sonnet", description="Fallback AI model")
+    max_tokens: int = Field(64000, ge=1000, le=200000, description="Maximum tokens")
+    temperature: float = Field(0.2, ge=0.0, le=2.0, description="Model temperature")
+    research_temperature: float = Field(0.1, ge=0.0, le=2.0, description="Research model temperature")
+
+
+class MonitoringConfig(BaseModel):
+    """Monitoring and logging configuration."""
+    log_level: str = Field("INFO", description="Logging level")
+    metrics_enabled: bool = Field(True, description="Enable metrics collection")
+    prometheus_port: int = Field(9090, ge=1024, le=65535, description="Prometheus metrics port")
+
+    @field_validator('log_level')
+    @classmethod
+    def validate_log_level(cls, v):
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        if v.upper() not in valid_levels:
+            raise ValueError(f"Log level must be one of: {valid_levels}")
+        return v.upper()
+
+
+class ACGSConfigModel(BaseModel):
+    """Complete ACGS configuration model with Pydantic validation."""
+    environment: Environment = Field(Environment.DEVELOPMENT, description="Application environment")
+    debug: bool = Field(False, description="Enable debug mode")
+
+    # Configuration sections
+    database: DatabaseConfig
+    service_urls: ServiceUrlsConfig
+    internal_service_urls: ServiceUrlsConfig
+    security: SecurityConfig
+    ai_models: AIModelConfig
+    monitoring: MonitoringConfig
+
+    # API configuration
+    api_version: str = Field("v1", pattern=r"^v\d+$", description="API version")
+
+    # External services
+    llm_api_endpoint: str = Field("http://mock_llm_service/generate", description="LLM API endpoint")
+
+    # AI API keys (stored securely)
+    ai_api_keys: Dict[str, Optional[str]] = Field(default_factory=dict, description="AI service API keys")
+
+    # Feature flags
+    model_features: Dict[str, bool] = Field(default_factory=dict, description="Model feature flags")
+
+    # Testing configuration
+    test_mode: bool = Field(False, description="Enable test mode")
+    test_database_url: Optional[str] = Field(None, description="Test database URL")
+
+    model_config = {"extra": "forbid", "validate_assignment": True}
+
+
 # Centralized Configuration Management
 class ACGSConfig:
     """
@@ -130,25 +252,127 @@ class ACGSConfig:
     Handles environment variables, service URLs, and cross-service communication settings.
     """
 
-    def __init__(self, env_file: Optional[str] = None):
+    def __init__(self, env_file: Optional[str] = None, environment: Optional[str] = None):
         """
-        Initialize configuration with optional environment file.
+        Initialize configuration with optional environment file and environment-specific profiles.
 
         Args:
             env_file: Path to .env file. If None, uses default discovery.
+            environment: Override environment (development, staging, production, testing)
         """
         # Load environment variables
-        if env_file:
-            load_dotenv(env_file)
-        else:
-            # Try to load from common locations
-            for env_path in ['.env', '../.env', '../../.env', '../../../.env']:
-                if os.path.exists(env_path):
-                    load_dotenv(env_path)
-                    break
+        self._load_environment_files(env_file)
 
+        # Determine environment
+        self.environment = Environment(environment or os.getenv('ENVIRONMENT', 'development'))
+
+        # Load environment-specific configuration
+        self._load_environment_specific_config()
+
+        # Load and validate configuration
         self._config = self._load_configuration()
-        self._validate_configuration()
+        self._validated_config = self._validate_with_pydantic()
+
+    def _load_environment_files(self, env_file: Optional[str] = None) -> None:
+        """Load environment files with precedence order."""
+        env_files_to_try = []
+
+        if env_file:
+            env_files_to_try.append(env_file)
+
+        # Environment-specific files
+        env_name = os.getenv('ENVIRONMENT', 'development')
+        env_files_to_try.extend([
+            f'.env.{env_name}',
+            f'.env.{env_name}.local',
+            '.env.local',
+            '.env'
+        ])
+
+        # Common locations
+        for base_path in ['.', '..', '../..', '../../..']:
+            for env_file_name in env_files_to_try:
+                env_path = os.path.join(base_path, env_file_name)
+                if os.path.exists(env_path):
+                    load_dotenv(env_path, override=False)  # Don't override already set values
+                    logger.info(f"Loaded environment file: {env_path}")
+
+    def _load_environment_specific_config(self) -> None:
+        """Load environment-specific configuration profiles."""
+        config_dir = Path("config")
+        if config_dir.exists():
+            # Load base config
+            base_config_file = config_dir / "base.json"
+            if base_config_file.exists():
+                self._load_config_file(base_config_file)
+
+            # Load environment-specific config
+            env_config_file = config_dir / f"{self.environment.value}.json"
+            if env_config_file.exists():
+                self._load_config_file(env_config_file)
+
+    def _load_config_file(self, config_file: Path) -> None:
+        """Load configuration from JSON file."""
+        try:
+            with open(config_file, 'r') as f:
+                config_data = json.load(f)
+                # Set environment variables from config file (if not already set)
+                for key, value in config_data.items():
+                    if key not in os.environ:
+                        os.environ[key] = str(value)
+                        logger.debug(f"Set {key} from config file: {config_file}")
+        except Exception as e:
+            logger.warning(f"Could not load config file {config_file}: {e}")
+
+    def _validate_with_pydantic(self) -> ACGSConfigModel:
+        """Validate configuration using Pydantic models."""
+        try:
+            # Prepare configuration data for Pydantic validation
+            config_data = {
+                'environment': self.environment,
+                'debug': self._config['debug'],
+                'database': {
+                    'url': self._config['database_url'],
+                    'echo_log': self._config['db_echo_log'],
+                    'pool_size': int(os.getenv('DB_POOL_SIZE', '10')),
+                    'max_overflow': int(os.getenv('DB_MAX_OVERFLOW', '20'))
+                },
+                'service_urls': self._config['service_urls'],
+                'internal_service_urls': self._config['internal_service_urls'],
+                'security': {
+                    'jwt_secret_key': self._config['jwt_secret_key'],
+                    'jwt_algorithm': self._config['jwt_algorithm'],
+                    'jwt_access_token_expire_minutes': self._config['jwt_access_token_expire_minutes'],
+                    'jwt_refresh_token_expire_days': self._config['jwt_refresh_token_expire_days'],
+                    'cors_origins': self._config['cors_origins']
+                },
+                'ai_models': {
+                    'primary': self._config['ai_models']['primary'],
+                    'research': self._config['ai_models']['research'],
+                    'fallback': self._config['ai_models']['fallback'],
+                    'max_tokens': self._config['llm_settings']['max_tokens'],
+                    'temperature': self._config['llm_settings']['temperature'],
+                    'research_temperature': self._config['llm_settings']['research_temperature']
+                },
+                'monitoring': {
+                    'log_level': self._config['log_level'],
+                    'metrics_enabled': self._config['metrics_enabled'],
+                    'prometheus_port': self._config['prometheus_port']
+                },
+                'api_version': self._config['api_version'],
+                'llm_api_endpoint': self._config['llm_api_endpoint'],
+                'ai_api_keys': self._config['ai_api_keys'],
+                'model_features': self._config['model_features'],
+                'test_mode': self._config['test_mode'],
+                'test_database_url': self._config.get('test_database_url')
+            }
+
+            # Pass environment context for validation
+            context = {'environment': self._config['environment']}
+            return ACGSConfigModel.model_validate(config_data, context=context)
+        except Exception as e:
+            logger.error(f"Configuration validation failed: {e}")
+            raise ValueError(f"Invalid configuration: {e}")
 
     def _load_configuration(self) -> Dict[str, Any]:
         """Load all configuration from environment variables."""
@@ -321,6 +545,10 @@ class ACGSConfig:
         """Check if running in production environment."""
         return self._config['environment'] == 'production'
 
+    def is_testing(self) -> bool:
+        """Check if running in testing environment."""
+        return self._config['environment'] == 'testing'
+
     def is_test_mode(self) -> bool:
         """Check if running in test mode."""
         return self._config['test_mode']
@@ -440,6 +668,106 @@ class ACGSConfig:
                 if key is not None
             }
         }
+
+    def get_validated_config(self) -> ACGSConfigModel:
+        """Get validated Pydantic configuration model."""
+        return self._validated_config
+
+    def get_secure_config_summary(self) -> Dict[str, Any]:
+        """Get configuration summary with sensitive values redacted."""
+        return {
+            'environment': self.environment.value,
+            'debug': self._config['debug'],
+            'database_configured': bool(self._config.get('database_url')),
+            'services_configured': list(self._config['service_urls'].keys()),
+            'ai_providers_configured': [
+                provider for provider, key in self._config['ai_api_keys'].items()
+                if key is not None
+            ],
+            'features_enabled': [
+                feature for feature, enabled in self._config['model_features'].items()
+                if enabled
+            ],
+            'monitoring': {
+                'log_level': self._config['log_level'],
+                'metrics_enabled': self._config['metrics_enabled']
+            }
+        }
+
+    def validate_critical_config(self) -> List[str]:
+        """Validate critical configuration and return list of issues."""
+        issues = []
+
+        # Check production-specific requirements
+        if self.is_production():
+            if self._config['jwt_secret_key'] == 'your-secret-key-change-in-production':
+                issues.append("JWT secret key must be changed in production")
+
+            if self._config['debug']:
+                issues.append("Debug mode should be disabled in production")
+
+            if not self._config.get('ai_api_keys', {}).get('anthropic'):
+                issues.append("Anthropic API key not configured for production")
+
+        # Check database configuration
+        if not self._config.get('database_url'):
+            issues.append("Database URL not configured")
+
+        # Check service URLs
+        for service, url in self._config['service_urls'].items():
+            if not url or not url.startswith(('http://', 'https://')):
+                issues.append(f"Invalid service URL for {service}: {url}")
+
+        return issues
+
+    def export_config_template(self, include_secrets: bool = False) -> Dict[str, Any]:
+        """Export configuration template for documentation."""
+        template = {
+            'environment_variables': {
+                'ENVIRONMENT': 'development|staging|production|testing',
+                'DEBUG': 'true|false',
+                'DATABASE_URL': 'postgresql+asyncpg://user:password@host:port/database',
+                'DB_ECHO_LOG': 'true|false',
+                'DB_POOL_SIZE': '10',
+                'DB_MAX_OVERFLOW': '20',
+                'JWT_SECRET_KEY': 'your-secret-key-minimum-32-characters',
+                'JWT_ALGORITHM': 'HS256',
+                'JWT_ACCESS_TOKEN_EXPIRE_MINUTES': '30',
+                'JWT_REFRESH_TOKEN_EXPIRE_DAYS': '7',
+                'BACKEND_CORS_ORIGINS': 'http://localhost:3000,http://localhost:3001',
+                'LOG_LEVEL': 'DEBUG|INFO|WARNING|ERROR|CRITICAL',
+                'METRICS_ENABLED': 'true|false',
+                'PROMETHEUS_PORT': '9090'
+            },
+            'service_urls': {
+                'AUTH_SERVICE_URL': 'http://localhost:8000',
+                'AC_SERVICE_URL': 'http://localhost:8001',
+                'INTEGRITY_SERVICE_URL': 'http://localhost:8002',
+                'FV_SERVICE_URL': 'http://localhost:8003',
+                'GS_SERVICE_URL': 'http://localhost:8004',
+                'PGC_SERVICE_URL': 'http://localhost:8005'
+            },
+            'ai_configuration': {
+                'ACGS_PRIMARY_LLM_MODEL': 'claude-3-7-sonnet-20250219',
+                'ACGS_RESEARCH_LLM_MODEL': 'sonar-pro',
+                'ACGS_FALLBACK_LLM_MODEL': 'claude-3-5-sonnet',
+                'ACGS_LLM_MAX_TOKENS': '64000',
+                'ACGS_LLM_TEMPERATURE': '0.2',
+                'ACGS_RESEARCH_TEMPERATURE': '0.1'
+            }
+        }
+
+        if include_secrets:
+            template['ai_api_keys'] = {
+                'ANTHROPIC_API_KEY': 'your-anthropic-api-key',
+                'OPENAI_API_KEY': 'your-openai-api-key',
+                'GOOGLE_API_KEY': 'your-google-api-key',
+                'PERPLEXITY_API_KEY': 'your-perplexity-api-key',
+                'HUGGINGFACE_API_KEY': 'your-huggingface-api-key',
+                'OPENROUTER_API_KEY': 'your-openrouter-api-key'
+            }
+
+        return template
 
     def to_dict(self) -> Dict[str, Any]:
         """Return configuration as dictionary (for debugging)."""

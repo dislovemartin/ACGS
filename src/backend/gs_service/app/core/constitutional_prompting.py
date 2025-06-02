@@ -61,7 +61,7 @@ Each principle has priority weights, scope definitions, and normative statements
 WINA OPTIMIZATION CONTEXT:
 When WINA (Weight Informed Neuron Activation) optimization is enabled, constitutional principles may include
 efficiency optimization constraints that balance performance gains with constitutional compliance.
-These WINA-informed principles ensure that LLM optimization maintains constitutional integrity."""
+These WINA-informed principles ensure that LLM optimization maintains constitutional integrity.
 
 CONSTITUTIONAL COMPLIANCE REQUIREMENTS:
 1. All generated policies MUST align with the constitutional principles
@@ -544,6 +544,7 @@ If principles conflict, resolve using this hierarchy:
         optimization_recommendations = constitutional_context.get("optimization_recommendations", [])
         optimization_context = constitutional_context.get("optimization_context", {})
 
+        avg_potential = wina_summary.get('average_optimization_potential', 0.0)
         section = f"""
 WINA OPTIMIZATION CONTEXT:
 Optimization Mode: {optimization_context.get('optimization_mode', 'conservative')}
@@ -555,7 +556,7 @@ OPTIMIZATION ANALYSIS SUMMARY:
 - High Optimization Potential: {wina_summary.get('high_potential_count', 0)}
 - Medium Optimization Potential: {wina_summary.get('medium_potential_count', 0)}
 - Low Optimization Potential: {wina_summary.get('low_potential_count', 0)}
-- Average Optimization Potential: {wina_summary.get('average_optimization_potential', 0.0):.3f}
+- Average Optimization Potential: {avg_potential:.3f}
 - Optimization Feasible: {wina_summary.get('optimization_feasible', False)}
 
 OPTIMIZATION RECOMMENDATIONS:
