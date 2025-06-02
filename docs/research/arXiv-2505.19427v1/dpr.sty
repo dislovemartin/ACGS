@@ -1,0 +1,773 @@
+%%%%%%%%%%%%%%%%%%
+% LaTeX macros.tex
+% 27 Apr 2003: \def replaced by \newcommand
+% 17 Aug 2005: \Frac fixed (needs {} around #1 and #2).
+%              \Newcommand, \pmat, \bmat  introduced.
+%              NB: \Newcommand doesn't work with commands that have [] arguments.
+% 05 Sep 2005: Added innerproduct
+% 08 Dec 2005: Realized that \providecommand already does what we were
+%              trying to do with \Newcommand.
+% 11 Dec 2005: Revived \Newcommand to overload commands from other packages.
+% 13 Aug 2007: AF changed ``\mathrm'' to ``\operator@font''
+%%%%%%%%%%%%%%%%%%
+
+\makeatletter
+%\newcommand{\proof{\penalty 25\noindent{\bf Proof.}\nobreak\hskip 1em\ignorespaces}
+
+%\newcommand{\emptybox}{\ \vbox{\hrule\hbox{\vrule height1.3ex\hskip0.8ex\vrule}\hrule}}
+\newcommand{\emptybox}{\vbox{\hrule height0.6pt\hbox{\vrule height1.3ex width0.6pt\hskip0.8ex%
+   \vrule width0.6pt}\hrule height0.6pt}} % SIAM \endproof
+
+\newcommand{\noproof}{\hspace{.5em}\blackslug}
+\newcommand{\m}{\phantom-}
+\newcommand{\mm}[1]{\hbox{$#1$}}                 % math mode
+\newcommand{\mtx}[2]{\renewcommand{\arraystretch}{1.2}%
+      \left(\! \begin{array}{#1}#2\end{array}\! \right)}
+\newcommand{\thnmtx}[2]{\renewcommand{\arraystretch}{0.95}%
+      \left(\nnthiksp\begin{array}{#1}#2\end{array}\nnthiksp\right)}
+% The next two are better than \mtx.
+\newcommand{\pmat}[1]{\begin{pmatrix}#1\end{pmatrix}} % Need \usepackage{amsmath}
+\newcommand{\bmat}[1]{\begin{bmatrix}#1\end{bmatrix}} % Need \usepackage{amsmath}
+\newcommand{\Bmat}[1]{\begin{Bmatrix}#1\end{Bmatrix}} % Need \usepackage{amsmath}
+\newcommand{\vmat}[1]{\begin{vmatrix}#1\end{vmatrix}} % Need \usepackage{amsmath}
+\newcommand{\Vmat}[1]{\begin{Vmatrix}#1\end{Vmatrix}} % Need \usepackage{amsmath}
+
+% Does anyone know how to do this with \newcommand?
+\ifx   \innerprod\undefined%
+   \def\innerprod(#1,#2){\langle#1,#2\rangle} % Must be called as \innerproduct(A,B)
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Replace commands defined in other packages%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Newcommand}[2]%
+   {\ifx#1\undefined \newcommand{#1}{#2} \else \renewcommand{#1}{#2} \fi}
+\ifx\mod\undefined
+  \newcommand{\mod}[1]{|#1|}
+\else
+  \renewcommand{\mod}[1]{|#1|}
+\fi
+\ifx\Range\undefined
+  \newcommand{\Range}{\mathop{\operator@font{range}}}
+\else
+  \renewcommand{\Range}{\mathop{\operator@font{range}}}
+\fi
+\Newcommand{\Re} {\mathbb{R}}           % Need \usepackage{amssymb}
+% \Newcommand{\subject} {\hbox{\rm subject to}}           % Need \usepackage{amssymb}
+\Newcommand{\subject}{\mathop{\operator@font{subject\ to}}}  % Need \usepackage{amssymb}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Commands defined in other packages%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\det}  {\mathop{\operator@font{det}}}
+\providecommand{\diag} {\mathop{\operator@font{diag}}}
+\providecommand{\dim}  {\mathop{\operator@font{dim}}}
+\providecommand{\exp}  {\mathop{\operator@font{exp}}}
+\providecommand{\Frac}[2]{{\textstyle{\frac{#1}{#2}}}}
+%\providecommand{\mod}[1]{|#1|}
+\providecommand{\rank} {\mathop{\operator@font{rank}}}
+%\providecommand{\Re}   {\mathbb{R}}           % Need \usepackage{amssymb}
+\providecommand{\Co}   {\mathbb{C}}            % Need \usepackage{amssymb}
+\providecommand{\vec}  {\mathop{\operator@font{vec}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\newcommand{\st}{:}
+\newcommand{\abs}[1]{|#1|}
+\newcommand{\Angle}{\mathop{\operator@font{angle}}}
+\newcommand{\argmin}{\mathop{\operator@font{argmin}}}
+\newcommand{\argmax}{\mathop{\operator@font{argmax}}}
+%\newcommand{\conv}{\mathop{\operator@font{conv}}}
+\newcommand{\eig}{\mathop{\operator@font{eig}}}
+\newcommand{\svSet}{\mathop{\operator@font{sv}}}
+\newcommand{\algmult}{\mathop{\operator@font{am}}}
+\newcommand{\geomult}{\mathop{\operator@font{gm}}}
+%\newcommand{\dottimes}{\mathop{\operator@font{{\,\boldmath$\cdot$}\,}}}
+\newcommand{\dottimes}{\mathop{\mbox{{\,\boldmath$\cdot$}\,}}}
+\newcommand{\mv}[1]{\mathtt{#1}}
+\newcommand{\mtt}[1]{\mathtt{#1}}
+\newcommand{\T}{^T\!}
+\newcommand{\Tinv}{^{-T}\!}
+\newcommand{\und}[1]{$\underline{\hbox{#1}}$}
+\newcommand{\gge}{\succeq}
+\newcommand{\twonorm}[1]{\norm{#1}_2}
+\newcommand{\onenorm}[1]{\norm{#1}_1}
+\newcommand{\infnorm}[1]{\norm{#1}_{\infty}}
+\newcommand{\gnorm}[1]{\norm{#1}_{\Phi}} % \Phi is a symmetric gauge function
+\newcommand{\gdualnorm}[1]{\norm{#1}_{\Phi\superstar}} % \Phi is a symmetric gauge function
+\newcommand{\realpart}{\mathop{\operator@font{Re}}\,}
+\newcommand{\imaginarypart}{\mathop{\operator@font{Im}}\,}
+%\newcommand{\frobnorm}[1]{\norm{#1}_F}
+\newcommand{\dualnorm}[1]{\norm{#1}_D}
+\newcommand{\disp}{\displaystyle}
+\newcommand{\super}{\scriptstyle}
+\newcommand{\superplus}{^{+}}
+\newcommand{\superminus}{^{-}}
+\newcommand{\ur}{\mbox{\bf u}}
+%\newcommand{\Re}{I\!\!R}
+\newcommand{\sgap}{\;}
+\newcommand{\mgap}{\;\;}
+\newcommand{\bgap}{\;\;\;}
+%\newcommand{\subject}{\hbox{\rm subject to}}
+\newcommand{\minimize}[1]{{\displaystyle\minim_{#1}}}
+\newcommand{\minimizearg}[2]{{\displaystyle\minim_{#1 \in \Re^{#2}}}}
+\newcommand{\maximizearg}[2]{{\displaystyle\maxim_{#1 \in \Re^{#2}}}}
+\newcommand{\minimizetwoarg}[4]{{\displaystyle\minim_{#1 \in \Re^{#2},%
+                                                  #3 \in \Re^{#4}}}}
+\newcommand{\maximizetwoarg}[4]{{\displaystyle\maxim_{#1 \in \Re^{#2},%
+                                                  #3 \in \Re^{#4}}}}
+\newcommand{\maximize}[1]{{\displaystyle\maxim_{#1}}}
+\newcommand{\eval}[2]{\left.#1\right|_{\alpha=#2}} % alpha     suffix
+\newcommand{\evalBrack}[2]{\Big[#1\Big]_{\alpha=#2}} % alpha in brackets
+\newcommand{\evaluate}[2]{\left.#1\right|_{#2}}    % arbitrary suffix
+
+\newcommand{\Bigp}[1]{\bigl(#1\bigr)}
+\newcommand{\tmat}[2]{\big(\, #1 \ \ #2 \,\big)}
+\newcommand{\tmatt}[3]{\big(\, #1 \ \  #2 \ \  #3\,\big)}
+\newcommand{\tmattt}[4]{\big(\, #1 \ \  #2 \ \  #3 \ \  #4\,\big)}
+\newcommand{\tmatttt}[5]{\big(\, #1 \ \  #2 \ \  #3 \ \  #4 \ \  #5\,\big)}
+
+\newcommand{\mat}[2]{\Bigp{\; #1 \quad #2 \;}}
+\newcommand{\matt}[3]{\Bigp{\; #1 \quad #2 \quad #3\;}}
+\newcommand{\mattt}[4]{\Bigp{\; #1 \quad #2 \quad #3 \quad #4\;}}
+\newcommand{\matttt}[5]{\Bigp{\; #1 \quad #2 \quad #3 \quad #4 \quad #5\;}}
+\newcommand{\Cpp}{C\raise3pt\hbox{\tiny++}}
+\newcommand{\blackslug}{\hbox{\hskip 1pt \vrule width 4pt height 6pt depth 1.5pt
+  \hskip 1pt}}
+\newcommand{\boxit}[1]{\vbox{\hrule\hbox{\vrule\hskip 3pt
+  \vbox{\vskip 3pt #1 \vskip 3pt}\hskip 3pt\vrule}\hrule}}
+\newcommand{\cross}{\scriptscriptstyle\times}
+\newcommand{\maxim}{\mathop{\operator@font{maximize}}}
+%\newcommand{\minim}{\mathop{\operator@font{minimize}}}
+\newcommand{\minim}{\mathop{\operator@font{minimize}}}
+\newcommand{\cond}{{\operator@font{cond}}}
+%\newcommand{\cond}{\mathop{\operator@font{cond}}}
+%\newcommand{\defined}{\buildrel{\scriptscriptstyle\triangle}\over=}
+\newcommand{\defined}{\mathop{\,{\scriptstyle\stackrel{\triangle}{=}}}\,}
+\newcommand{\definedas}{\defined}
+\newcommand{\closure}{\mathop{\operator@font{closure}}}
+\newcommand{\sep}{\mathop{\operator@font{sep}}}
+\newcommand{\dist}{\mathop{\operator@font{dist}}}
+\newcommand{\In}{\mathop{\operator@font{In}}}
+\newcommand{\Signature}{\mathop{\operator@font{Sn}}}
+\newcommand{\boundary}{\mathop{\operator@font{bnd}}}
+%\newcommand{\interior}{\mathop{\operator@font{int}}}
+\newcommand{\Int}{\mathop{\operator@font{int}}}
+%\newcommand{\Null}{\mathop{\operator@font{null}}}
+\newcommand{\columnRank}{\mathop{\operator@font{column\ rank}}}
+\newcommand{\rowRank}{\mathop{\operator@font{row\ rank}}}
+\newcommand{\Rank}{\mathop{\operator@font{rank}}}
+\newcommand{\op}{\mathop{\operator@font{op}}}
+\newcommand{\re}{\mathop{\operator@font{re}}}
+\newcommand{\range}{\mathop{\operator@font{range}}}
+\newcommand{\sign}{\mathop{\operator@font{sign}}}
+\newcommand{\sgn}{\mathop{\operator@font{sgn}}}
+%\newcommand{\Span}{\mbox{\rm span}}
+\newcommand{\Span}{\mathop{\operator@font{span}}}
+%\newcommand{\trace}{\mathop{\operator@font{trace}}}
+\newcommand{\drop}{^{\null}}
+%\newcommand{\etal}{et al.}  %%% No italics!!  Also, must say \etal\
+\newcommand{\float}{fl}
+\newcommand{\Grad}{\nabla\!}
+%\newcommand{\grad}{\nabla}   % Already defined
+\newcommand{\Hess}{\nabla^2\!}
+
+\newcommand{\cents}{\hbox{\operator@font{\rlap/c}}}
+\newcommand{\half}  {{\textstyle\frac12}}
+\newcommand{\third} {{\textstyle\frac13}}
+\newcommand{\fourth}{{\textstyle\frac14}}
+\newcommand{\sixth}{{\textstyle\frac16}}
+\newcommand{\eighth}{{\textstyle\frac18}}
+\newcommand{\inv}{^{-1}}
+\newcommand{\invT}{^{-T}}
+\newcommand{\invsq}{^{-2}}
+\newcommand{\limk}{\lim_{k\to\infty}}
+\newcommand{\modd}[1]{\biggl|#1\biggr|}
+\newcommand{\Mod}[1]{\left|#1\right|}
+\newcommand{\normm}[1]{\biggl\|#1\biggr\|}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\pinv}{^\dag}                   %  pseudoinverse
+\newcommand{\seql}[2]{\{\hthinsp#1\hthinsp\}_{#2}}
+\newcommand{\seq}[1]{\seql{#1}{k\ge0}}
+\newcommand{\Seq}[1]{\{\hthinsp#1\hthinsp\}}
+\newcommand{\Set}[1]{\{\, #1 \,\}}
+\newcommand{\spose}[1]{\hbox to 0pt{#1\hss}}
+%\newcommand{\sub}[1]{^{\null}_{#1}}
+\newcommand{\sub}[1]{_{\mbox{\protect\tiny #1}}}
+\newcommand{\till}{\,{:}\,}                 %  Matlab i = 1:n as i = 1\till n
+
+\newcommand{\lwords}[1]{\text{#1}\mgap}     % text automatically adjusts the size
+\newcommand{\rwords}[1]{\mgap\text{#1}}
+\newcommand{\lwordss}[1]{\text{#1}\quad}    % text automatically adjusts the size
+\newcommand{\rwordss}[1]{\quad\text{#1}}
+\newcommand{\lwordsss}[1]{\text{#1}\qquad}  % text automatically adjusts the size
+\newcommand{\rwordsss}[1]{\qquad\text{#1}}
+\newcommand{\words}[1]{\mgap\text{#1}\mgap}
+\newcommand{\wordss}[1]{\quad\text{#1}\quad}
+\newcommand{\wordsss}[1]{\qquad\text{#1}\qquad}
+
+\newcommand{\xint}{{x_{\rm int}}}
+
+%%% Fixed-size glue, only for math mode
+
+\newcommand{\halfthinsp}{\mskip 0.5 mu}    %           thin space
+\newcommand{\hthinsp}{\mskip  1   mu}    %           thin space
+\newcommand{\pthinsp}{\mskip  2   mu}    %           thin space
+\newcommand{\pmedsp }{\mskip  2.75mu}    % positive  medium space
+\newcommand{\pthiksp}{\mskip  3.5 mu}    %           thick space
+\newcommand{\nthinsp}{\mskip -2   mu}
+\newcommand{\nmedsp }{\mskip -2.75mu}
+\newcommand{\nthiksp}{\mskip -3.5 mu}
+\newcommand{\nnthiksp}{\mskip -9.5 mu}
+
+\newcommand{\up}[1]{^{(#1)}}
+\newcommand{\upT}[1]{^{(#1)T}}
+\newcommand\upk{\up{k}}
+\newcommand\upkT{\upT{k}}
+\newcommand{\upkp}[1]{^{(k+#1)}}
+\newcommand{\upkm}[1]{^{(k-#1)}}
+
+%%% Specially lowered subscripts (see \sub above)
+
+\newcommand{\Asubk}{A\sub{\nthinsp k}}
+\newcommand{\Bsubk}{B\sub{\nthinsp k}}
+\newcommand{\Fsubk}{F\sub{\nmedsp k}}
+\newcommand{\Gsubk}{G\sub{\nthinsp k}}
+\newcommand{\Hsubk}{H\sub{\nthinsp k}}
+\newcommand{\HsubB}{H\sub{\nthinsp\scriptscriptstyle{B}}}
+\newcommand{\HsubS}{H\sub{\nthinsp\scriptscriptstyle{S}}}
+\newcommand{\HsubBS}{H\sub{\nthinsp\scriptscriptstyle\mathit{BS}}}
+\newcommand{\Hz}{H\sub{\nthinsp \scriptscriptstyle{Z}}}
+\newcommand{\Jsubk}{J\sub{\nmedsp k}}
+\newcommand{\Psubk}{P\sub{\nthiksp k}}
+\newcommand{\Qsubk}{Q\sub{\nthinsp k}}
+\newcommand{\Vsubk}{V\sub{\nmedsp k}}
+\newcommand{\Vsubone}{V\sub{\nmedsp 1}}
+\newcommand{\Vsubtwo}{V\sub{\nmedsp 2}}
+\newcommand{\Ysubk}{Y\sub{\nmedsp k}}
+\newcommand{\Wsubk}{W\sub{\nthiksp k}}
+\newcommand{\Zsubk}{Z\sub{\nthinsp k}}
+\newcommand{\Zsubi}{Z\sub{\nthinsp i}}
+
+%%% Subscripts
+
+\newcommand{\subfr}{_{\scriptscriptstyle\mathit{FR}}}
+\newcommand{\subfx}{_{\scriptscriptstyle\mathit{FX}}}
+\newcommand{\fr}{\subfr}
+\newcommand{\fx}{\subfx}
+
+\newcommand{\supmax}{^{\operator@font{max}}}
+\newcommand{\supmin}{^{\operator@font{min}}}
+\newcommand{\submax}{_{\operator@font{max}}}
+\newcommand{\submin}{_{\operator@font{min}}}
+\newcommand{\subminus}{_{\scriptscriptstyle -}}
+\newcommand{\subplus }{_{\scriptscriptstyle +}}
+\newcommand{\supplus }{^{\scriptscriptstyle +}}
+\newcommand{\subzero }{_{\scriptscriptstyle 0}}
+
+\newcommand{\A}{_{\scriptscriptstyle A}}
+\newcommand{\B}{_{\scriptscriptstyle B}}
+%\newcommand{\BS}{_{\scriptscriptstyle\mathit{BS}}}
+%\newcommand{\C}{_{\scriptscriptstyle C}}
+\newcommand{\D}{_{\scriptscriptstyle D}}
+%\newcommand{\E}{_{\scriptscriptstyle E}}
+\newcommand{\F}{_{\scriptscriptstyle F}}
+\newcommand{\G}{_{\scriptscriptstyle G}}
+\newcommand{\I}{_{\scriptscriptstyle I}}
+\newcommand{\w}{_w}
+%\newcommand{\k}{_k}
+\newcommand{\kp}[1]{_{k+#1}}
+\newcommand{\km}[1]{_{k-#1}}
+%\newcommand{\j}{_j}
+\newcommand{\jp}[1]{_{j+#1}}
+\newcommand{\jm}[1]{_{j-#1}}
+%\newcommand{\i}{_i}
+\newcommand{\ip}[1]{_{i+#1}}
+\newcommand{\im}[1]{_{i-#1}}
+\newcommand{\kd}{_k\drop}
+\newcommand{\kdp}[1]{_{k+#1}\drop}
+\newcommand{\kdm}[1]{_{k-#1}\drop}
+\newcommand{\id}{_i\drop}
+\newcommand{\idp}[1]{_{i+#1}\drop}
+\newcommand{\idm}[1]{_{i-#1}\drop}
+\newcommand{\jd}{_j\drop}
+\newcommand{\jdp}[1]{_{j+#1}\drop}
+\newcommand{\jdm}[1]{_{j-#1}\drop}
+\newcommand{\K}{_{\scriptscriptstyle K}}
+\renewcommand{\L}{_{\scriptscriptstyle L}}
+\newcommand{\M}{_{\scriptscriptstyle M}}
+%\newcommand{\N}{_{\scriptscriptstyle N}}
+%\newcommand{\subb}{\B}
+%\newcommand{\subc}{\C}
+%\newcommand{\subm}{\M}
+%\newcommand{\subf}{\F}
+%\newcommand{\subn}{\N}
+%\newcommand{\subh}{\H}
+%\newcommand{\subk}{\K}
+%\newcommand{\subt}{_{\scriptscriptstyle T}}
+%\newcommand{\subr}{\R}
+%\newcommand{\subz}{\Z}
+\newcommand{\J}{_{\scriptscriptstyle J}}
+%\newcommand{\O}{_{\scriptscriptstyle O}}
+\renewcommand{\P}{_{\scriptscriptstyle P}}
+%\newcommand{\Q}{_{\scriptscriptstyle Q}}
+%\newcommand{\R}{_{\scriptscriptstyle R}}
+\let\Sec=\S
+%\renewcommand{\S}{_{\scriptscriptstyle S}}
+\newcommand{\N}{_{\scriptscriptstyle N}}
+%\Newcommand{\R}{_{\scriptscriptstyle R}}
+\newcommand{\U}{\subU}
+\newcommand{\V}{_{\scriptscriptstyle V}}
+\newcommand{\W}{_{\scriptscriptstyle W}}
+\newcommand{\X}{_{\scriptscriptstyle X}}
+\newcommand{\Y}{_{\scriptscriptstyle Y}}
+%\newcommand{\Z}{_{\scriptscriptstyle Z}}
+\newcommand{\Zd}{_{\scriptscriptstyle Z}^{\null}}
+
+%%% Superscript stars
+
+\newcommand{\starsymbol}{\ast}
+\newcommand{\superstar}{^\starsymbol}
+\newcommand{\substar}{_\starsymbol}
+%\renewcommand{\substar}{_{\lower 1.5pt\starsymbol}}
+\newcommand{\starT}{{\starsymbol T\!}}
+\newcommand{\starTT}{{\starsymbol T}}
+\newcommand{\SUPERSTAR}{^{\raise 0.5pt\hbox{$\starsymbol$}}}
+\renewcommand{\SUPERSTAR}{\superstar}
+\newcommand{\JstarT}{J^{\starT}}
+
+\newcommand{\shrink}{\mskip -7mu}  %%% Less space after \xstar if followed by , or .
+
+\newcommand{\alphastar}{\alpha\superstar}
+\newcommand{\sigmastar}{\sigma\superstar}
+\newcommand{\gammastar}{\gamma\superstar}
+\newcommand{\lamstar  }{\lambda\superstar}
+\newcommand{\lamstarT}{\lambda^{\starT}}
+\newcommand{\lambdastar}{\lamstar}
+\newcommand{\nustar}{\nu\superstar}
+\newcommand{\mustar}{\mu\superstar}
+\newcommand{\pistar}{\pi\superstar}
+\newcommand{\thetastar}{\theta\superstar}
+
+\newcommand{\cstar}{c\superstar}
+\newcommand{\dstar}{d\superstar}
+\newcommand{\fstar}{f\superstar}
+\newcommand{\gstar}{g\superstar}
+\newcommand{\hstar}{h\superstar}
+\newcommand{\mstar}{m\superstar}
+\newcommand{\pstar}{p\superstar}
+\newcommand{\qstar}{q\superstar}
+\newcommand{\sstar}{s\superstar}
+%\newcommand{\rstar}{r\superstar}
+\newcommand{\tstar}{t\superstar}
+\newcommand{\ustar}{u\superstar}
+\newcommand{\vstar}{v\superstar}
+\newcommand{\wstar}{w\superstar}
+\newcommand{\xstar}{x\superstar}
+\newcommand{\ystar}{y\superstar}
+\newcommand{\zstar}{z\superstar}
+
+\newcommand{\Astar}{A\SUPERSTAR}
+\newcommand{\Bstar}{B\SUPERSTAR}
+\newcommand{\Cstar}{C\SUPERSTAR}
+\newcommand{\Fstar}{F\SUPERSTAR}
+\newcommand{\Gstar}{G\SUPERSTAR}
+\newcommand{\Hstar}{H\SUPERSTAR}
+\newcommand{\Jstar}{J\SUPERSTAR}
+\newcommand{\Kstar}{K\SUPERSTAR}
+\newcommand{\Lstar}{L\SUPERSTAR}
+\newcommand{\Mstar}{M\SUPERSTAR}
+\newcommand{\Qstar}{Q\SUPERSTAR}
+\newcommand{\Rstar}{R\SUPERSTAR}
+\newcommand{\Ustar}{U\SUPERSTAR}
+\newcommand{\Vstar}{V\SUPERSTAR}
+\newcommand{\Wstar}{W\SUPERSTAR}
+\newcommand{\Xstar}{X\SUPERSTAR}
+\newcommand{\Zstar}{Z\SUPERSTAR}
+
+%%% bars, hats, tildes  (\skew4 is the default)
+
+\newcommand{\alphabar}{\skew3\bar\alpha}
+\newcommand{\alphahat}{\skew3\hat\alpha}
+\newcommand{\alphatilde}{\skew3\tilde\alpha}
+\newcommand{\betabar}{\skew{2.8}\bar\beta}
+%\newcommand{\betahat}{\skew{2.8}\widehat\beta}
+\newcommand{\betahat}{\skew6\hat\beta}
+\newcommand{\betatilde}{\skew6\tilde\beta}
+\newcommand{\delbar}{\bar\delta}
+\newcommand{\deltahat}{\skew6\hat\delta}
+\newcommand{\deltilde}{\skew5\tilde\delta}
+\newcommand{\deltabar}{\bar\delta}
+\newcommand{\deltatilde}{\deltilde}
+\newcommand{\epsbar}{\skew3\bar\epsilon}
+\newcommand{\lambar}{\bar\lambda}
+\newcommand{\etabar}{\bar\eta}
+\newcommand{\etahat}{\hat\eta}
+\newcommand{\gammabar}{\bar\gamma}
+\newcommand{\gammahat}{\skew4\hat\gamma}
+%\newcommand{\lamhat}{\skew{2.8}\widehat\lambda}
+%\newcommand{\lamhat}{\skew{3.8}\widehat\lambda}
+\newcommand{\lamhat}{\widehat\lambda}
+\newcommand{\lamtilde}{\widetilde\lambda}
+\newcommand{\lambdabar}{\lambar}
+\newcommand{\lambdahat}{\lamhat}
+\newcommand{\mubar}{\skew3\bar \mu}
+\newcommand{\muhat}{\skew3\widehat \mu}
+\newcommand{\mutilde}{\widetilde\mu}
+\newcommand{\nubar}{\skew3\bar\nu}
+\newcommand{\nuhat}{\skew3\widehat\nu}
+\newcommand{\nutilde}{\skew3\tilde\nu}
+\newcommand{\omegabar}{\bar\omega}
+\newcommand{\varphihat}{\widehat\varphi}
+\newcommand{\varphibar}{\bar\varphi}
+\newcommand{\pibar}{\skew1\bar\pi}
+\newcommand{\pihat}{\skew1\widehat \pi}
+\newcommand{\sigmabar}{\skew{2.8}\bar\sigma}
+\newcommand{\sigmahat}{\skew3\hat\sigma}
+%\newcommand{\sigmahat}{\widehat\sigma}
+\newcommand{\sigmatilde}{\skew{2.8}\tilde\sigma}
+\newcommand{\rhobar}{\bar\rho}
+%\newcommand{\rhohat}{\skew2\widehat\rho}
+\newcommand{\rhohat}{\skew{3.5}\hat\rho}
+\newcommand{\taubar}{\bar\tau}
+\newcommand{\tautilde}{\tilde\tau}
+\newcommand{\tauhat}{\widehat\tau}
+\newcommand{\thetabar}{\bar\theta}
+\newcommand{\thetahat}{\hat\theta}
+\newcommand{\xibar}{\skew4\bar\xi}
+\newcommand{\zetabar}{\skew4\bar\zeta}
+\newcommand{\zetatilde}{\skew4\tilde\zeta}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Math italic and calligraphic fonts
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\providecommand{\varGamma}  {{\mathit\Gamma}}
+\providecommand{\varDelta}  {{\mathit\Delta}}
+\providecommand{\varTheta}  {{\mathit\Theta}}
+\providecommand{\varLambda} {{\mathit\Lambda}}
+\providecommand{\varXi}     {{\mathit\Xi}}
+\providecommand{\varPi}     {{\mathit\Pi}}
+\providecommand{\varSigma}  {{\mathit\Sigma}}
+\providecommand{\varUpsilon}{{\mathit\Upsilon}}
+\providecommand{\varPhi}    {{\mathit\Phi}}
+\providecommand{\varPsi}    {{\mathit\Psi}}
+\providecommand{\varOmega}  {{\mathit\Omega}}
+
+\newcommand{\Deltait}{\varDelta}
+\newcommand{\Gammait}{\varGamma}
+\newcommand{\Gammabarit}{\skew5\bar\Gammait}
+\newcommand{\Lambdait}{\varLambda}
+\newcommand{\Lamhatit}{\skew5\widehat\Lambdait}
+\newcommand{\Lambarit}{\skew5\bar\Lambdait}
+\newcommand{\Omegait}{\varOmega}
+\newcommand{\Omegaitbar}{\skew5\bar\Omegait}
+\newcommand{\Piit}{\varPi}
+\newcommand{\Pibarit}{\bar\varPi}
+\newcommand{\Pihatit}{\skew5\widehat\varPi}
+\newcommand{\Piitbar}{\skew5\bar\Piit}
+\newcommand{\Phiit}{\varPhi}
+\newcommand{\Psiit}{\varPsi}
+\newcommand{\Sigmait}{\varSigma}
+\newcommand{\Thetait}{\varTheta}
+\newcommand{\Upsilonit}{\varUpsilon}
+\newcommand{\Xiit}{\varXi}
+
+\newcommand{\setA}{\mathcal{A}}
+\newcommand{\setB}{\mathcal{B}}
+\newcommand{\setC}{\mathcal{C}}
+\newcommand{\setD}{\mathcal{D}}
+\newcommand{\setE}{\mathcal{E}}
+\newcommand{\setF}{\mathcal{F}}
+\newcommand{\setG}{\mathcal{G}}
+\newcommand{\setI}{\mathcal{I}}
+\newcommand{\setJ}{\mathcal{J}}
+\newcommand{\setK}{\mathcal{K}}
+\newcommand{\setL}{\mathcal{L}}
+\newcommand{\setH}{\mathcal{H}}
+\newcommand{\setM}{\mathcal{M}}
+\newcommand{\setN}{\mathcal{N}}
+\newcommand{\setP}{\mathcal{P}}
+\newcommand{\setQ}{\mathcal{Q}}
+\newcommand{\setR}{\mathcal{R}}
+\newcommand{\setS}{\mathcal{S}}
+\newcommand{\setShat}{\skew4\widehat{\mathcal{S}}}
+\newcommand{\setT}{\mathcal{T}}
+\newcommand{\setU}{\mathcal{U}}
+\newcommand{\setV}{\mathcal{V}}
+\newcommand{\setW}{\mathcal{W}}
+\newcommand{\setX}{\mathcal{X}}
+\newcommand{\setY}{\mathcal{Y}}
+\newcommand{\setZ}{\mathcal{Z}}
+
+\newcommand{\suba}{_a}
+\newcommand{\subb}{_b}
+\newcommand{\subc}{_c}
+\newcommand{\sube}{_e}
+\newcommand{\subf}{_f}
+\newcommand{\subi}{_i}
+\newcommand{\subm}{_m}
+\newcommand{\subn}{_n}
+\newcommand{\subr}{_r}
+\newcommand{\subs}{_s}
+\newcommand{\subv}{_v}
+\newcommand{\subw}{_w}
+\newcommand{\subz}{_z}
+\newcommand{\subA}{_{\scriptscriptstyle A}}
+\newcommand{\subB}{_{\scriptscriptstyle B}}
+\newcommand{\subC}{_{\scriptscriptstyle C}}
+\newcommand{\subD}{_{\scriptscriptstyle D}}
+\newcommand{\subE}{_{\scriptscriptstyle E}}
+\newcommand{\subF}{_{\scriptscriptstyle F}}
+\newcommand{\subI}{_{\scriptscriptstyle I}}
+\newcommand{\subJ}{_{\scriptscriptstyle J}}
+\newcommand{\subM}{_{\scriptscriptstyle M}}
+\newcommand{\subG}{_{\scriptscriptstyle G}}
+\newcommand{\subL}{_{\scriptscriptstyle L}}
+\newcommand{\subN}{_{\scriptscriptstyle N}}
+\newcommand{\subH}{_{\scriptscriptstyle H}}
+\newcommand{\subK}{_{\scriptscriptstyle K}}
+\newcommand{\subT}{_{\scriptscriptstyle T}}
+\newcommand{\subP}{_{\scriptscriptstyle P}}
+\newcommand{\subQ}{_{\scriptscriptstyle Q}}
+\newcommand{\subR}{_{\scriptscriptstyle R}}
+\newcommand{\subS}{_{\scriptscriptstyle S}}
+\newcommand{\subU}{_{\scriptscriptstyle U}}
+\newcommand{\subV}{_{\scriptscriptstyle V}}
+\newcommand{\subW}{_{\scriptscriptstyle W}}
+\newcommand{\subZ}{_{\scriptscriptstyle Z}}
+
+\newcommand{\supE}{^{\scriptscriptstyle E}}
+\newcommand{\supN}{^{\scriptscriptstyle N}}
+
+\newcommand{\Ascr}{{\mathcal A}}
+\newcommand{\Bscr}{{\mathcal B}}
+\newcommand{\Cscr}{{\mathcal C}}
+\newcommand{\Dscr}{{\mathcal D}}
+\newcommand{\Escr}{{\mathcal E}}
+\newcommand{\Fscr}{{\mathcal F}}
+\newcommand{\Gscr}{{\mathcal G}}
+\newcommand{\Gscrbar}{{\mathcal\Gbar}}
+\newcommand{\Hscr}{{\mathcal H}}
+\newcommand{\Iscr}{{\mathcal I}}
+\newcommand{\Jscr}{{\mathcal J}}
+\newcommand{\Kscr}{{\mathcal K}}
+\newcommand{\Kscrbar}{{\mathcal\Kbar}}
+\newcommand{\Lscr}{{\mathcal L}}
+\newcommand{\Mscr}{{\mathcal M}}
+\newcommand{\Nscr}{{\mathcal N}}
+\newcommand{\lscr}{\ell}
+\newcommand{\lscrbar}{\ellbar}
+\newcommand{\Oscr}{{\mathcal O}}
+\newcommand{\Pscr}{{\mathcal P}}
+\newcommand{\Qscr}{{\mathcal Q}}
+\newcommand{\Rscr}{{\mathcal R}}
+\newcommand{\Sscr}{{\mathcal S}}
+\newcommand{\Tscr}{{\mathcal T}}
+\newcommand{\Uscr}{{\mathcal U}}
+\newcommand{\Vscr}{{\mathcal V}}
+\newcommand{\Wscr}{{\mathcal W}}
+\newcommand{\Xscr}{{\mathcal X}}
+\newcommand{\Yscr}{{\mathcal Y}}
+
+\newcommand{\abar}{\skew3\bar a}
+\newcommand{\ahat}{\skew2\widehat a}
+\newcommand{\atilde}{\skew2\widetilde a}
+\newcommand{\Abar}{\skew7\bar A}
+\newcommand{\Ahat}{\widehat A}
+\newcommand{\Atilde}{\widetilde A}
+\newcommand{\bbar}{\skew3\bar b}
+%\newcommand{\bhat}{\skew12\widehat b}
+\newcommand{\bhat}{\hat b}
+\newcommand{\btilde}{\skew2\widetilde b}
+\newcommand{\Bbar}{\bar B}
+\newcommand{\Bhat}{\skew4\widehat B}
+\newcommand{\Btilde}{\skew4\widetilde B}
+\newcommand{\cbar}{\skew5\bar c}
+\newcommand{\chat}{\widehat c}
+\newcommand{\ctilde}{\widetilde c}
+\newcommand{\Cbar}{\skew5\bar C}
+\newcommand{\Chat}{\widehat C}
+\newcommand{\Ctilde}{\widetilde C}
+\newcommand{\dbar}{\bar d}
+\newcommand{\dhat}{\widehat d}
+\newcommand{\dtilde}{\widetilde d}
+\newcommand{\Dbar}{\bar D}
+\newcommand{\Dhat}{\widehat D}
+\newcommand{\Dtilde}{\widetilde D}
+\newcommand{\ehat}{\skew3\widehat e}
+\newcommand{\ebar}{\bar e}
+\newcommand{\Ebar}{\bar E}
+\newcommand{\Ehat}{\widehat E}
+\newcommand{\fbar}{\bar f}
+\newcommand{\fhat}{\widehat f}
+\newcommand{\ftilde}{\widetilde f}
+\newcommand{\Fbar}{\bar F}
+\newcommand{\Fhat}{\skew4\widehat F}
+\newcommand{\gbar}{\skew{4.3}\bar g}
+%\newcommand{\ghat}{\skew{4.3}\widehat g}
+\newcommand{\ghat}{\skew{4.3}\hat g}
+\newcommand{\gtilde}{\skew{4.5}\widetilde g}
+\newcommand{\Gbar}{\bar G}
+\newcommand{\Ghat}{\widehat G}
+%\newcommand{\hbar}{\skew{4.2}\bar h}
+\newcommand{\hhat}{\skew2\widehat h}
+\newcommand{\htilde}{\skew3\widetilde h}
+\newcommand{\Hbar}{\skew5\bar H}
+\newcommand{\Hhat}{\widehat H}
+\newcommand{\Htilde}{\widetilde H}
+\newcommand{\Ibar}{\skew5\bar I}
+\newcommand{\Itilde}{\widetilde I}
+\newcommand{\Jbar}{\skew6\bar J}
+\newcommand{\Jhat}{\skew8\widehat J}
+\newcommand{\Jtilde}{\widetilde J}
+\newcommand{\kbar}{\skew{1.0}\bar k}
+\newcommand{\Khat}{\widehat K}
+\newcommand{\Kbar}{\skew{4.4}\bar K}
+\newcommand{\Ktilde}{\widetilde K}
+\newcommand{\ellbar}{\bar \ell}
+\newcommand{\lhat}{\skew2\widehat l}
+\newcommand{\lbar}{\skew2\bar l}
+\newcommand{\Lbar}{\skew{4.3}\bar L}
+\newcommand{\Lhat}{\widehat L}
+\newcommand{\Ltilde}{\widetilde L}
+\newcommand{\mbar}{\skew2\bar m}
+\newcommand{\mhat}{\widehat m}
+\newcommand{\mtilde}{\widetilde m}
+\newcommand{\Mbar}{\skew{4.4}\bar M}
+%\newcommand{\Mhat}{\widehat M}     % too wide!!
+\newcommand{\Mhat}{\skew4\hat M}
+\newcommand{\Mtilde}{\widetilde M}
+\newcommand{\Nbar}{\skew{4.4}\bar N}
+\newcommand{\Ntilde}{\widetilde N}
+\newcommand{\nbar}{\skew2\bar n}
+\newcommand{\pbar}{\skew2\bar p}
+%\newcommand{\phat}{\skew2\widehat p}
+\newcommand{\phat}{\skew2\hat p}
+\newcommand{\ptilde}{\skew2\widetilde p}
+\newcommand{\Pbar}{\skew5\bar P}
+\newcommand{\Phat}{\widehat P}
+\newcommand{\Ptilde}{\skew5\widetilde P}
+\newcommand{\qbar}{\bar q}
+\newcommand{\qhat}{\skew2\widehat q}
+\newcommand{\qtilde}{\widetilde q}
+\newcommand{\Qbar}{\bar Q}
+\newcommand{\Qhat}{\widehat Q}
+\newcommand{\Qtilde}{\widetilde Q}
+\newcommand{\rbar}{\skew3\bar r}
+\newcommand{\rhat}{\skew3\widehat r}
+\newcommand{\rtilde}{\skew3\widetilde r}
+\newcommand{\Rbar}{\skew5\bar R}
+\newcommand{\Rhat}{\widehat R}
+\newcommand{\Rtilde}{\widetilde R}
+\newcommand{\sbar}{\bar s}
+\newcommand{\shat}{\widehat s}
+\newcommand{\Stilde}{\widetilde S}
+\newcommand{\stilde}{\widetilde s}
+\newcommand{\Shat}{\widehat S}
+\newcommand{\Sbar}{\skew2\bar S}
+\newcommand{\tbar}{\bar t}
+\newcommand{\ttilde}{\widetilde t}
+\newcommand{\that}{\widehat t}
+\newcommand{\Tbar}{\bar T}
+\newcommand{\That}{\widehat T}
+\newcommand{\Ttilde}{\widetilde T}
+\newcommand{\ubar}{\skew3\bar u}
+\newcommand{\uhat}{\skew3\widehat u}
+\newcommand{\utilde}{\skew3\tilde u}
+\newcommand{\Ubar}{\skew2\bar U}
+\newcommand{\Uhat}{\widehat U}
+\newcommand{\Utilde}{\widetilde U}
+\newcommand{\vbar}{\skew3\bar v}
+\newcommand{\vhat}{\skew3\widehat v}
+\newcommand{\vtilde}{\skew3\widetilde v}
+\newcommand{\Vbar}{\skew2\bar V}
+\newcommand{\Vhat}{\widehat V}
+\newcommand{\Vtilde}{\widetilde V}
+\newcommand{\wbar}{\skew3\bar w}
+\newcommand{\what}{\skew3\widehat w}
+\newcommand{\wtilde}{\skew3\widetilde w}
+\newcommand{\Wbar}{\skew3\bar W}
+\newcommand{\What}{\widehat W}
+\newcommand{\Wtilde}{\widetilde W}
+\newcommand{\xbar}{\skew{2.8}\bar x}
+\newcommand{\xhat}{\skew{2.8}\widehat x}
+\newcommand{\xtilde}{\skew3\widetilde x}
+\newcommand{\Xbar}{\skew5\bar X}
+\newcommand{\Xhat}{\widehat X}
+\newcommand{\ybar}{\skew3\bar y}
+\newcommand{\yhat}{\skew3\widehat y}
+\newcommand{\ytilde}{\skew3\widetilde y}
+\newcommand{\Ytilde}{\widetilde Y}
+\newcommand{\Ybar}{\skew2\bar Y}
+\newcommand{\Yhat}{\widehat Y}
+\newcommand{\zbar}{\skew{2.8}\bar z}
+\newcommand{\zhat}{\skew{2.8}\widehat z}
+\newcommand{\ztilde}{\skew{2.8}\widetilde z}
+\newcommand{\Zbar}{\skew5\bar Z}
+\newcommand{\Zhat}{\widehat Z}
+\newcommand{\Ztilde}{\widetilde Z}
+
+%\newcommand{\cf}{\textrm{cf.}}
+
+\providecommand{\Matlab}{{\sc Matlab}}
+
+\providecommand{\Gams  }{{\sc    Gams}}
+\providecommand{\Ampl  }{{\sc    Ampl}}
+\providecommand{\Nag   }{{\sc    Nag}}
+\providecommand{\Neos  }{{\sc    Neos}}
+\providecommand{\NAG   }{{\small Nag}}
+\providecommand{\AMPL  }{{\small AMPL}}
+\providecommand{\CUTE  }{{\small CUTE}}
+\providecommand{\CUTEST}{{\small CUTE}st}
+%\providecommand{\CUTEr }{{\small CUTE}r}
+\providecommand{\CUTEr }{\CUTEST}
+\providecommand{\GAMS  }{{\small GAMS}}
+\providecommand{\Knossos} {{\small K}nossos}
+\providecommand{\LANCELOT}{{\small LANCELOT}}
+
+\providecommand{\LPOPT }{{\small LPOPT}}
+\providecommand{\LSSOL }{{\small LSSOL}}
+\providecommand{\LUSOL }{{\small LUSOL}}
+\providecommand{\MINOS }{{\small MINOS}}
+\providecommand{\NLSSOL}{{\small NLSSOL}}
+\providecommand{\NPSOL }{{\small NPSOL}}
+\providecommand{\QPOPT }{{\small QPOPT}}
+\providecommand{\NPOPT }{{\small NPOPT}}
+\providecommand{\QPSOL }{{\small QPSOL}}
+\providecommand{\SNOPT }{{\small SNOPT}}
+\providecommand{\SNOPTA}{{\small SNOPTA}}
+\providecommand{\SNOPTB}{{\small SNOPTB}}
+\providecommand{\SQOPT }{{\small SQOPT}}
+\providecommand{\IOTR  }{{\small IOTR}}
+\providecommand{\APPSPACK}{{\small APPSPACK}}
+
+\providecommand{\CGM   }{{\small CGM}}
+\providecommand{\GMRES }{{\small GMRES}}
+\providecommand{\LSQR  }{{\small LSQR}}
+\providecommand{\MINRES}{{\small MINRES}}
+\providecommand{\SYMMLQ}{{\small SYMMLQ}}
+\providecommand{\LRHR}{{\small L-RHR}}
+\providecommand{\GLTR}{{\small GLTR}}
+
+\newcommand{\stoptol}{\tau\sub{stop}}
+\newcommand{\varphitilde}{\tilde{\varphi}}
+%\newcommand{\betatilde}{\tilde{\beta}}
+\newcommand{\khat}{\skew2\widehat k}
+
+\newcommand{\DQ}{\Deltait Q}
+\newcommand{\Scg}{\Sscr\sub{CG} }
+\newcommand{\Sneg}{\Sscr\sub{NEG} }
+\newcommand{\Ssad}{\Sscr\sub{SAD} }
+\newcommand{\Sexp}{\Sscr\sub{EXP} }
+\newcommand{\Spro}{\Sscr\sub{PRO} }
+
+\newcommand{\strt}{\rule[-.5ex]{0pt}{3ex}}%   Total height 3.5
+\newcommand{\hstrt}{\rule[-1ex]{0pt}{3.5ex}}% Total height 4.5
+\newcommand{\lstrt}{\rule[-1.5ex]{0pt}{4ex}}% Total height 4.5
+
+\newcommand{\ff}{fail}
+\newcommand{\Cute}[1]{\hbox{\it\uppercase{#1}\/}}
+
+\makeatother
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

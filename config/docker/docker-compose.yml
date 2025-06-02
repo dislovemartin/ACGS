@@ -240,6 +240,62 @@ services:
       - ../../src/backend/shared:/app/shared
     restart: unless-stopped
 
+  # EC Service (Evolutionary Computation) - WINA Optimization and Constitutional Oversight
+  ec_service:
+    build: ../../src/backend/ec_service
+    container_name: acgs_ec_service
+    ports:
+      - "8006:8006" # Internal port
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001/api/v1}
+      - GS_SERVICE_URL=${GS_SERVICE_URL:-http://gs_service:8004/api/v1}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - PYTHONPATH=/app:/app/shared
+      # WINA Optimization Configuration
+      - WINA_ENABLED=${WINA_ENABLED:-true}
+      - WINA_SVD_ENABLED=${WINA_SVD_ENABLED:-true}
+      - WINA_GATING_ENABLED=${WINA_GATING_ENABLED:-true}
+      - WINA_GFLOPS_REDUCTION_TARGET=${WINA_GFLOPS_REDUCTION_TARGET:-0.55}
+      - WINA_SYNTHESIS_ACCURACY_THRESHOLD=${WINA_SYNTHESIS_ACCURACY_THRESHOLD:-0.95}
+      - WINA_CONSTITUTIONAL_COMPLIANCE_ENABLED=${WINA_CONSTITUTIONAL_COMPLIANCE_ENABLED:-true}
+      # AlphaEvolve Configuration
+      - ALPHAEVOLVE_ENABLED=${ALPHAEVOLVE_ENABLED:-true}
+      - EVOLUTIONARY_COMPUTATION_ENABLED=${EVOLUTIONARY_COMPUTATION_ENABLED:-true}
+      - POPULATION_SIZE=${POPULATION_SIZE:-50}
+      - MUTATION_RATE=${MUTATION_RATE:-0.1}
+      - CROSSOVER_RATE=${CROSSOVER_RATE:-0.8}
+      - MAX_GENERATIONS=${MAX_GENERATIONS:-100}
+      # Constitutional Fidelity Monitoring
+      - CFM_ENABLED=${CFM_ENABLED:-true}
+      - CFM_GREEN_THRESHOLD=${CFM_GREEN_THRESHOLD:-0.85}
+      - CFM_AMBER_THRESHOLD=${CFM_AMBER_THRESHOLD:-0.70}
+      - CFM_RED_THRESHOLD=${CFM_RED_THRESHOLD:-0.55}
+      - CFM_MONITORING_INTERVAL_SECONDS=${CFM_MONITORING_INTERVAL_SECONDS:-30}
+      # Redis for performance monitoring
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      ac_service:
+        condition: service_started
+      gs_service:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      alembic-runner:
+        condition: service_completed_successfully
+    volumes:
+      - ../../src/backend/ec_service:/app
+      - ../../src/backend/shared:/app/shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   nginx_gateway:
     image: nginx:1.25-alpine
     container_name: acgs_nginx_gateway
@@ -254,6 +310,7 @@ services:
       - fv_service
       - gs_service
       - pgc_service
+      - ec_service
     restart: unless-stopped
 
   frontend:
@@ -295,6 +352,7 @@ services:
       - fv_service
       - gs_service
       - pgc_service
+      - ec_service
 
   # Grafana monitoring dashboard
   grafana:

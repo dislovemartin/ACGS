@@ -18,6 +18,7 @@ curl http://localhost:8002/health  # Integrity Service
 curl http://localhost:8003/health  # FV Service
 curl http://localhost:8004/health  # GS Service
 curl http://localhost:8005/health  # PGC Service
+curl http://localhost:8006/health  # EC Service (WINA Optimization)
 
 # Check monitoring services
 curl http://localhost:9090/-/healthy  # Prometheus
@@ -307,6 +308,121 @@ upstream auth_service_upstream {
 # Ensure health checks are working
 curl http://localhost:8000/health
 curl http://localhost:8001/health
+```
+
+### 7. WINA Optimization Issues (EC Service)
+
+#### Symptoms
+- Poor policy synthesis accuracy
+- High GFLOPs usage despite optimization
+- Constitutional compliance failures
+- EC service performance degradation
+
+#### Diagnosis
+```bash
+# Check EC service logs
+docker-compose logs ec_service | grep -i "wina\|optimization\|gflops"
+
+# Check WINA performance metrics
+curl http://localhost:8006/api/v1/wina/performance/metrics
+
+# Check constitutional fidelity score
+curl http://localhost:8006/api/v1/monitoring/constitutional-fidelity
+
+# Check WINA configuration
+docker-compose exec ec_service env | grep WINA
+```
+
+#### Solutions
+
+**WINA Configuration Tuning**
+```bash
+# Adjust optimization targets (less aggressive)
+WINA_GFLOPS_REDUCTION_TARGET=0.45  # Reduced from 0.55
+WINA_SYNTHESIS_ACCURACY_THRESHOLD=0.90  # Lowered threshold
+
+# Enable/disable specific optimizations
+WINA_SVD_ENABLED=true
+WINA_GATING_ENABLED=false  # Disable if causing issues
+```
+
+**Constitutional Compliance Issues**
+```bash
+# Check constitutional principles integration
+curl http://localhost:8001/api/v1/principles/ | jq '.[] | select(.is_active == true)'
+
+# Verify AC service connectivity
+docker-compose exec ec_service curl -f http://ac_service:8001/health
+
+# Reset constitutional fidelity monitoring
+curl -X POST http://localhost:8006/api/v1/monitoring/validate-governance
+```
+
+**Performance Optimization**
+```bash
+# Monitor GFLOPs reduction
+curl http://localhost:8006/api/v1/wina/performance/gflops
+
+# Check synthesis accuracy trends
+curl http://localhost:8006/api/v1/wina/performance/synthesis-accuracy
+
+# Run performance benchmark
+curl -X POST http://localhost:8006/api/v1/wina/performance/benchmark
+```
+
+### 8. Constitutional Council Issues
+
+#### Symptoms
+- Amendment proposals not being processed
+- Voting mechanisms failing
+- Council member authentication issues
+- Democratic governance workflow failures
+
+#### Diagnosis
+```bash
+# Check Constitutional Council status
+curl http://localhost:8001/api/v1/constitutional-council/amendments
+
+# Verify council member roles
+docker exec acgs_postgres_db psql -U acgs_user -d acgs_pgp_db -c "
+SELECT email, role, is_active FROM users WHERE role = 'constitutional_council';"
+
+# Check amendment voting status
+curl http://localhost:8001/api/v1/constitutional-council/amendments/{id}/votes
+
+# Check AC service logs for council operations
+docker-compose logs ac_service | grep -i "council\|amendment\|vote"
+```
+
+#### Solutions
+
+**Council Member Management**
+```sql
+-- Add council member
+INSERT INTO users (email, username, full_name, role, is_active)
+VALUES ('council@example.com', 'council_member', 'Council Member', 'constitutional_council', true);
+
+-- Verify council member permissions
+SELECT u.email, u.role, COUNT(av.id) as votes_cast
+FROM users u
+LEFT JOIN amendment_votes av ON u.id = av.voter_id
+WHERE u.role = 'constitutional_council'
+GROUP BY u.id, u.email, u.role;
+```
+
+**Amendment Workflow Issues**
+```bash
+# Check voting period configuration
+echo $AC_VOTING_PERIOD_HOURS
+
+# Verify amendment threshold
+echo $AC_AMENDMENT_THRESHOLD
+
+# Check for expired voting periods
+docker exec acgs_postgres_db psql -U acgs_user -d acgs_pgp_db -c "
+SELECT id, title, status, voting_deadline
+FROM constitutional_amendments
+WHERE voting_deadline < NOW() AND status = 'voting';"
 ```
 
 ## Performance Optimization
