@@ -1,0 +1,49 @@
+\begin{table*}[t]
+  \caption{Results of controlled sparsity experiments over Qwen-2.5-7B}
+  \label{tab:qwen25_7b_sparsity}
+  \vspace{3pt}
+  \centering
+  % \addtolength{\tabcolsep}{-1pt}
+    \resizebox{1.0\columnwidth}{!}{
+\begin{tabular}{llccccccc}
+  \toprule[0.1em]
+  Method & Sparsity & PiQA & WinoGrande & HellaSwag & Arc-c & MMLU & GSM8K & Avg \\
+  \midrule
+  Baseline & - & 79.71 & 72.85 & 78.93 & 51.11 & 71.93 & 83.32 & 72.98 \\ \midrule
+
+  \multirow{4}{*}{TEAL~\citep{liu2024trainingfreeactivationsparsitylarge}}  
+  & 25\% & 79.27 & 78.56 & 72.77 & 51.19 & 71.30 & 82.87 & {72.83} \\
+  & 40\% & 78.40 & 77.28 & 73.09 & 52.65 & 70.20 & 78.32 & \textbf{71.66} \\
+  & 50\% & 78.62 & 75.02 & 69.77 & 51.02 & 67.72 & 71.42 & {68.93} \\
+  & 65\% & 73.72 & 63.35 & 62.67 & 42.75 & 54.95 & 34.95 & {55.40} \\ \midrule
+
+  \multirow{4}{*}{TEAL-transform} 
+  & 25\% & 80.09 & 72.77 & 78.65 & 51.79 & 71.56 & 83.09 & 72.99 \\
+  & 40\% & 79.71 & 72.30 & 77.73 & 51.28 & 69.93 & 77.18 & 71.52 \\
+  & 50\% & 78.56 & 68.67 & 75.74 & 50.00 & 67.28 & 71.49 & 68.62 \\
+  & 65\% & 76.06 & 61.33 & 67.30 & 44.20 & 56.06 & 32.60 & 56.93 \\ \midrule
+
+  \multirow{4}{*}{\algacro{}}  
+  & 25\% & 80.05 & 72.69 & 78.58 & 51.37 & 71.51 & 83.93 & \textbf{73.02} \\
+  & 40\% & 78.40 & 70.56 & 78.02 & 50.94 & 70.54 & 79.83 & 71.38 \\
+  & 50\% & 78.67 & 69.30 & 76.48 & 50.85 & 67.99 & 72.25 & \textbf{69.26} \\
+  & 65\% & 76.17 & 61.01 & 70.09 & 42.92 & 59.48 & 38.36 & \textbf{58.34} \\
+  \bottomrule[0.1em]
+\end{tabular}
+  }
+\end{table*}
+
+% \begin{table}[t] % [t]表示尽量放在页面顶部
+%   \centering
+%   \caption{单栏跨栏表格示例}
+%   \label{tab:wide}
+%   \begin{tabular}{lccr}
+%     \toprule
+%     Header1 & Header2 & Header3 & Header4 \\
+%     \midrule
+%     Item1 & 0.25 & 42 & A \\
+%     Item2 & 0.67 & 13 & B \\
+%     Item3 & 0.92 & 29 & C \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}

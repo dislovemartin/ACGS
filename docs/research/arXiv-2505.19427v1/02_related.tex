@@ -1,0 +1,41 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\paragraph{Sparse Activation.} Modern sparse activation activation approaches fall into two principal paradigms: training-based methods and training-free methods. Training-based methods typically employ a trainable router to learn to dynamically select activated experts for each token, with the Mixture-of-Experts (MoE) architecture~\citep{jacobs1991adaptive} serving as the foundational framework. In this framework, each expert operates an individual component of the model, as only the relevant experts are activated for each input during inference, achieving significant computational savings.
+
+This paradigm has been expanded through many iterations and variants. The sparsely-gated mixture of experts layer \citep{shazeer2017outrageously} integrates MoE into recurring neural networks (RNNs). Works like GShard \citep{lepikhin2020GShard} and the Switch Transformer \citep{fedus2022switch} extend MoEs to the Transformer architecture \citep{raffel2020exploring} while others combine several approaches, such as WideNet~\citep{xue2022go},  reduces the size of the MoE model by initially compressing the model before transitioning into a MoE. Works like MoEBert \citep{zuo2022moebert} decomposes the FFN layer of a pre-trained dense model into multiple experts based on importance-guided adaptation and then refines the model through distillation. LLM in Flash \citep{alizadeh2023llm} employs a low-rank predictor to determine which intermediate neurons are activated.
+
+Training-free methods, in contrast, do not rely on a learnable router, instead using predefined or calculated criteria to perform sparse activation. Methods \citep{han2015learnweightsconnect} can utilize magnitude-based weight pruning or global activation pruning \citep{wen2016learnstructsparse} to apply a fixed sparsity pattern regardless of input. For instance, Q-Sparse \citep{wang2024q} produces sparsity as a function of input magnitudes, achieving sparsity rates of 60\% with reasonable performance degradation. CATS~\citep{lee2024catscontextuallyawarethresholdingsparsity} applies sparse activation on SwiGLU outputs within gated MLP layers, achieving performance comparable to the original dense model while achieving  25\% model sparsity. In contrast, TEAL~\citep{liu2024trainingfreeactivationsparsitylarge} extends magnitude-based activation sparsity to all network layers, achieving 40-50\% model-wide sparsity across architectures with minimal performance impact. 
+
+However, current sparse activation methods suffer from noticeable limitations. They determine activation elements solely based on the magnitude of hidden states, neglecting the crucial influence of the weight matrix, which results in suboptimal error control.
+
+\paragraph{Relations to Model Structured Pruning.} Although \algacro{} shares the shared goal of reducing inference cost with structured pruning methods (via a similar paradigm by searching a sub-network), its philosophy and mechanism differ substantially. Traditional model pruning removes redundant parameters from deep neural networks~\citep{han2015deep, frankle2018lottery, frantar2023sparsegpt}, often requiring fine-tuning to restore performance~\citep{lin2019toward, he2018soft, wen2016learning, li2020group, zhuang2020neuron, chen2017reduced, chen2021orthant, chen2020neural}. To enhance the quality of the pruned sub-networks, recent advances introduce knowledge-transfer mechanisms during pruning~\citep{chen2021oto, chen2023otov2, chen2023otov3, chen2023lorashear, chen2024hesso,qu2025automatic} or apply post-hoc distillation~\citep{ko2024distillm, ko2025distillm} to improve accuracy. However, these approaches typically involve additional training stages, making them less suitable for scaling to large foundation models. In contrast, \algacro{} is a training-free, plug-and-play sparse activation framework that dynamically selects high-performing sub-networks at inference time without modifying or retraining the model. This makes \algacro{} particularly well-suited for deployment in resource-constrained or latency-sensitive environments.
+
+
+% \textbf{Model Pruning}.
+% Unstructured pruning \citep{frankle2018lottery, sanh2020movement}, which targets individual neurons rather than structured blocks, often yields higher compression rates but is generally not conducive to model speedup improvements. While structured pruning has emerged as a critical model compression technique, particularly in the domain of large language model~\citep{kurtic2024ziplm, ma2023llm} for its ability to accelerate model inference and address the challenges posed by the ever-growing model sizes with minimal impact on performance. 
+
+% Structured pruning approaches can be divided into either multi-stage or end-to-end. Multi-stage pruning \citep{xia2023sheared, frantar2023sparsegpt} involves an initial phase where fully-trained models are analyzed to identify and eliminate redundant structures to construct a slimmer DNN. Subsequently, the pruned model may undergo retraining to recover any loss in accuracy, potentially employing knowledge distillation techniques. This method is complex and time-intensive, necessitating multiple training iterations of DNN and substantial domain knowledge to manually proceed each step effectively. End-to-end pruning amis to avoid fine-tuning by enabling training once to compress the model. Advances such as OTOv2 \citep{chen2023otov2} and DepGraph \citep{fang2023depgraph} have further automated the structured pruning process for general DNNs, reducing the manual efforts required to discern removal structures and construct a slimmer model. OTOv3 \citep{chen2023otov3} extends the pruning mode to a new application domain to automatically erase redundant operators entirely, enabling the automatic and generic of structured pruning.
+
+% \dz{
+% \paragraph{Expansion \& Upcycling.} 
+% In attempts to more easily realize the efficiency gains of MoE architectures for LLMs, more recent work has focused on upcycling: the process of converting a trained dense model into a MoE model. 
+% Recent work \cite{upcycle} has created large-scale MoE from LLMs as existing pre-trained
+% checkpoints, which has already seen usage and adoption among popular language models \cite{deepseeek2024, bai2023qwen}. 
+% }
+
+% \begin{table}[!ht]
+%     \centering
+%     \caption{Summary of \algacro{} and existing methods}
+%     \resizebox{1.0\linewidth}{!}{
+%     \begin{tabular}{l|lll}
+%     \toprule[0.1em]
+%         \textbf{} & \textbf{Additional model size} & \textbf{Efficient Routing} & \textbf{Generic} \\ 
+%         \midrule
+%         Classial MoE & large & No & No \\ 
+%         In-place MoE & little & No & No \\ 
+%         \algacro{} & little & Yes & Yes \\ 
+%         \bottomrule[0.1em]
+%     \end{tabular}
+%     }
+% \end{table}

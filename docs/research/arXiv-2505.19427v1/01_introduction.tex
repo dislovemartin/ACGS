@@ -1,0 +1,64 @@
+\section{Introduction}
+
+While large language models (LLMs) have revolutionized the field of natural language processing, offering unprecedented capabilities in a variety of applications, such as text generation~\citep{li2024pre,cheng2025dehumanizing}, translation~\citep{hendy2023goodgptmodelsmachine,seamless2025joint},  understanding~\citep{chang2024survey,tschannen2025siglip}, and grounding~\citep{zhao2025robustness,hui2025winclick} their growing size and complexity make controlling their computation costs challenging. They often require substantial computational resources, particularly during inference, making reducing inference costs without degrading output quality a central challenge.
+
+One strategy has been to activate only a sub-network of the full model~\citep{jacobs1991adaptive} during inference using a Mixture of Experts (MoE) architecture, which has already seen adoption in popular and widely-used LLMs like GPT4~\citep{achiam2023gpt} and Mistral~\citep{jiang2023mistral}. Other methods include model distillation, where a smaller model is trained using knowledge distilled from a larger teacher model to route inference requests more efficiently. However, these approaches can require a considerable amount of training, which can also be computationally costly.
+
+An alternative is training-free sparse activation, which retains the original dense model but selectively omits weights or neurons at inference time. These training-free methods avoid training or retraining and can be applied to off-the-shelf models. They leverage criteria such as hidden-state magnitudes, weight importance, weight statistics, or additional validation data to determine which parts of the model to deactivate, thereby accelerating inference.
+% To tackle these challenges, the Mixture of Experts (MoE) activates only a sub-network during inference, thereby economizing computational cost~\citep{jacobs1991adaptive}. MoE offers a promising solution and has been successfully employed in commercial LLMs such as GPT4~\citep{achiam2023gpt} and Mistral~\citep{jiang2023mistral}.}
+% }
+
+
+
+% \csh{
+However, current training-free methods exhibit critical limitations. Most notably, they ignore the influence of weight matrices on error propagation. Specifically, these approaches fail to account for how interactions between input elements and the weight matrix during forward propagation affect model outputs, leading to accumulated approximation errors in sparse activation.
+
+\paragraph{Contributions.} In this paper, we propose \algacro{}: a simple, easy-to-use, training-free framework that performs sparse activation based on the magnitude of hidden states and the column-wise $\ell_2$-norm of the weight matrix. By combining activation strength with weight importance, our thresholds directly reflect how much each activation can influence the next layer. This design provides theoretical guarantees that the total approximation error remains bounded and is lower than that of other comparable approaches. 
+
+In contrast, methods like TEAL rely exclusively on the distribution of hidden‐state magnitudes to decide which activations to keep and which to deactivate. Ignoring weight magnitudes in this way may discard highly influential activations or retain many low‐impact ones, leading to suboptimal trade-offs between efficiency and output quality. Our framework overcomes these limitations by integrating weight statistics into the selection process, achieving finer control over sparsity and tighter bounds on the resulting approximation error.
+
+% By ranking columns according to this bound and pruning those with smallest contributions, \algacro{} ensures that the total approximation error remains below a user-defined threshold, and we provide a theoretical proof of this guarantee.
+
+\begin{wraptable}{r}{0.42\textwidth}
+\centering
+\scriptsize
+% \resizebox{1.0\columnwidth}{!}{
+	\vspace{-3.5mm}
+	\begin{tabular}{lccc}
+		\toprule
+		& \textbf{\algacro{}} & \textbf{TEAL}  & \textbf{CATS}  \\
+		\midrule
+		\textbf{Tight Approx Error}  & {\cmark} & \xmark & \xmark \\
+		\textbf{Layer Generality} & \cmark & \cmark & \xmark  \\
+		\textbf{Hetero Sparsity} & \cmark & \cmark & \xmark  \\
+		\bottomrule
+	\end{tabular}
+	\vspace{-3mm}
+\end{wraptable}
+We evaluate \algacro{} on multiple widely-used LLMs (ranging from 7B to 14B parameters) across several popular benchmark datasets. Compared with state-of-the-art training-free methods such as TEAL~\citep{liu2024trainingfreeactivationsparsitylarge} and CATS~\citep{lee2024catscontextuallyawarethresholdingsparsity}, achieves superior model performance at identical sparsity levels, with significantly less performance degradation. 
+We also establish theoretical error bounds for our methodology,  providing formal support for the experimental results and validating our method's effectiveness. In summary, our detailed contributions include as follows.
+
+
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+	\item \textbf{Weighted-informed Activation:} we introduce a novel sparse activation method that jointly considers hidden state magnitudes and the column-wise $\ell_2$-norms of weight matrices. This allows for selecting neurons that are not only strongly activated but also those that have a larger influence on downstream layers, leading to a more informed construction of a sub-network during inference.
+	\item \textbf{Theoretically Tighter Approximation Error:} {we conduct a formal analysis to demonstrate that our weight-informed activation mechanism yields a lower expected output error compared to prior methods (e.g., TEAL) under mild assumptions, including column-wise orthogonality of weights and monotonic activation functions, with guarantees extendable to multi-layer architectures.}
+	\item \textbf{Numerical Experiments:} {we perform extensive evaluations on multiple LLMs, including Qwen-2.5 \citep{bai2023qwen}, LLaMA series~\citep{touvron2023llama}, and Phi-4~\citep{abdin2024phi}, demonstrate that our method achieves superior accuracy under various sparsity levels. In particular, \algacro{} maintains better performance as sparsity increases, highlighting its robustness and practical utility across diverse tasks and model scales.}
+\end{itemize}
+
+The rest of our paper is organized as follows. We begin by reviewing related works in Section \ref{sec:related_work}. We detail our methodology in Section \ref{sec:algo} and review our experimental results in Section \ref{sec:experiments}. We conclude with a discussion on future directions in Section \ref{sec:conclusion}.
+
+% \begin{table}[h]
+	% \centering
+	% \renewcommand{\arraystretch}{1.3}
+	% \setlength{\tabcolsep}{6pt}
+	% \begin{tabular}{lccc}
+		% \toprule
+		%  & \textbf{CATS} & \textbf{TEAL} & \textbf{WINA} \\
+		% \midrule
+		% Sparsity for all matrices & \XSolidBrush & {\textcolor{Green}{\CheckmarkBold}} & \CheckmarkBold \\
+		% Different sparsity for each matrix   & \XSolidBrush & \CheckmarkBold      & \CheckmarkBold\\
+		% Error control & \XSolidBrush & \XSolidBrush & \CheckmarkBold \\
+		% \bottomrule
+		% \end{tabular}
+	% \end{table}
+
