@@ -264,3 +264,41 @@ class SafetyCheckResponse(BaseModel):
 class User(BaseModel):
     id: str
     roles: List[str] = []
+
+
+# --- Enhanced Multi-Model Validation Schemas ---
+
+class ValidationResult(BaseModel):
+    """Result of a validation operation."""
+    rule_id: int
+    principle_id: int
+    validation_type: str
+    is_valid: bool
+    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    error_details: Optional[str] = None
+    suggestions: Optional[List[str]] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+class ValidationContext(BaseModel):
+    """Context for multi-model validation."""
+    request_id: str
+    models: Dict[str, List[Dict[str, Any]]]
+    validation_rules: Optional[List[str]] = None
+    performance_budget: Optional[Dict[str, float]] = None
+
+class MultiModelValidationResult(BaseModel):
+    """Result of multi-model validation."""
+    request_id: str
+    overall_valid: bool
+    validation_results: List[ValidationResult]
+    performance_metrics: Dict[str, float]
+    recommendations: List[str]
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class ConflictCheckResult(BaseModel):
+    """Result of conflict checking between models."""
+    has_conflicts: bool
+    conflict_details: List[str]
+    severity: str = Field(..., pattern="^(low|medium|high|critical)$")
+    resolution_suggestions: List[str]
+    affected_principles: List[int]

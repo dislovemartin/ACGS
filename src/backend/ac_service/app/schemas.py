@@ -203,7 +203,8 @@ class ACAmendmentCreate(ACAmendmentBase):
         if v is not None:
             valid_groups = {
                 "citizens", "experts", "affected_parties", "regulatory_bodies",
-                "constitutional_council", "policy_managers", "auditors"
+                "constitutional_council", "policy_managers", "auditors",
+                "privacy_advocates", "security_experts", "legal_experts"
             }
             for group in v:
                 if group not in valid_groups:

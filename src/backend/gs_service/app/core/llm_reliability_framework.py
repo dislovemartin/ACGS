@@ -172,6 +172,20 @@ class ReliabilityMetrics:
         return max(0.0, core_score - bias_penalty - hallucination_penalty)
 
 
+@dataclass
+class UltraReliableResult:
+    """Result from ultra-reliable consensus framework."""
+    policy: Optional[LLMStructuredOutput]
+    confidence: float
+    validation_path: str  # "automated_consensus", "expert_review", "failed_synthesis"
+    requires_human_review: bool
+    error_message: Optional[str] = None
+    synthesis_details: Optional[Dict[str, Any]] = None
+    validation_details: Optional[Dict[str, Any]] = None
+    formal_verification_status: Optional[Dict[str, Any]] = None
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
 class PrometheusMetricsCollector:
     """Collects and exports Prometheus metrics for reliability monitoring."""
 
