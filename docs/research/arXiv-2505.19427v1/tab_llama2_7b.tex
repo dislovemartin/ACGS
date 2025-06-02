@@ -1,0 +1,34 @@
+\begin{table*}[ht]
+  \caption{Results of controlled sparsity experiments over Llama-2-7B}
+  \vspace{3pt}
+  \label{tab:llama2_7b_sparsity}
+  \centering
+  % \addtolength{\tabcolsep}{-1pt}
+    \resizebox{1.0\columnwidth}{!}{
+    \begin{tabular}{llccccccc}
+  \toprule[0.1em]
+  Method & Sparsity & PiQA & Arc-c & WinoGrande & HellaSwag & MMLU & GSM8K & Avg\\
+  \midrule
+  Baseline & - & 79.05 & 46.33 & 68.98 & 76.00 & 41.82 & 13.87 & 54.34 \\ \midrule
+
+  \multirow{4}{*}{TEAL\,\citep{liu2024trainingfreeactivationsparsitylarge}}  
+  & 25\% & 78.18 & 45.99 & 69.85 & 76.01 & 41.30 & 13.34 & 54.11 \\
+  & 40\% & 77.53 & 44.45 & 67.88 & 75.32 & 38.66 & 11.07 & 52.49 \\
+  & 50\% & 77.53 & 41.21 & 67.25 & 73.57 & 34.71 & 8.79 & 50.51 \\
+  & 65\% & 74.43 & 33.87 & 62.12 & 64.20 & 27.05 & 3.56 & 44.21 \\ \midrule
+
+  \multirow{4}{*}{TEAL-transform} 
+  & 25\% & 78.45 & 46.42 & 69.14 & 75.93 & 41.75 & 13.42 & 54.19 \\
+  & 40\% & 77.69 & 45.48 & 68.43 & 75.18 & 39.22 & 11.05 &  \textbf{52.84} \\
+  & 50\% & 78.07 & 43.77 & 66.54 & 73.48 & 36.28 & 10.24 & 51.40 \\
+  & 65\% & 74.32 & 37.71 & 63.77 & 66.49 & 29.11 & 3.64 & 45.51 \\ \midrule
+
+  \multirow{4}{*}{\algacro{}}  
+  & 25\% & 78.45 & 46.16 & 69.69 & 75.95 & 42.14 & 14.10 & \textbf{54.42} \\
+  & 40\% & 77.91 & 45.56 & 67.32 & 75.52 & 39.58 & 11.07 & {52.83} \\
+  & 50\% & 78.35 & 44.45 & 67.96 & 73.65 & 36.55 & 9.63 & \textbf{51.76} \\
+  & 65\% & 74.59 & 37.88 & 63.93 & 66.55 & 28.81 & 3.18 & \textbf{45.82} \\
+  \bottomrule[0.1em]
+\end{tabular}
+      }
+\end{table*}

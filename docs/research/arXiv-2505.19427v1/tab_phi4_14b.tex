@@ -1,0 +1,37 @@
+\begin{table*}
+  \caption{Results of controlled sparsity experiments over Phi-4-14B}
+  \label{tab:phi4_14b_sparsity}
+  \vspace{3pt}
+  \centering
+  % \addtolength{\tabcolsep}{-1pt}
+\resizebox{1.0\columnwidth}{!}{
+  \begin{tabular}{llccccccc}
+    \toprule[0.1em]
+    Method & Sparsity & PiQA & WinoGrande & HellaSwag & Arc-c & MMLU & GSM8K & Avg \\
+    \midrule
+    Baseline & - & 81.28 & 76.80 & 81.93 & 55.97 & 77.06 & 90.22 & 77.21 \\ \midrule
+
+  \multirow{4}{*}{TEAL~\citep{liu2024trainingfreeactivationsparsitylarge}}  
+  & 25\% & 81.07 & 75.45 & 81.92 & 56.23 & 76.63 & 89.84 & 76.86 \\
+  & 40\% & 80.79 & 73.80 & 81.21 & 54.95 & 75.10 & 88.02 & 75.98 \\
+  & 50\% & 80.63 & 71.98 & 80.06 & 53.84 & 73.52 & 86.13 & 74.36 \\
+  & 65\% & 77.64 & 66.06 & 74.26 & 50.77 & 65.17 & 74.37 & 68.71 \\
+  \midrule
+
+  \multirow{4}{*}{TEAL-transform} 
+  & 25\% & 80.96 & 74.59 & 81.60 & 55.63 & 76.68 & 89.92 & 76.56 \\
+  & 40\% & 81.18 & 74.19 & 80.94 & 54.61 & 75.99 & 90.07 & 76.50 \\
+  & 50\% & 79.82 & 72.38 & 79.79 & 53.92 & 74.51 & 88.02 & 74.74 \\
+  & 65\% & 77.64 & 68.51 & 74.72 & 52.47 & 66.64 & 77.18 & 69.86 \\
+  \midrule
+
+\multirow{4}{*}{\algacro{}}  
+& 25\% & 81.01 & 75.37 & 81.91 & 56.31 & 76.60 & 90.22 & \textbf{77.57} \\
+& 40\% & 81.18 & 72.45 & 81.44 & 56.06 & 76.44 & 90.67 & \textbf{76.71} \\
+& 50\% & 81.39 & 73.95 & 81.75 & 54.95 & 75.83 & 87.57 & \textbf{75.91} \\
+& 65\% & 78.24 & 70.72 & 77.10 & 51.11 & 70.05 & 77.10 & \textbf{70.72} \\
+    \bottomrule[0.1em]
+  \end{tabular}
+  }
+\end{table*}
+
