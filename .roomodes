@@ -1,63 +1,188 @@
 {
-  "customModes": [
-    {
-      "slug": "boomerang",
-      "name": "Boomerang",
-      "roleDefinition": "You are Roo, a strategic workflow orchestrator who coordinates complex tasks by delegating them to appropriate specialized modes. You have a comprehensive understanding of each mode's capabilities and limitations, also your own, and with the information given by the user and other modes in shared context you are enabled to effectively break down complex problems into discrete tasks that can be solved by different specialists using the `taskmaster-ai` system for task and context management.",
-      "customInstructions": "Your role is to coordinate complex workflows by delegating tasks to specialized modes, using `taskmaster-ai` as the central hub for task definition, progress tracking, and context management. \nAs an orchestrator, you should:\nn1. When given a complex task, use contextual information (which gets updated frequently) to break it down into logical subtasks that can be delegated to appropriate specialized modes.\nn2. For each subtask, use the `new_task` tool to delegate. Choose the most appropriate mode for the subtask's specific goal and provide comprehensive instructions in the `message` parameter. \nThese instructions must include:\n*   All necessary context from the parent task or previous subtasks required to complete the work.\n*   A clearly defined scope, specifying exactly what the subtask should accomplish.\n*   An explicit statement that the subtask should *only* perform the work outlined in these instructions and not deviate.\n*   An instruction for the subtask to signal completion by using the `attempt_completion` tool, providing a thorough summary of the outcome in the `result` parameter, keeping in mind that this summary will be the source of truth used to further relay this information to other tasks and for you to keep track of what was completed on this project.\nn3. Track and manage the progress of all subtasks. When a subtask is completed, acknowledge its results and determine the next steps.\nn4. Help the user understand how the different subtasks fit together in the overall workflow. Provide clear reasoning about why you're delegating specific tasks to specific modes.\nn5. Ask clarifying questions when necessary to better understand how to break down complex tasks effectively. If it seems complex delegate to architect to accomplish that \nn6. Use subtasks to maintain clarity. If a request significantly shifts focus or requires a different expertise (mode), consider creating a subtask rather than overloading the current one.",
-      "groups": [
-        "read",
-        "edit",
-        "browser",
-        "command",
-        "mcp"
+  "developerTeamImprovementGuide": {
+    "guideVersion": "2.0",
+    "introduction": "A comprehensive guide to identify areas, strategies, and metrics for improving a developer team's effectiveness, quality, and overall well-being.",
+    "howToUseThisGuide": [
+      "Use the 'Common Improvement Dimensions' to understand broad areas for potential growth.",
+      "Utilize the 'Key Questions To Ask Team' within each dimension to gather specific feedback and insights from your team.",
+      "Review the 'Initial High Impact Strategies' for actionable starting points.",
+      "Consider the 'Suggested Metrics' to track progress over time.",
+      "Anticipate 'Potential Challenges' and explore 'Tools & Resources' for support.",
+      "Adapt this guide to your team's specific context and needs."
+    ],
+    "commonImprovementDimensions": [
+      {
+        "dimension": "Productivity & Efficiency",
+        "description": "Delivering more value, faster. Involves streamlining workflows, reducing interruptions, and improving focus time.",
+        "keyQuestionsToAskTeam": [
+          "What are the biggest time-wasters in our daily work?",
+          "Where do we experience the most delays or bottlenecks?",
+          "Do we have enough focus time for deep work?"
+        ],
+        "suggestedMetrics": [
+          "Cycle Time (from work start to delivery)",
+          "Lead Time (from request to delivery)",
+          "Deployment Frequency",
+          "Throughput (e.g., features/stories completed per iteration)"
+        ]
+      },
+      {
+        "dimension": "Code Quality & Maintainability",
+        "description": "Writing code that is robust, easy to understand, test, and modify, reducing bugs and long-term costs.",
+        "keyQuestionsToAskTeam": [
+          "Are we confident in the quality of our codebase?",
+          "How easy is it to onboard a new developer to our code?",
+          "Are we accumulating technical debt faster than we're addressing it?"
+        ],
+        "suggestedMetrics": [
+          "Code Coverage Percentage (Unit, Integration)",
+          "Bug Density (e.g., bugs per KLOC or feature)",
+          "Cyclomatic Complexity / Cognitive Complexity",
+          "Technical Debt Ratio (e.g., from tools like SonarQube)",
+          "Mean Time to Recover (MTTR) from production incidents"
+        ]
+      },
+      {
+        "dimension": "Processes & Workflow",
+        "description": "How work gets done – from planning and prioritization to development, testing, and deployment. Includes agile methodologies, CI/CD, and review processes.",
+        "keyQuestionsToAskTeam": [
+          "Are our planning meetings effective?",
+          "Is our CI/CD pipeline reliable and fast enough?",
+          "Are our review processes adding value without being overly burdensome?"
+        ],
+        "suggestedMetrics": [
+          "Sprint Goal Achievement Rate",
+          "Build and Test Automation Speed & Reliability",
+          "Pull Request Review Time",
+          "Work In Progress (WIP) limits adherence"
+        ]
+      },
+      {
+        "dimension": "Skills & Knowledge Development",
+        "description": "Ensuring the team has the necessary technical skills and domain knowledge, including continuous learning.",
+        "keyQuestionsToAskTeam": [
+          "Do we have opportunities to learn new technologies or improve existing skills?",
+          "Is knowledge shared effectively across the team?",
+          "Are there any single points of failure in terms of knowledge?"
+        ],
+        "suggestedMetrics": [
+          "Training hours per team member",
+          "Number of internal knowledge-sharing sessions",
+          "Team skills matrix coverage for critical technologies"
+        ]
+      },
+      {
+        "dimension": "Collaboration & Communication",
+        "description": "How team members work together, share information, resolve conflicts, and communicate with stakeholders.",
+        "keyQuestionsToAskTeam": [
+          "Is it easy to get help or information from other team members?",
+          "Is communication with product/stakeholders clear and timely?",
+          "How do we handle disagreements or conflicts?"
+        ],
+        "suggestedMetrics": [
+          "Team satisfaction surveys (questions on collaboration)",
+          "Frequency of cross-functional collaboration",
+          "Clarity of requirements (e.g., reduced rework due to misunderstandings)"
+        ]
+      },
+      {
+        "dimension": "Tooling & Infrastructure",
+        "description": "Having the right tools (IDEs, version control, CI/CD, project management, monitoring) and a stable development environment.",
+        "keyQuestionsToAskTeam": [
+          "Are our development tools helping or hindering us?",
+          "Is our local development setup easy and consistent?",
+          "Do we have adequate monitoring and observability for our systems?"
+        ],
+        "suggestedMetrics": [
+          "Developer satisfaction with tools (survey)",
+          "Time spent on environment setup/troubleshooting",
+          "Availability and performance of development infrastructure"
+        ]
+      },
+      {
+        "dimension": "Team Morale & Culture",
+        "description": "Fostering a positive, supportive, and psychologically safe environment where developers feel motivated and valued.",
+        "keyQuestionsToAskTeam": [
+          "Do you feel valued and recognized for your contributions?",
+          "Is it safe to voice concerns or make mistakes on this team?",
+          "Are we celebrating successes?"
+        ],
+        "suggestedMetrics": [
+          "Employee Net Promoter Score (eNPS) or team mood scores",
+          "Retention Rate",
+          "Feedback from anonymous surveys on psychological safety"
+        ]
+      }
+    ],
+    "initialHighImpactStrategies": [
+      {
+        "strategyName": "Implement or Refine Regular Retrospectives",
+        "description": "Create a dedicated, safe space for the team to reflect on what went well, what didn't, and what to improve, fostering a continuous improvement cycle.",
+        "actionableIdeas": [
+          "If new to retrospectives, start with a simple 'Start, Stop, Continue' format. Rotate facilitators.",
+          "If already doing them, ensure action items are SMART (Specific, Measurable, Achievable, Relevant, Time-bound), assigned, and tracked to completion.",
+          "Experiment with different retrospective formats to keep them engaging."
+        ],
+        "potentialChallenges": [
+          "Lack of psychological safety leading to superficial discussions.",
+          "Action items not being followed up or resourced.",
+          "Meetings becoming routine without real change or impact."
+        ],
+        "toolsAndResources": [
+          "Retrospective tools: Miro, Retrium, EasyRetro, TeamRetro",
+          "Books: 'Agile Retrospectives: Making Good Teams Great' by Esther Derby and Diana Larsen"
+        ]
+      },
+      {
+        "strategyName": "Enhance Code Review Practices",
+        "description": "Improve the effectiveness of code reviews to boost code quality, facilitate knowledge sharing, and catch issues earlier in the development process.",
+        "actionableIdeas": [
+          "Define clear guidelines and expectations for both reviewers (e.g., focus areas, constructive feedback, timely reviews) and authors (e.g., self-review first, clear pull request descriptions, small PRs).",
+          "Use checklists for common review points (e.g., security, performance, readability).",
+          "Encourage pair programming or mob programming for complex changes as an alternative/supplement to PRs."
+        ],
+        "potentialChallenges": [
+          "Reviews becoming a bottleneck if not timely.",
+          "Inconsistent review quality or focus.",
+          "Fear of criticism or overly pedantic reviews."
+        ],
+        "toolsAndResources": [
+          "Pull Request templates in GitHub/GitLab/Bitbucket.",
+          "Linters and static analysis tools to automate common checks.",
+          "Articles on effective code review practices."
+        ]
+      },
+      {
+        "strategyName": "Reduce Friction in the Development Workflow (Address 'Paper Cuts')",
+        "description": "Identify and eliminate small, recurring annoyances or inefficiencies in the daily development process that collectively slow down developers and cause frustration.",
+        "actionableIdeas": [
+          "Regularly survey the team to identify their top 'paper cuts' (e.g., slow build times, flaky tests, cumbersome local setup, inefficient deployment steps).",
+          "Dedicate a small percentage of each sprint/iteration to fixing these issues.",
+          "Automate repetitive manual tasks."
+        ],
+        "potentialChallenges": [
+          "Difficulty prioritizing these fixes against feature work.",
+          "Some 'paper cuts' might be symptoms of larger underlying issues.",
+          "Underestimating the effort to fix some seemingly small issues."
+        ],
+        "toolsAndResources": [
+          "Scripting languages (Bash, Python) for automation.",
+          "CI/CD pipeline optimization tools.",
+          "Developer experience (DevEx) focused teams or initiatives."
+        ]
+      }
+    ],
+    "continuousImprovementCycle": {
+      "title": "Fostering a Culture of Continuous Improvement",
+      "steps": [
+        "Identify: Use this guide and team feedback to pinpoint areas for improvement.",
+        "Plan: Choose 1-2 specific, measurable, achievable, relevant, and time-bound (SMART) goals.",
+        "Implement: Execute the planned changes or experiments.",
+        "Review: After a set period (e.g., a sprint, a month), assess the impact of the changes using agreed-upon metrics.",
+        "Adapt: Based on the review, decide whether to continue, adjust, or abandon the change. Share learnings.",
+        "Repeat: Make this cycle a regular part of the team's rhythm."
       ]
     },
-    {
-      "slug": "architect",
-      "name": "Architect",
-      "roleDefinition": "You are Roo, an expert technical leader operating in Architect mode. When activated via a delegated task, your focus is solely on analyzing requirements, designing system architecture, planning implementation steps, and performing technical analysis as specified in the task message. You utilize analysis tools as needed and report your findings and designs back using `attempt_completion`. You do not deviate from the delegated task scope.",
-      "customInstructions": "1. Do some information gathering (for example using read_file or search_files) to get more context about the task.\n\n2. You should also ask the user clarifying questions to get a better understanding of the task.\n\n3. Once you've gained more context about the user's request, you should create a detailed plan for how to accomplish the task. Include Mermaid diagrams if they help make your plan clearer.\n\n4. Ask the user if they are pleased with this plan, or if they would like to make any changes. Think of this as a brainstorming session where you can discuss the task and plan the best way to accomplish it.\n\n5. Once the user confirms the plan, ask them if they'd like you to write it to a markdown file.\n\n6. Use the switch_mode tool to request that the user switch to another mode to implement the solution.",
-      "groups": [
-        "read",
-        ["edit", { "fileRegex": "\\.md$", "description": "Markdown files only" }],
-        "command",
-        "mcp"
-      ]
-    },
-    {
-      "slug": "ask",
-      "name": "Ask",
-      "roleDefinition": "You are Roo, a knowledgeable technical assistant.\nWhen activated by another mode via a delegated task, your focus is to research, analyze, and provide clear, concise answers or explanations based *only* on the specific information requested in the delegation message. Use available tools for information gathering and report your findings back using `attempt_completion`.",
-      "customInstructions": "You can analyze code, explain concepts, and access external resources. Make sure to answer the user's questions and don't rush to switch to implementing code. Include Mermaid diagrams if they help make your response clearer.",
-      "groups": [
-        "read",
-        "browser",
-        "mcp"
-      ]
-    },
-    {
-      "slug": "debug",
-      "name": "Debug",
-      "roleDefinition": "You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution. When activated by another mode, your task is to meticulously analyze the provided debugging request (potentially referencing Taskmaster tasks, logs, or metrics), use diagnostic tools as instructed to investigate the issue, identify the root cause, and report your findings and recommended next steps back via `attempt_completion`. You focus solely on diagnostics within the scope defined by the delegated task.",
-      "customInstructions": "Reflect on 5-7 different possible sources of the problem, distill those down to 1-2 most likely sources, and then add logs to validate your assumptions. Explicitly ask the user to confirm the diagnosis before fixing the problem.",
-      "groups": [
-        "read",
-        "edit",
-        "command",
-        "mcp"
-      ]
-    },
-    {
-      "slug": "test",
-      "name": "Test",
-      "roleDefinition": "You are Roo, an expert software tester. Your primary focus is executing testing tasks delegated to you by other modes.\nAnalyze the provided scope and context (often referencing a Taskmaster task ID and its `testStrategy`), develop test plans if needed, execute tests diligently, and report comprehensive results (pass/fail, bugs, coverage) back using `attempt_completion`. You operate strictly within the delegated task's boundaries.",
-      "customInstructions": "Focus on the `testStrategy` defined in the Taskmaster task. Develop and execute test plans accordingly. Report results clearly, including pass/fail status, bug details, and coverage information.",
-      "groups": [
-        "read",
-        "command",
-        "mcp"
-      ]
-    }
-  ]
+    "finalNote": "This guide is a starting point. The most effective improvements will come from open discussions, active listening, and collaborative problem-solving within your team."
+  }
 }
