@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import re
+import os
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
@@ -8,19 +9,20 @@ from ..services.integrity_client import integrity_service_client, IntegrityPolic
 from .datalog_engine import datalog_engine # Use the global engine instance
 from .policy_format_router import PolicyFormatRouter, PolicyFramework
 from .manifest_manager import ManifestManager
+# Task 8: Import incremental compilation components
+from .incremental_compiler import get_incremental_compiler, IncrementalCompiler
+from .opa_client import get_opa_client, OPAClient
 
 # Import crypto service for signature verification
 import sys
-import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../alphaevolve_gs_engine/src'))
 try:
     from alphaevolve_gs_engine.services.crypto_service import CryptoService
 except ImportError:
     CryptoService = None
 
-# Placeholder token for Integrity Service (if its placeholder auth expects one)
-# The integrity_service placeholder auth uses "internal_service_token" for GET /policies/
-INTEGRITY_SERVICE_MOCK_TOKEN = "internal_service_token"
+# Mock token for integrity service (in production, use proper auth)
+INTEGRITY_SERVICE_MOCK_TOKEN = "mock_token_for_testing"
 
 import logging
 logger = logging.getLogger(__name__)
@@ -36,11 +38,21 @@ class PolicyManager:
         self.format_router = PolicyFormatRouter()
         self.manifest_manager = ManifestManager()
         self.crypto_service = CryptoService() if CryptoService else None
+
+        # Task 8: Initialize incremental compilation components
+        self.incremental_compiler: Optional[IncrementalCompiler] = None
+        self.opa_client: Optional[OPAClient] = None
+        self.enable_incremental_compilation = os.getenv("ENABLE_INCREMENTAL_COMPILATION", "true").lower() == "true"
+
         self._validation_stats = {
             'total_loaded': 0,
             'signature_verified': 0,
             'format_converted': 0,
-            'validation_failed': 0
+            'validation_failed': 0,
+            # Task 8: Add incremental compilation stats
+            'incremental_compilations': 0,
+            'full_compilations': 0,
+            'compilation_time_saved_ms': 0
         }
 
     async def get_active_rules(self, force_refresh: bool = False) -> List[IntegrityPolicyRule]:
@@ -67,11 +79,16 @@ class PolicyManager:
                         # Enhanced rule processing with format conversion and validation
                         processed_rules = await self._process_and_validate_rules(self._active_rules)
 
-                        # Load rules into the Datalog engine
-                        datalog_engine.clear_rules_and_facts() # Clear old rules and facts
-                        rule_strings = [rule.rule_content for rule in processed_rules]
-                        datalog_engine.load_rules(rule_strings)
-                        print(f"PolicyManager: Datalog engine updated with {len(processed_rules)} processed rules.")
+                        # Task 8: Use incremental compilation if enabled
+                        if self.enable_incremental_compilation:
+                            await self._compile_policies_incrementally(processed_rules, force_refresh)
+                        else:
+                            # Fallback to traditional Datalog engine loading
+                            datalog_engine.clear_rules_and_facts() # Clear old rules and facts
+                            rule_strings = [rule.rule_content for rule in processed_rules]
+                            datalog_engine.load_rules(rule_strings)
+
+                        print(f"PolicyManager: Updated with {len(processed_rules)} processed rules.")
                         print(f"Validation stats: {self._validation_stats}")
                     else:
                         # This case might not be hit if client returns [] on error.
@@ -207,6 +224,85 @@ class PolicyManager:
             return f"Policy rule: {rule_name}"
 
         return "Auto-generated policy rule description"
+
+    async def _compile_policies_incrementally(
+        self,
+        processed_rules: List[IntegrityPolicyRule],
+        force_full: bool = False
+    ) -> None:
+        """
+        Task 8: Compile policies using incremental compilation engine.
+
+        This method replaces the traditional Datalog engine loading with
+        OPA-based incremental compilation for better performance.
+        """
+        try:
+            # Initialize incremental compiler if not already done
+            if not self.incremental_compiler:
+                self.incremental_compiler = await get_incremental_compiler()
+                logger.info("Incremental compiler initialized")
+
+            # Initialize OPA client if not already done
+            if not self.opa_client:
+                self.opa_client = await get_opa_client()
+                logger.info("OPA client initialized")
+
+            # Compile policies using incremental compilation
+            compilation_metrics = await self.incremental_compiler.compile_policies(
+                processed_rules,
+                force_full=force_full
+            )
+
+            # Update statistics
+            if compilation_metrics.incremental:
+                self._validation_stats['incremental_compilations'] += 1
+            else:
+                self._validation_stats['full_compilations'] += 1
+
+            # Calculate time savings (estimated)
+            if compilation_metrics.incremental and compilation_metrics.compilation_time_ms > 0:
+                estimated_full_time = len(processed_rules) * 10 + 100  # Rough estimate
+                time_saved = max(0, estimated_full_time - compilation_metrics.compilation_time_ms)
+                self._validation_stats['compilation_time_saved_ms'] += time_saved
+
+            logger.info(
+                f"Incremental compilation completed: "
+                f"{compilation_metrics.compilation_time_ms:.2f}ms, "
+                f"incremental={compilation_metrics.incremental}, "
+                f"cache_hit_ratio={compilation_metrics.cache_hit_ratio:.2f}"
+            )
+
+            # Also load into Datalog engine for backward compatibility
+            datalog_engine.clear_rules_and_facts()
+            rule_strings = [rule.rule_content for rule in processed_rules]
+            datalog_engine.load_rules(rule_strings)
+
+        except Exception as e:
+            logger.error(f"Incremental compilation failed: {e}")
+            # Fallback to traditional loading
+            logger.info("Falling back to traditional Datalog engine loading")
+            datalog_engine.clear_rules_and_facts()
+            rule_strings = [rule.rule_content for rule in processed_rules]
+            datalog_engine.load_rules(rule_strings)
+
+    async def get_compilation_metrics(self) -> Dict[str, Any]:
+        """
+        Task 8: Get incremental compilation performance metrics.
+        """
+        metrics = {
+            "validation_stats": self._validation_stats.copy(),
+            "incremental_compilation_enabled": self.enable_incremental_compilation
+        }
+
+        if self.incremental_compiler:
+            compiler_metrics = self.incremental_compiler.get_metrics()
+            metrics["compiler"] = compiler_metrics
+
+        if self.opa_client:
+            opa_metrics = await self.opa_client.get_metrics()
+            metrics["opa"] = opa_metrics
+
+        return metrics
 
     def get_active_rule_strings(self) -> List[str]:
         """Returns only the rule content strings of the active rules."""

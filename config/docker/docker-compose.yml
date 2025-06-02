@@ -36,6 +36,31 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # Task 8: OPA service for incremental policy compilation
+  opa:
+    image: openpolicyagent/opa:0.58.0-envoy
+    container_name: acgs_opa
+    ports:
+      - "8181:8181"  # OPA REST API
+    volumes:
+      - opa_policies:/policies
+      - opa_data:/data
+    command: >
+      run --server
+      --addr=0.0.0.0:8181
+      --diagnostic-addr=0.0.0.0:8282
+      --set=plugins.health.service=authz
+      --set=decision_logs.console=true
+      --set=status.console=true
+      --set=bundles.authz.resource=/policies
+      --config-file=/config/opa-config.yaml
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8181/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   alembic-runner:
     build:
       context: ../.. # Build context is the root directory
@@ -197,9 +222,19 @@ services:
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
+      # Task 8: OPA integration for incremental policy compilation
+      - OPA_SERVER_URL=${OPA_SERVER_URL:-http://opa:8181}
+      - OPA_BUNDLE_NAME=${OPA_BUNDLE_NAME:-authz}
+      - ENABLE_INCREMENTAL_COMPILATION=${ENABLE_INCREMENTAL_COMPILATION:-true}
+      - POLICY_CACHE_TTL=${POLICY_CACHE_TTL:-300}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       integrity_service:
         condition: service_started
+      opa:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ../../src/backend/pgc_service:/app
       - ../../src/backend/shared:/app/shared
@@ -283,5 +318,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  opa_policies:
+  opa_data:
   prometheus_data:
   grafana_data:

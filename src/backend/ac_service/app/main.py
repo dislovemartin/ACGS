@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from app.api.v1.principles import router as principles_router
 from app.api.v1.constitutional_council import router as constitutional_council_router
+from app.api.v1.conflict_resolution import router as conflict_resolution_router
+from app.api.v1.fidelity_monitor import router as fidelity_monitor_router
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
 from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
@@ -18,6 +20,8 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Include the API routers
 app.include_router(principles_router, prefix="/api/v1/principles", tags=["Principles"])
 app.include_router(constitutional_council_router, prefix="/api/v1/constitutional-council", tags=["Constitutional Council"])
+app.include_router(conflict_resolution_router, prefix="/api/v1/conflict-resolution", tags=["Conflict Resolution"])
+app.include_router(fidelity_monitor_router, prefix="/api/v1/fidelity", tags=["Constitutional Fidelity"])
 
 @app.on_event("startup")
 def on_startup():
