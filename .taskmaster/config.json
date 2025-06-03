@@ -1,8 +1,8 @@
 {
   "models": {
     "main": {
-      "provider": "google",
-      "modelId": "google/gemini-2.5-flash-preview-05-20",
+      "provider": "openrouter",
+      "modelId": "deepseek/deepseek-r1-0528:free",
       "maxTokens": 64000,
       "temperature": 0.2
     },
