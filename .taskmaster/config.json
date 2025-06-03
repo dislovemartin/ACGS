@@ -1,8 +1,8 @@
 {
   "models": {
     "main": {
-      "provider": "openrouter",
-      "modelId": "deepseek/deepseek-r1-0528:free",
+      "provider": "requesty",
+      "modelId": "openai/O4 Mini:high",
       "maxTokens": 64000,
       "temperature": 0.2
     },

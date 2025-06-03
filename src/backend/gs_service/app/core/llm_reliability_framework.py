@@ -68,8 +68,12 @@ class LLMReliabilityConfig:
     bias_detection_enabled: bool = True
     semantic_validation_enabled: bool = True
     fallback_strategy: str = "conservative"  # "conservative", "majority", "expert"
+    rule_based_fallback_enabled: bool = True # New: Enable rule-based fallback
     max_retries: int = 3
+    llm_failure_threshold: int = 5 # New: Threshold for consecutive LLM failures before degradation
     timeout_seconds: int = 30
+    default_fallback_response: str = "An automated policy could not be generated due to system constraints. Please try again later or consult support." # New: Default response for critical failures
+    enable_model_degradation: bool = True # New: Enable/disable dynamic model degradation
     # Updated to match protocol's UltraReliableConsensus.confidence_threshold
     confidence_threshold: float = 0.999
 
@@ -184,6 +188,7 @@ class UltraReliableResult:
     validation_details: Optional[Dict[str, Any]] = None
     formal_verification_status: Optional[Dict[str, Any]] = None
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    status: Optional[str] = None # Added status field
 
 
 class PrometheusMetricsCollector:
@@ -230,6 +235,27 @@ class PrometheusMetricsCollector:
             'Cache hit rate for LLM requests',
             registry=self.registry
         )
+        self.fallbacks_total = Counter(
+            'llm_fallbacks_total',
+            'Total number of times fallback mechanisms were used',
+            registry=self.registry
+        )
+        self.escalations_total = Counter(
+            'llm_escalations_total',
+            'Total number of times human review escalations occurred',
+            registry=self.registry
+        )
+        self.failures_total = Counter(
+            'llm_failures_total',
+            'Total number of LLM processing failures',
+            registry=self.registry
+        )
+        self.model_failures_total = Counter( # New: Track failures per model
+            'llm_model_failures_total',
+            'Total number of LLM processing failures per model',
+            ['model_name'], # Label for model name
+            registry=self.registry
+        )
 
     def record_metrics(self, metrics: ReliabilityMetrics):
         """Record metrics to Prometheus."""
@@ -242,6 +268,30 @@ class PrometheusMetricsCollector:
         self.bias_detection_rate.set(metrics.bias_detection_rate)
         self.consensus_rate.set(metrics.consensus_rate)
         self.cache_hit_rate.set(metrics.cache_hit_rate)
+
+    def increment_fallbacks(self):
+        """Increment the total number of times fallback mechanisms were used."""
+        if self.enabled:
+            self.fallbacks_total.inc()
+            logger.debug("Prometheus: Fallback incremented.")
+
+    def increment_escalations(self):
+        """Increment the total number of times human review escalations occurred."""
+        if self.enabled:
+            self.escalations_total.inc()
+            logger.debug("Prometheus: Escalation incremented.")
+
+    def increment_failures(self):
+        """Increment the total number of LLM processing failures."""
+        if self.enabled:
+            self.failures_total.inc()
+            logger.debug("Prometheus: Failure incremented.")
+
+    def increment_model_failures(self, model_name: str):
+        """Increment the total number of LLM processing failures for a specific model."""
+        if self.enabled:
+            self.model_failures_total.labels(model_name=model_name).inc()
+            logger.debug(f"Prometheus: Model {model_name} failure incremented.")
 
 
 class CacheManager:
@@ -323,6 +373,8 @@ class EnhancedMultiModelValidator:
         self.models = {}
         self.cache_manager = CacheManager(config)
         self.performance_history = []
+        self.model_failure_counts: Dict[str, int] = {} # Track consecutive failures per model
+        self.active_models: List[str] = [] # List of currently active models
 
     async def initialize(self):
         """Initialize multiple LLM models for ensemble validation based on config."""
@@ -381,6 +433,8 @@ class EnhancedMultiModelValidator:
                         "weight": weight,
                         "type": model_type
                     }
+                    self.active_models.append(model_name) # Add to active models
+                    self.model_failure_counts[model_name] = 0 # Initialize failure count
             except Exception as e:
                 logger.error(f"Failed to initialize model {model_name}: {e}")
 
@@ -507,13 +561,22 @@ class EnhancedMultiModelValidator:
             return [], ["No models configured"], {"synthesis_attempts": 0}
 
         tasks_with_model_names = []
-        for model_name, model_info in self.models.items():
+        # Only use active models for parallel synthesis
+        for model_name in self.active_models:
+            model_info = self.models[model_name]
             # Create a coroutine that, when awaited, returns (model_name, result_of_call)
             async def task_wrapper(m_name, m_info, i_data, r_id):
                 try:
                     res = await self._call_individual_model_for_synthesis(m_name, m_info, i_data, r_id)
+                    # Reset failure count on success
+                    self.model_failure_counts[m_name] = 0
                     return m_name, res # res is (LLMStructuredOutput, float_time) or None if exception handled inside
                 except Exception as e:
+                    # Increment failure count on failure
+                    self.model_failure_counts[m_name] += 1
+                    self.metrics_collector.increment_model_failures(m_name) # Increment Prometheus counter
+                    if self.config.enable_model_degradation and self.model_failure_counts[m_name] >= self.config.llm_failure_threshold:
+                        await self._degrade_model(m_name, request_id)
                     return m_name, e # Return the exception associated with the model name
 
             tasks_with_model_names.append(task_wrapper(model_name, model_info, input_data, request_id))
@@ -522,6 +585,11 @@ class EnhancedMultiModelValidator:
         gathered_results = await asyncio.gather(*tasks_with_model_names, return_exceptions=False) # Exceptions are handled in task_wrapper
 
         for model_name, result in gathered_results:
+            # Check if the model is still active before processing its result
+            if model_name not in self.active_models:
+                logger.warning(f"Request {request_id}: Model {model_name} was degraded during synthesis, skipping its result.")
+                continue
+
             model_info = self.models[model_name] # Get model_info again using the returned model_name
             if isinstance(result, Exception):
                 error_message = f"Model {model_name}: {str(result)}"
@@ -922,6 +990,7 @@ class EnhancedMultiModelValidator:
         Handle escalation to expert review when automated consensus is insufficient.
         """
         logger.warning(f"Request {request_id}: Escalating to expert review. Confidence: {current_confidence:.4f}")
+        self.metrics_collector.increment_escalations() # Increment escalation counter
         
         best_policy_model_name = "N/A"
         if current_best_policy:
@@ -1315,6 +1384,9 @@ class EnhancedBiasDetectionFramework:
         if not words1 and not words2:
             return 0.0
 
+        if not words1 or not words2:
+            return 0.0
+
         intersection = len(words1 & words2)
         union = len(words1 | words2)
 
@@ -1702,6 +1774,9 @@ class EnhancedLLMReliabilityFramework:
     async def initialize(self):
         """Initialize all framework components."""
         await self.multi_model_validator.initialize()
+        # After multi_model_validator initializes its models, populate active_models and failure_counts
+        self.multi_model_validator.active_models = list(self.multi_model_validator.models.keys())
+        self.multi_model_validator.model_failure_counts = {model_name: 0 for model_name in self.multi_model_validator.active_models}
         logger.info("Enhanced LLM Reliability Framework fully initialized")
 
     async def process_with_reliability(
@@ -1719,16 +1794,54 @@ class EnhancedLLMReliabilityFramework:
             
             ultra_reliable_result = await self.multi_model_validator.achieve_ultra_reliable_consensus(input_data)
 
-            output: LLMStructuredOutput
+            output: LLMStructuredOutput = LLMStructuredOutput(interpretations=[], raw_llm_response="") # Initialize output
+
             if ultra_reliable_result.policy and isinstance(ultra_reliable_result.policy, LLMStructuredOutput):
                 output = ultra_reliable_result.policy
             elif ultra_reliable_result.policy:
                 # If policy is some other type, wrap or handle appropriately.
                 logger.warning(f"Request {process_request_id}: Policy from consensus is not LLMStructuredOutput, type: {type(ultra_reliable_result.policy)}. Wrapping.")
                 output = LLMStructuredOutput(interpretations=[], raw_llm_response=str(ultra_reliable_result.policy))
-            else: # No policy could be synthesized or agreed upon
+            else: # No policy could be synthesized or agreed upon, or an error occurred
                 logger.error(f"Request {process_request_id}: No policy synthesized by ultra-reliable consensus. Error: {ultra_reliable_result.error_message}")
-                output = LLMStructuredOutput(interpretations=[], raw_llm_response=ultra_reliable_result.error_message or "No policy synthesized.")
+                # Attempt rule-based fallback immediately if no policy is synthesized
+                if self.config.rule_based_fallback_enabled:
+                    fallback_policy, fallback_message = await self._apply_rule_based_fallback(
+                        input_data,
+                        ultra_reliable_result.error_message or "No policy synthesized by consensus.",
+                        None # No current best policy to pass
+                    )
+                    if fallback_policy:
+                        output = fallback_policy
+                        ultra_reliable_result.status = "FALLBACK_APPLIED_NO_CONSENSUS"
+                        logger.warning(f"Request {process_request_id}: Rule-based fallback applied due to no consensus: {fallback_message}")
+                        self.metrics_collector.increment_fallbacks()
+                    else:
+                        # If rule-based fallback also fails, use emergency safeguards
+                        output = await self._apply_emergency_safeguards(
+                            LLMStructuredOutput(interpretations=[], raw_llm_response=ultra_reliable_result.error_message or "No policy synthesized."),
+                            ReliabilityMetrics(
+                                success_rate=0.0, consensus_rate=0.0, bias_detection_rate=0.0,
+                                semantic_faithfulness_score=0.0, average_response_time=time.time() - start_time,
+                                error_rate=1.0, fallback_usage_rate=1.0, confidence_score=0.0,
+                                request_id=process_request_id
+                            )
+                        )
+                        ultra_reliable_result.status = "EMERGENCY_SAFEGUARDS_NO_CONSENSUS"
+                        self.metrics_collector.increment_fallbacks()
+                else:
+                    # If rule-based fallback is disabled, directly apply emergency safeguards
+                    output = await self._apply_emergency_safeguards(
+                        LLMStructuredOutput(interpretations=[], raw_llm_response=ultra_reliable_result.error_message or "No policy synthesized."),
+                        ReliabilityMetrics(
+                            success_rate=0.0, consensus_rate=0.0, bias_detection_rate=0.0,
+                            semantic_faithfulness_score=0.0, average_response_time=time.time() - start_time,
+                            error_rate=1.0, fallback_usage_rate=1.0, confidence_score=0.0,
+                            request_id=process_request_id
+                        )
+                    )
+                    ultra_reliable_result.status = "EMERGENCY_SAFEGUARDS_NO_CONSENSUS"
+                    self.metrics_collector.increment_fallbacks()
 
             # Construct ReliabilityMetrics from UltraReliableResult and other process details
             metrics = ReliabilityMetrics(
@@ -1742,24 +1855,36 @@ class EnhancedLLMReliabilityFramework:
                 confidence_score=ultra_reliable_result.confidence,
                 request_id=process_request_id,
                 model_agreement_score=ultra_reliable_result.synthesis_details.get("chosen_policy_scoring_breakdown", {}).get("raw_avg_cross_val_score", ultra_reliable_result.confidence) if ultra_reliable_result.synthesis_details else ultra_reliable_result.confidence,
-                cache_hit_rate=0.0 # Assuming no top-level cache hit for this new structure yet
+                cache_hit_rate=0.0, # Assuming no top-level cache hit for this new structure yet
+                # Placeholder for hallucination_rate and factual_accuracy_score
+                # These would ideally come from a dedicated quality assessment module
+                hallucination_rate=ultra_reliable_result.validation_details.get("hallucination_score", 0.0) if ultra_reliable_result.validation_details else 0.0,
+                factual_accuracy_score=ultra_reliable_result.validation_details.get("factual_accuracy_score", 0.0) if ultra_reliable_result.validation_details else 0.0
             )
             
             if ultra_reliable_result.requires_human_review:
-                logger.warning(f"Request {process_request_id}: Policy synthesis requires human review. Path: {ultra_reliable_result.validation_path}. Message: {ultra_reliable_result.error_message}")
+                logger.warning(f"Request {process_request_id}: Human review required. Path: {ultra_reliable_result.validation_path}. Message: {ultra_reliable_result.error_message}")
+                self.metrics_collector.increment_escalations() # Increment escalation counter
             elif not ultra_reliable_result.policy and ultra_reliable_result.error_message:
                  logger.error(f"Request {process_request_id}: Policy synthesis failed. Path: {ultra_reliable_result.validation_path}. Error: {ultra_reliable_result.error_message}")
+                 self.metrics_collector.increment_failures() # Increment failure counter
 
             # Enhanced bias detection and mitigation
             if self.config.bias_detection_enabled:
                 if self.config.proactive_bias_mitigation:
+                    # Perform bias detection on the current output
+                    bias_analysis_before_mitigation = await self.bias_detector.detect_bias_comprehensive(output)
+                    metrics.bias_detection_rate = bias_analysis_before_mitigation["overall_score"] # Record bias before mitigation
+                    
                     output = await self.bias_detector.mitigate_bias_proactive(output)
-                    # Update metrics with bias analysis
-                    bias_analysis = await self.bias_detector.detect_bias_comprehensive(output)
-                    metrics.bias_detection_rate = 1.0 - bias_analysis["overall_score"]
-                    metrics.proactive_bias_score = bias_analysis["overall_score"]
+                    # After mitigation, re-evaluate bias to get the post-mitigation score
+                    bias_analysis_after_mitigation = await self.bias_detector.detect_bias_comprehensive(output)
+                    metrics.proactive_bias_score = bias_analysis_after_mitigation["overall_score"] # Record bias after mitigation
                 else:
-                    output = await self.bias_detector.mitigate_bias(output)
+                    # If proactive mitigation is off, just detect bias and record
+                    bias_analysis = await self.bias_detector.detect_bias(output)
+                    metrics.bias_detection_rate = bias_analysis["bias_score"]
+                    metrics.proactive_bias_score = 0.0 # Not applicable if proactive mitigation is off
 
             # Enhanced semantic faithfulness validation
             if self.config.semantic_validation_enabled and hasattr(input_data, 'principle_text'):
@@ -1770,22 +1895,58 @@ class EnhancedLLMReliabilityFramework:
                     metrics.semantic_faithfulness_score = faithfulness["overall_score"]
                     metrics.nli_validation_score = faithfulness["nli_entailment"]["score"]
                     metrics.constitutional_compliance_score = faithfulness["constitutional_compliance"]["score"]
+                    # Attempt to extract hallucination and factual accuracy from faithfulness details
+                    metrics.hallucination_rate = faithfulness.get("hallucination_rate", metrics.hallucination_rate)
+                    metrics.factual_accuracy_score = faithfulness.get("factual_accuracy_score", metrics.factual_accuracy_score)
                 else:
                     faithfulness = await self.faithfulness_validator.validate_faithfulness(
                         input_data.principle_text, output.raw_llm_response
                     )
                     metrics.semantic_faithfulness_score = faithfulness["faithfulness_score"]
+                    # Fallback for hallucination and factual accuracy if NLI is not enabled
+                    metrics.hallucination_rate = 0.0 # Default or placeholder
+                    metrics.factual_accuracy_score = 0.0 # Default or placeholder
 
             # Calculate overall reliability score
             overall_reliability = metrics.overall_reliability_score()
 
             # Check if reliability target is met
-            if overall_reliability < self.config.reliability_target:
+            # Only apply additional safeguards if reliability is too low AND no fallback was already applied due to no consensus
+            if overall_reliability < self.config.reliability_target and ultra_reliable_result.status not in ["FALLBACK_APPLIED_NO_CONSENSUS", "EMERGENCY_SAFEGUARDS_NO_CONSENSUS"]:
                 logger.warning(f"Reliability target not met: {overall_reliability:.3f} < {self.config.reliability_target}")
 
-                # Apply additional safeguards if reliability is too low
-                if overall_reliability < 0.8:
+                if ultra_reliable_result.requires_human_review:
+                    logger.warning(f"Request {process_request_id}: Human review required. Path: {ultra_reliable_result.validation_path}. Message: {ultra_reliable_result.error_message}")
+                    
+                    fallback_applied = False
+                    if self.config.rule_based_fallback_enabled:
+                        logger.info(f"Request {process_request_id}: Attempting rule-based fallback.")
+                        fallback_policy, fallback_message = await self._apply_rule_based_fallback(
+                            input_data,
+                            ultra_reliable_result.error_message,
+                            output # Pass the current best policy (output from consensus)
+                        )
+                        if fallback_policy:
+                            output = fallback_policy
+                            ultra_reliable_result.status = "FALLBACK_APPLIED"
+                            logger.warning(f"Request {process_request_id}: Rule-based fallback applied: {fallback_message}")
+                            fallback_applied = True
+                            metrics.fallback_usage_rate = 1.0 # Indicate fallback was used
+                            self.metrics_collector.increment_fallbacks() # Increment fallback counter
+                        else:
+                            logger.info(f"Request {process_request_id}: Rule-based fallback not applicable: {fallback_message}")
+
+                    if not fallback_applied:
+                        logger.warning(f"Request {process_request_id}: Applying emergency safeguards.")
+                        output = await self._apply_emergency_safeguards(output, metrics)
+                        ultra_reliable_result.status = "ESCALATED_WITH_SAFEGUARDS"
+                        metrics.fallback_usage_rate = 1.0 # Indicate safeguards were used
+                        self.metrics_collector.increment_fallbacks() # Increment fallback counter for emergency safeguards
+                elif overall_reliability < 0.8: # Apply emergency safeguards if reliability is very low, even if not human review
+                    logger.warning(f"Request {process_request_id}: Applying emergency safeguards due to very low reliability ({overall_reliability:.3f}).")
                     output = await self._apply_emergency_safeguards(output, metrics)
+                    ultra_reliable_result.status = "EMERGENCY_SAFEGUARDS_LOW_RELIABILITY"
+                    self.metrics_collector.increment_fallbacks() # Increment fallback counter for emergency safeguards
 
             # Store performance metrics
             self.performance_metrics.append(metrics)
@@ -1801,28 +1962,33 @@ class EnhancedLLMReliabilityFramework:
 
             # Log reliability status
             if overall_reliability >= self.config.reliability_target:
-                logger.info(f"Reliability target achieved: {overall_reliability:.3f}")
+                logger.info(f"Request {process_request_id}: Reliability target achieved: {overall_reliability:.3f}")
 
             return output, metrics
 
         except Exception as e:
-            logger.error(f"Error in reliability framework: {e}")
-            # Return fallback response with error metrics
-            fallback_output = LLMStructuredOutput(
-                interpretations=[],
-                raw_llm_response=f"Reliability framework error: {str(e)}"
+            logger.error(f"Error in process_with_reliability for input {input_data.input_hash}: {e}", exc_info=True)
+            self.metrics_collector.increment_failures() # Increment overall failures
+            # In case of an unexpected error, apply emergency safeguards as a last resort
+            final_policy = await self._apply_emergency_safeguards(
+                LLMStructuredOutput(interpretations=[], raw_llm_response=f"Unexpected error: {str(e)}"),
+                ReliabilityMetrics(
+                    success_rate=0.0, consensus_rate=0.0, bias_detection_rate=0.0,
+                    semantic_faithfulness_score=0.0, average_response_time=time.time() - start_time,
+                    error_rate=1.0, fallback_usage_rate=1.0, confidence_score=0.0,
+                    request_id=process_request_id,
+                    hallucination_rate=1.0, # Assume high hallucination on error
+                    factual_accuracy_score=0.0 # Assume low factual accuracy on error
+                )
             )
-            error_metrics = ReliabilityMetrics(
-                success_rate=0.0,
-                consensus_rate=0.0,
-                bias_detection_rate=0.0,
-                semantic_faithfulness_score=0.0,
-                average_response_time=time.time() - start_time,
-                error_rate=1.0,
-                fallback_usage_rate=1.0,
-                confidence_score=0.0
+            return final_policy, ReliabilityMetrics(
+                success_rate=0.0, consensus_rate=0.0, bias_detection_rate=0.0,
+                semantic_faithfulness_score=0.0, average_response_time=time.time() - start_time,
+                error_rate=1.0, fallback_usage_rate=1.0, confidence_score=0.0,
+                request_id=process_request_id,
+                hallucination_rate=1.0, # Assume high hallucination on error
+                factual_accuracy_score=0.0 # Assume low factual accuracy on error
             )
-            return fallback_output, error_metrics
 
     async def _apply_emergency_safeguards(
         self,
@@ -1840,6 +2006,74 @@ class EnhancedLLMReliabilityFramework:
             interpretations=output.interpretations,
             raw_llm_response=safeguarded_response
         )
+
+    async def _apply_rule_based_fallback(
+        self,
+        input_data: LLMInterpretationInput,
+        error_message: str,
+        current_best_policy: Optional[LLMStructuredOutput]
+    ) -> Tuple[Optional[LLMStructuredOutput], str]:
+        """
+        Applies rule-based fallback mechanisms when LLM outputs fail validation.
+        Returns a fallback policy and a message indicating the fallback action.
+        """
+        logger.warning(f"Applying rule-based fallback for LLM failure: {error_message}")
+
+        # Example rule 1: If the error is about "malformed JSON", try to wrap the current best policy
+        if "malformed json" in error_message.lower() and current_best_policy:
+            try:
+                # Attempt to re-parse or re-format the raw response
+                # This is a simple example; a real implementation might use a more robust JSON repair LLM call
+                repaired_json_str = f"```json\n{current_best_policy.raw_llm_response}\n```"
+                logger.info("Rule-based fallback: Attempted to repair malformed JSON.")
+                return LLMStructuredOutput(
+                    interpretations=current_best_policy.interpretations,
+                    raw_llm_response=repaired_json_str
+                ), "Rule-based fallback: Malformed JSON repaired."
+            except Exception as e:
+                logger.error(f"Failed to repair JSON in fallback: {e}")
+
+        # Example rule 2: If the error is about "safety violation", return a generic safe response
+        if "safety violation" in error_message.lower() or "unsafe content" in error_message.lower():
+            safe_response = "The requested policy could not be generated due to potential safety concerns. Please refine your request or consult an expert."
+            logger.info("Rule-based fallback: Returned generic safe response due to safety violation.")
+            return LLMStructuredOutput(
+                interpretations=[],
+                raw_llm_response=safe_response
+            ), "Rule-based fallback: Generic safe response due to safety violation."
+
+        # Example rule 3: If the error is about "lack of consensus", return a simplified default policy
+        if "consensus below threshold" in error_message.lower() or "no policy selected" in error_message.lower():
+            default_policy_text = f"A definitive policy could not be established due to lack of consensus among models. Defaulting to a conservative interpretation of principle: '{input_data.principle_text}'."
+            logger.info("Rule-based fallback: Returned conservative default policy due to lack of consensus.")
+            return LLMStructuredOutput(
+                interpretations=[],
+                raw_llm_response=default_policy_text
+            ), "Rule-based fallback: Conservative default policy applied."
+
+        # If no specific rule applies, return None and a message
+        logger.info("No specific rule-based fallback applied.")
+        # Example rule 4: If all models are degraded, return a hardcoded default response
+        if not self.active_models:
+            logger.critical(f"All LLM models are degraded. Returning default fallback response: {self.config.default_fallback_response}")
+            return LLMStructuredOutput(
+                interpretations=[],
+                raw_llm_response=self.config.default_fallback_response
+            ), "Rule-based fallback: All models degraded, returned default response."
+
+        # If no specific rule applies, return None and a message
+        logger.info("No specific rule-based fallback applied.")
+        return None, "No specific rule-based fallback applied."
+
+    async def _degrade_model(self, model_name: str, request_id: str):
+        """Degrade (disable) a model that has consistently failed."""
+        if model_name in self.active_models:
+            self.active_models.remove(model_name)
+            logger.warning(f"Request {request_id}: Model {model_name} has been degraded due to {self.model_failure_counts[model_name]} consecutive failures.")
+            # Optionally, notify monitoring systems or trigger an alert
+            self.metrics_collector.increment_escalations() # Consider model degradation an escalation
+        else:
+            logger.info(f"Request {request_id}: Attempted to degrade {model_name}, but it was already inactive.")
 
     def get_overall_reliability(self) -> float:
         """Calculate overall system reliability with enhanced metrics."""
@@ -1925,20 +2159,6 @@ class EnhancedLLMReliabilityFramework:
 class LLMReliabilityFramework(EnhancedLLMReliabilityFramework):
     """Backward compatibility alias for the enhanced framework."""
     pass
-
-
-@dataclass
-class UltraReliableResult:
-    """
-    Represents the outcome of the ultra-reliable consensus process,
-    aligning with the research protocol.
-    """
-    policy: Any  # Could be LLMStructuredOutput or specific policy object
-    confidence: float
-    validation_path: str  # e.g., "automated_consensus", "expert_review"
-    requires_human_review: bool
-    synthesis_details: Optional[Dict[str, Any]] = field(default_factory=dict) # For intermediate results, validation matrix etc.
-    error_message: Optional[str] = None
 
 
 @dataclass

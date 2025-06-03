@@ -1,0 +1,48 @@
+🧬 Darwin Gödel Machine Initialized
+Language: python
+Git Directory: /home/dislove/ACGS-master
+Problem: /home/dislove/ACGS-master/temp_project_plan.prd...
+🧬 Starting DGM Evolution Process
+🔄 Evolution Attempt 1/3
+🔄 Reset to commit: HEAD
+⚠️ Using mock response - implement actual LLM integration
+📚 Archived solution #1
+
+=== 🧬 DGM Attempt 1 Summary ===
+Strategy: initial_analysis
+Test Success: False
+Tests Passed: 0
+Tests Failed: 0
+Errors: 0
+Execution Time: 0.14s
+Archive Size: 1
+🔄 Evolution Attempt 2/3
+🔄 Reset to commit: HEAD
+⚠️ Using mock response - implement actual LLM integration
+📚 Archived solution #2
+
+=== 🧬 DGM Attempt 2 Summary ===
+Strategy: comprehensive_refactor
+Test Success: False
+Tests Passed: 0
+Tests Failed: 0
+Errors: 0
+Execution Time: 0.14s
+Archive Size: 2
+🔄 Evolution Attempt 3/3
+🔄 Reset to commit: HEAD
+⚠️ Using mock response - implement actual LLM integration
+📚 Archived solution #3
+
+=== 🧬 DGM Attempt 3 Summary ===
+Strategy: comprehensive_refactor
+Test Success: False
+Tests Passed: 0
+Tests Failed: 0
+Errors: 0
+Execution Time: 0.13s
+Archive Size: 3
+🔄 Reset to commit: HEAD
+❌ Error applying patch: Command '['git', 'apply']' returned non-zero exit status 128.
+✅ Applied final solution from attempt #3
+🧬 DGM Evolution Generation 1 Complete

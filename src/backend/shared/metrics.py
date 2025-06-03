@@ -102,6 +102,39 @@ class ACGSMetrics:
             ['service', 'verification_type', 'result']
         )
 
+        # LLM specific metrics
+        self.llm_response_time = Histogram(
+            'acgs_llm_response_time_seconds',
+            'LLM response time in seconds',
+            ['service', 'model_name', 'request_type'],
+            buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 20.0, 30.0)
+        )
+        self.llm_error_rate = Counter(
+            'acgs_llm_errors_total',
+            'Total LLM errors',
+            ['service', 'model_name', 'error_type']
+        )
+        self.llm_output_quality_score = Gauge(
+            'acgs_llm_output_quality_score',
+            'LLM output quality score (e.g., semantic faithfulness, factual accuracy)',
+            ['service', 'model_name', 'quality_metric']
+        )
+        self.llm_bias_score = Gauge(
+            'acgs_llm_bias_score',
+            'LLM output bias score',
+            ['service', 'model_name', 'bias_type']
+        )
+        self.llm_fallback_count = Counter(
+            'acgs_llm_fallbacks_total',
+            'Total LLM fallback occurrences',
+            ['service', 'fallback_reason']
+        )
+        self.llm_human_escalation_count = Counter(
+            'acgs_llm_human_escalations_total',
+            'Total LLM human review escalations',
+            ['service', 'escalation_reason']
+        )
+
         # Task 7: Parallel processing metrics
         self.parallel_tasks_total = Counter(
             'acgs_parallel_tasks_total',
@@ -270,6 +303,52 @@ class ACGSMetrics:
             service=self.service_name,
             pool_status=pool_status
         ).set(count)
+
+    def record_llm_response_time(self, model_name: str, request_type: str, duration: float):
+        """Record LLM response time."""
+        self.llm_response_time.labels(
+            service=self.service_name,
+            model_name=model_name,
+            request_type=request_type
+        ).observe(duration)
+
+    def record_llm_error(self, model_name: str, error_type: str):
+        """Record LLM error."""
+        self.llm_error_rate.labels(
+            service=self.service_name,
+            model_name=model_name,
+            error_type=error_type
+        ).inc()
+
+    def set_llm_output_quality_score(self, model_name: str, quality_metric: str, score: float):
+        """Set LLM output quality score."""
+        self.llm_output_quality_score.labels(
+            service=self.service_name,
+            model_name=model_name,
+            quality_metric=quality_metric
+        ).set(score)
+
+    def set_llm_bias_score(self, model_name: str, bias_type: str, score: float):
+        """Set LLM bias score."""
+        self.llm_bias_score.labels(
+            service=self.service_name,
+            model_name=model_name,
+            bias_type=bias_type
+        ).set(score)
+
+    def record_llm_fallback(self, fallback_reason: str):
+        """Record LLM fallback."""
+        self.llm_fallback_count.labels(
+            service=self.service_name,
+            fallback_reason=fallback_reason
+        ).inc()
+
+    def record_llm_human_escalation(self, escalation_reason: str):
+        """Record LLM human escalation."""
+        self.llm_human_escalation_count.labels(
+            service=self.service_name,
+            escalation_reason=escalation_reason
+        ).inc()
 
 # Global metrics instances (will be initialized by each service)
 metrics_registry: Dict[str, ACGSMetrics] = {}
