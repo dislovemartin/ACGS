@@ -8,6 +8,8 @@ from app.api.v1.alphaevolve_integration import router as alphaevolve_router # Ad
 from app.api.v1.mab_optimization import router as mab_router # Added Task 5 MAB
 from app.api.v1.wina_rego_synthesis import router as wina_rego_router # Added Task 17.5 WINA Rego
 from app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance # Added for LLM Reliability Dashboard
+from app.api.v1.multi_model_synthesis import router as multi_model_synthesis_router # Added Task 18 Multi-Model Enhancement
+from app.api.v1.fidelity_monitoring_websocket import router as fidelity_websocket_router # Added Task 19 Real-time Monitoring
 from app.services.ac_client import ac_service_client
 from app.services.integrity_client import integrity_service_client
 from app.services.fv_client import fv_service_client # Added FV client for shutdown
@@ -33,6 +35,8 @@ app.include_router(alphaevolve_router, prefix="/api/v1/alphaevolve", tags=["Alph
 app.include_router(mab_router, prefix="/api/v1/mab", tags=["Multi-Armed Bandit Optimization"]) # Added Task 5
 app.include_router(wina_rego_router, prefix="/api/v1", tags=["WINA Rego Synthesis"]) # Added Task 17.5
 app.include_router(reliability_metrics_router, prefix="/api/v1/reliability", tags=["LLM Reliability Metrics"]) # Added for LLM Reliability Dashboard
+app.include_router(multi_model_synthesis_router, prefix="/api/v1/multi-model", tags=["Multi-Model Policy Synthesis"]) # Added Task 18
+app.include_router(fidelity_websocket_router, prefix="/api/v1", tags=["Real-time Fidelity Monitoring"]) # Added Task 19
 
 @app.on_event("startup")
 async def on_startup():

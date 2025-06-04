@@ -3,7 +3,7 @@ import httpx
 from typing import List, Optional
 from ..schemas import ACPrinciple # Using the schema defined in gs_service
 try:
-    from src.backend.shared.auth import get_service_token, get_auth_headers
+    from shared.auth import get_service_token, get_auth_headers
 except ImportError:
     # Fallback for different import contexts
     from shared.auth import get_service_token, get_auth_headers

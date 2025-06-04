@@ -45,13 +45,13 @@ class LangGraphConfiguration(BaseModel):
     })
     
     fallback_models: Dict[ModelRole, str] = Field(default={
-        ModelRole.CONSTITUTIONAL_PROMPTING: "gemini-2.0-flash",
-        ModelRole.POLICY_SYNTHESIS: "gpt-4o-mini",
+        ModelRole.CONSTITUTIONAL_PROMPTING: "meta-llama/llama-4-maverick-17b-128e-instruct",
+        ModelRole.POLICY_SYNTHESIS: "grok-3-mini",
         ModelRole.CONFLICT_RESOLUTION: "gemini-2.0-flash",
-        ModelRole.BIAS_MITIGATION: "gemini-2.0-flash",
-        ModelRole.REFLECTION: "gemini-2.0-flash",
+        ModelRole.BIAS_MITIGATION: "meta-llama/llama-4-maverick-17b-128e-instruct",
+        ModelRole.REFLECTION: "grok-3-mini",
         ModelRole.AMENDMENT_ANALYSIS: "gemini-2.0-flash",
-        ModelRole.STAKEHOLDER_COMMUNICATION: "gpt-4o-mini",
+        ModelRole.STAKEHOLDER_COMMUNICATION: "grok-3-mini",
         ModelRole.FIDELITY_MONITORING: "gemini-2.0-flash"
     })
     
@@ -92,6 +92,7 @@ class LangGraphConfiguration(BaseModel):
     gemini_api_key: Optional[str] = Field(default=None)
     openai_api_key: Optional[str] = Field(default=None)
     groq_api_key: Optional[str] = Field(default=None)
+    xai_api_key: Optional[str] = Field(default=None)
     
     # Monitoring and alerting
     enable_performance_monitoring: bool = Field(default=True)
@@ -115,6 +116,7 @@ class LangGraphConfiguration(BaseModel):
         gemini_api_key = os.getenv("GEMINI_API_KEY")
         openai_api_key = os.getenv("OPENAI_API_KEY")
         groq_api_key = os.getenv("GROQ_API_KEY")
+        xai_api_key = os.getenv("XAI_API_KEY")
         
         # Get Redis configuration
         redis_url = os.getenv("LANGGRAPH_REDIS_URL", "redis://localhost:6379")
@@ -152,6 +154,7 @@ class LangGraphConfiguration(BaseModel):
             gemini_api_key=gemini_api_key,
             openai_api_key=openai_api_key,
             groq_api_key=groq_api_key,
+            xai_api_key=xai_api_key,
             redis_url=redis_url,
             postgres_url=postgres_url,
             constitutional_fidelity_threshold=constitutional_fidelity_threshold,
@@ -190,7 +193,8 @@ class LangGraphConfiguration(BaseModel):
         return {
             "gemini": self.gemini_api_key is not None,
             "openai": self.openai_api_key is not None,
-            "groq": self.groq_api_key is not None
+            "groq": self.groq_api_key is not None,
+            "xai": self.xai_api_key is not None
         }
     
     def get_redis_key(self, workflow_type: str, workflow_id: str) -> str:

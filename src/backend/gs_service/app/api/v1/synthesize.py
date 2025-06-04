@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any, Optional
 
-from src.backend.shared.database import get_async_db # Added
+from shared.database import get_async_db # Added
 
 # Import schemas and CRUD functions using relative paths
 from ... import schemas as gs_schemas # Goes up 3 levels from v1 to app.

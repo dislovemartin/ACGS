@@ -21,10 +21,10 @@ from datetime import datetime, timezone, timedelta
 logger = logging.getLogger(__name__)
 
 # Import WINA components
-from ....shared.wina import WINACore, WINAConfig, WINAIntegrationConfig
-from ....shared.wina.model_integration import WINAModelIntegrator, WINAOptimizationResult
-from ....shared.wina.config import load_wina_config_from_env
-from ....shared.wina.exceptions import WINAError, WINAOptimizationError
+from shared.wina import WINACore, WINAConfig, WINAIntegrationConfig
+from shared.wina.model_integration import WINAModelIntegrator, WINAOptimizationResult
+from shared.wina.config import load_wina_config_from_env
+from shared.wina.exceptions import WINAError, WINAOptimizationError
 
 # Import WINA components from gs_service.app.wina
 from ..wina.core import analyze_neuron_activations, calculate_wina_weights

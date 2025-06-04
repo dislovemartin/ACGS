@@ -771,7 +771,179 @@ class ConstitutionalValidation(Base):
     constitutional_violations = Column(JSONB, nullable=True)  # Detected violations
 
     # Validation details
-    validation_method = Column(String(100), nullable=True)  # "automated", "human_review", "hybrid"
+    validation_method = Column(String(100), nullable=True)
+    validation_timestamp = Column(DateTime, nullable=True)
+    validation_metadata = Column(JSON, nullable=True)
+
+
+# --- Constitutional Violation Detection Models ---
+
+class ConstitutionalViolation(Base):
+    """Model for tracking constitutional principle violations."""
+    __tablename__ = "constitutional_violations"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    violation_type = Column(String(100), nullable=False, index=True)  # principle_violation, synthesis_failure, enforcement_breach, stakeholder_conflict
+    severity = Column(String(20), nullable=False, index=True)  # low, medium, high, critical
+    principle_id = Column(UUID(as_uuid=True), ForeignKey("constitutional_principles.id"), nullable=True)
+    policy_id = Column(UUID(as_uuid=True), ForeignKey("policies.id"), nullable=True)
+
+    # Violation details
+    violation_description = Column(Text, nullable=False)
+    detection_method = Column(String(100), nullable=False)  # automated, manual, escalated
+    fidelity_score = Column(Numeric(5, 4), nullable=True)  # Constitutional fidelity score at time of violation
+    distance_score = Column(Numeric(5, 4), nullable=True)  # Constitutional distance score
+
+    # Context and metadata
+    context_data = Column(JSON, nullable=True)  # Additional context about the violation
+    detection_metadata = Column(JSON, nullable=True)  # Metadata from detection algorithms
+
+    # Status tracking
+    status = Column(String(50), default="detected", nullable=False, index=True)  # detected, investigating, resolved, escalated
+    resolution_status = Column(String(50), nullable=True)  # auto_resolved, manual_resolved, escalated, dismissed
+    resolution_description = Column(Text, nullable=True)
+
+    # Escalation tracking
+    escalated = Column(Boolean, default=False, nullable=False, index=True)
+    escalation_level = Column(String(50), nullable=True)  # policy_manager, constitutional_council, emergency_response
+    escalated_at = Column(DateTime, nullable=True)
+    escalated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
+    # Audit trail
+    detected_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+    detected_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # User who detected (if manual)
+    resolved_at = Column(DateTime, nullable=True)
+    resolved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Indexes for performance
+    __table_args__ = (
+        Index('idx_violation_type_severity', 'violation_type', 'severity'),
+        Index('idx_violation_status_detected', 'status', 'detected_at'),
+        Index('idx_violation_escalated', 'escalated', 'escalation_level'),
+        Index('idx_violation_principle_policy', 'principle_id', 'policy_id'),
+    )
+
+
+class ViolationAlert(Base):
+    """Model for tracking violation alerts and notifications."""
+    __tablename__ = "violation_alerts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    violation_id = Column(UUID(as_uuid=True), ForeignKey("constitutional_violations.id"), nullable=False)
+
+    # Alert configuration
+    alert_type = Column(String(50), nullable=False, index=True)  # threshold, escalation, notification
+    alert_level = Column(String(20), nullable=False, index=True)  # green, amber, red
+    threshold_value = Column(Numeric(5, 4), nullable=True)  # Threshold that triggered the alert
+
+    # Alert content
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    recommended_actions = Column(JSON, nullable=True)  # List of recommended actions
+
+    # Notification tracking
+    notification_channels = Column(JSON, nullable=True)  # List of channels used for notification
+    notification_status = Column(String(50), default="pending", nullable=False)  # pending, sent, failed, acknowledged
+    notification_attempts = Column(Integer, default=0, nullable=False)
+    last_notification_attempt = Column(DateTime, nullable=True)
+
+    # Response tracking
+    acknowledged = Column(Boolean, default=False, nullable=False)
+    acknowledged_at = Column(DateTime, nullable=True)
+    acknowledged_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    response_actions = Column(JSON, nullable=True)  # Actions taken in response to alert
+
+    # Timestamps
+    created_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Indexes for performance
+    __table_args__ = (
+        Index('idx_alert_type_level', 'alert_type', 'alert_level'),
+        Index('idx_alert_status_created', 'notification_status', 'created_at'),
+        Index('idx_alert_acknowledged', 'acknowledged', 'acknowledged_at'),
+    )
+
+
+class ViolationThreshold(Base):
+    """Model for configurable violation detection thresholds."""
+    __tablename__ = "violation_thresholds"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    threshold_name = Column(String(100), unique=True, nullable=False, index=True)
+    threshold_type = Column(String(50), nullable=False, index=True)  # fidelity_score, violation_count, severity_based
+
+    # Threshold values
+    green_threshold = Column(Numeric(5, 4), nullable=False)  # Normal operation threshold
+    amber_threshold = Column(Numeric(5, 4), nullable=False)  # Warning threshold
+    red_threshold = Column(Numeric(5, 4), nullable=False)    # Critical threshold
+
+    # Configuration
+    enabled = Column(Boolean, default=True, nullable=False)
+    description = Column(Text, nullable=True)
+    configuration = Column(JSON, nullable=True)  # Additional configuration parameters
+
+    # Metadata
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class ViolationEscalation(Base):
+    """Model for tracking violation escalation workflows."""
+    __tablename__ = "violation_escalations"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    violation_id = Column(UUID(as_uuid=True), ForeignKey("constitutional_violations.id"), nullable=False)
+
+    # Escalation details
+    escalation_type = Column(String(50), nullable=False, index=True)  # automatic, manual, threshold_based
+    escalation_level = Column(String(50), nullable=False, index=True)  # policy_manager, constitutional_council, emergency_response
+    escalation_reason = Column(Text, nullable=False)
+
+    # Escalation configuration
+    trigger_conditions = Column(JSON, nullable=True)  # Conditions that triggered escalation
+    escalation_rules = Column(JSON, nullable=True)    # Rules applied for escalation
+
+    # Assignment and notification
+    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    assigned_role = Column(String(50), nullable=True)  # Role required for handling
+    notification_sent = Column(Boolean, default=False, nullable=False)
+    notification_channels = Column(JSON, nullable=True)
+
+    # Status tracking
+    status = Column(String(50), default="pending", nullable=False, index=True)  # pending, assigned, in_progress, resolved, timeout
+    response_time_seconds = Column(Integer, nullable=True)  # Time to first response
+    resolution_time_seconds = Column(Integer, nullable=True)  # Time to resolution
+
+    # Response details
+    response_actions = Column(JSON, nullable=True)  # Actions taken in response
+    resolution_summary = Column(Text, nullable=True)
+
+    # Audit trail
+    escalated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    resolved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
+    # Timestamps
+    escalated_at = Column(DateTime, default=func.now(), nullable=False, index=True)
+    responded_at = Column(DateTime, nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Indexes for performance
+    __table_args__ = (
+        Index('idx_escalation_type_level', 'escalation_type', 'escalation_level'),
+        Index('idx_escalation_status_escalated', 'status', 'escalated_at'),
+        Index('idx_escalation_assigned', 'assigned_to', 'assigned_role'),
+    )), nullable=True)  # "automated", "human_review", "hybrid"
     validator_confidence = Column(Float, nullable=True)  # Confidence in validation (0.0 to 1.0)
 
     # Cross-platform consistency

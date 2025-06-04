@@ -9,7 +9,7 @@ pydantic==2.5.3
 email-validator==2.1.0
 python-jose[cryptography]==3.3.0
 fastapi==0.104.1
-httpx==0.25.2
+httpx==0.28.1
 
 # WINA (Weight Informed Neuron Activation) Dependencies
 numpy==1.24.3

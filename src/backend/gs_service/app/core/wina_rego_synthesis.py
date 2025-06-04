@@ -25,11 +25,11 @@ from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 
 # Import WINA components
-from ....shared.wina import WINACore, WINAConfig, WINAIntegrationConfig
-from ....shared.wina.model_integration import WINAModelIntegrator, WINAOptimizationResult
-from ....shared.wina.config import load_wina_config_from_env
-from ....shared.wina.exceptions import WINAError, WINAOptimizationError
-from ....shared.wina.metrics import WINAMetrics
+from shared.wina import WINACore, WINAConfig, WINAIntegrationConfig
+from shared.wina.model_integration import WINAModelIntegrator, WINAOptimizationResult
+from shared.wina.config import load_wina_config_from_env
+from shared.wina.exceptions import WINAError, WINAOptimizationError
+from shared.wina.metrics import WINAMetrics
 
 # Import GS Engine components
 from .wina_llm_integration import WINAOptimizedLLMClient, WINAOptimizedSynthesisResult
@@ -49,6 +49,12 @@ try:
     ALPHAEVOLVE_AVAILABLE = True
 except ImportError as e:
     ALPHAEVOLVE_AVAILABLE = False
+
+    # Mock PolicySuggestion for when AlphaEvolve is not available
+    class PolicySuggestion:
+        def __init__(self, suggested_policy_code="", confidence_score=0.0):
+            self.suggested_policy_code = suggested_policy_code
+            self.confidence_score = confidence_score
 
 logger = logging.getLogger(__name__)
 

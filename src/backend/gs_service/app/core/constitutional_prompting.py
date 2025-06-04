@@ -14,7 +14,7 @@ from ..services.ac_client import ac_service_client
 # Import WINA constitutional integration
 try:
     import logging
-    from src.backend.shared.wina.constitutional_integration import (
+    from shared.wina.constitutional_integration import (
         WINAConstitutionalPrincipleAnalyzer,
         WINAConstitutionalUpdateService
     )

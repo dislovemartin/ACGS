@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import uuid
 
 # Fix the import to use the full package path
-from src.backend.shared.database import Base
+from shared.database import Base
 
 
 class PromptTemplateModel(Base):
