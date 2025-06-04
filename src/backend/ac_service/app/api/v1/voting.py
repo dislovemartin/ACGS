@@ -22,7 +22,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.deps import get_db_session
+from shared.database import get_async_db as get_db_session
 from ...services.voting_mechanism import (
     ConsensusAlgorithm,
     VoteType,

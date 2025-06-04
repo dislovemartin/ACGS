@@ -19,17 +19,17 @@ from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database import get_db
+from shared.database import get_async_db as get_db
 from ..schemas import (
-    PublicProposalCreate, PublicProposalResponse, PublicFeedbackCreate, 
+    PublicProposalCreate, PublicProposalResponse, PublicFeedbackCreate,
     PublicFeedbackResponse, ConsultationMetricsResponse
 )
 from ..services.public_consultation_service import (
-    PublicConsultationService, PublicProposal, PublicFeedback, 
+    PublicConsultationService, PublicProposal, PublicFeedback,
     StakeholderGroup, FeedbackType, ConsultationStatus
 )
 from ..services.human_in_the_loop_sampler import HumanInTheLoopSampler
-from ..services.auth import get_current_user, require_roles
+from shared.auth import get_current_active_user as get_current_user, require_admin, require_policy_manager
 from shared.models import User
 
 logger = logging.getLogger(__name__)
@@ -366,7 +366,7 @@ async def get_consultation_metrics(
 async def advance_proposal_to_council(
     proposal_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "constitutional_council"]))
+    current_user: User = Depends(require_admin)
 ):
     """
     Advance a public proposal to Constitutional Council consideration.

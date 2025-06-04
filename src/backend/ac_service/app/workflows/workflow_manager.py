@@ -24,13 +24,13 @@ except ImportError:
     END = "END"
     Send = None
 
-from src.backend.shared.langgraph_states import (
+from shared.langgraph_states import (
     ConstitutionalCouncilState,
     WorkflowStatus,
     create_workflow_metadata,
     update_workflow_status
 )
-from src.backend.shared.langgraph_config import (
+from shared.langgraph_config import (
     get_langgraph_config,
     ConstitutionalCouncilConfig,
     ModelRole

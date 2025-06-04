@@ -9,10 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 from datetime import datetime, timedelta
 
-from ...database import get_db
+from shared.database import get_async_db as get_db
 from ... import crud
-from ....shared.auth import get_current_user, require_roles
-from ....shared.models import User
+from shared.auth import get_current_active_user as get_current_user, require_admin, require_policy_manager
+from shared.models import User
 
 # Import QEC enhancement components
 try:
@@ -205,7 +205,7 @@ async def get_active_alerts(
 @router.post("/start-monitoring")
 async def start_monitoring(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin"]))
+    current_user: User = Depends(require_admin)
 ):
     """Start continuous fidelity monitoring."""
     if not QEC_AVAILABLE:
@@ -235,7 +235,7 @@ async def start_monitoring(
 @router.post("/stop-monitoring")
 async def stop_monitoring(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin"]))
+    current_user: User = Depends(require_admin)
 ):
     """Stop continuous fidelity monitoring."""
     if not QEC_AVAILABLE:
@@ -305,7 +305,7 @@ async def get_monitoring_status(
 @router.post("/recalculate")
 async def force_recalculation(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Force immediate recalculation of constitutional fidelity."""
     if not QEC_AVAILABLE:

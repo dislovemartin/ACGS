@@ -175,7 +175,7 @@ async def update_conflict_resolution(
 async def delete_conflict_resolution(
     conflict_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin"]))
+    current_user: User = Depends(require_admin)
 ):
     """Delete a conflict resolution."""
     conflict = await crud.get_ac_conflict_resolution(db, conflict_id)
@@ -252,7 +252,7 @@ async def generate_conflict_patch(
 async def get_conflict_qec_insights(
     conflict_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get QEC insights for a specific conflict resolution."""
     conflict = await crud.get_ac_conflict_resolution(db, conflict_id)

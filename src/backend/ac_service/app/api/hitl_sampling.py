@@ -7,18 +7,18 @@ enabling uncertainty assessment, human oversight triggering, and feedback proces
 
 import logging
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database import get_db
+from shared.database import get_async_db as get_db
 from ..schemas import (
     HITLSamplingRequest, HITLSamplingResult, HITLFeedbackRequest, 
     HITLPerformanceMetrics, UncertaintyMetrics
 )
 from ..services.human_in_the_loop_sampler import HumanInTheLoopSampler, UncertaintyAssessment
 from ..services.hitl_cross_service_integration import HITLCrossServiceIntegrator, CrossServiceConfidenceMetrics
-from ..services.auth import get_current_user, require_roles
+from shared.auth import get_current_active_user as get_current_user, require_admin, require_policy_manager
 from shared.models import User
 
 logger = logging.getLogger(__name__)
@@ -180,7 +180,7 @@ async def trigger_human_oversight(
 async def submit_human_feedback(
     feedback: HITLFeedbackRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager", "constitutional_council"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """
     Submit human feedback on HITL sampling decisions for adaptive learning.
@@ -234,7 +234,7 @@ async def submit_human_feedback(
 
 @router.get("/metrics", response_model=HITLPerformanceMetrics)
 async def get_performance_metrics(
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """
     Get current performance metrics for the HITL sampling system.
@@ -265,7 +265,7 @@ async def get_performance_metrics(
 
 @router.get("/config")
 async def get_hitl_config(
-    current_user: User = Depends(require_roles(["admin"]))
+    current_user: User = Depends(require_admin)
 ):
     """
     Get current HITL sampling configuration.
@@ -302,7 +302,7 @@ async def get_hitl_config(
 @router.put("/config")
 async def update_hitl_config(
     config_updates: Dict[str, Any],
-    current_user: User = Depends(require_roles(["admin"]))
+    current_user: User = Depends(require_admin)
 ):
     """
     Update HITL sampling configuration.
@@ -453,7 +453,7 @@ async def coordinate_cross_service_oversight(
     request: HITLSamplingRequest,
     include_services: Optional[List[str]] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager", "constitutional_council"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """
     Coordinate human oversight across all ACGS-PGP services.
@@ -525,7 +525,7 @@ async def coordinate_cross_service_oversight(
 
 @router.get("/integration-metrics")
 async def get_integration_metrics(
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """
     Get cross-service integration metrics for the HITL sampling system.
