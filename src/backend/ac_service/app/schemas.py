@@ -527,3 +527,158 @@ class HITLPerformanceMetrics(BaseModel):
                 "threshold_adjustments_count": 3
             }
         }
+
+
+# Public Consultation Schemas
+
+class PublicProposalCreate(BaseModel):
+    """Schema for creating a public amendment proposal."""
+    title: str = Field(..., min_length=10, max_length=200, description="Proposal title")
+    description: str = Field(..., min_length=50, max_length=2000, description="Detailed proposal description")
+    proposed_changes: str = Field(..., min_length=20, max_length=1000, description="Specific changes being proposed")
+    justification: str = Field(..., min_length=20, max_length=1000, description="Justification for the proposal")
+    submitter_name: Optional[str] = Field(None, max_length=100, description="Name of the submitter")
+    submitter_email: Optional[str] = Field(None, max_length=100, description="Email of the submitter")
+    submitter_organization: Optional[str] = Field(None, max_length=100, description="Organization of the submitter")
+    stakeholder_group: str = Field(..., description="Stakeholder group (citizen, expert, etc.)")
+    consultation_period_days: Optional[int] = Field(30, ge=7, le=90, description="Consultation period in days")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "Enhanced Privacy Protection Framework",
+                "description": "This proposal aims to strengthen privacy protections for citizens in AI governance systems by implementing comprehensive data protection measures.",
+                "proposed_changes": "Add explicit consent requirements for all data processing in governance decisions and implement data minimization principles.",
+                "justification": "Current privacy protections are insufficient for modern AI governance needs and citizen trust.",
+                "submitter_name": "Dr. Jane Privacy",
+                "submitter_email": "jane@privacyadvocates.org",
+                "submitter_organization": "Digital Rights Foundation",
+                "stakeholder_group": "privacy_advocate",
+                "consultation_period_days": 30
+            }
+        }
+
+
+class PublicProposalResponse(BaseModel):
+    """Schema for public proposal response."""
+    id: int = Field(..., description="Unique proposal identifier")
+    title: str = Field(..., description="Proposal title")
+    description: str = Field(..., description="Detailed proposal description")
+    proposed_changes: str = Field(..., description="Specific changes being proposed")
+    justification: str = Field(..., description="Justification for the proposal")
+    submitter_name: Optional[str] = Field(None, description="Name of the submitter")
+    submitter_organization: Optional[str] = Field(None, description="Organization of the submitter")
+    stakeholder_group: str = Field(..., description="Stakeholder group")
+    status: str = Field(..., description="Current proposal status")
+    created_at: datetime = Field(..., description="Proposal creation timestamp")
+    consultation_period_days: int = Field(..., description="Consultation period in days")
+    public_support_count: int = Field(..., description="Number of public supporters")
+    requires_review: bool = Field(..., description="Whether proposal requires manual review")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "title": "Enhanced Privacy Protection Framework",
+                "description": "Comprehensive proposal for strengthening privacy protections in AI governance.",
+                "proposed_changes": "Add explicit consent requirements and data minimization principles.",
+                "justification": "Current privacy protections are insufficient for modern AI governance needs.",
+                "submitter_name": "Dr. Jane Privacy",
+                "submitter_organization": "Digital Rights Foundation",
+                "stakeholder_group": "privacy_advocate",
+                "status": "open",
+                "created_at": "2024-01-15T10:30:00Z",
+                "consultation_period_days": 30,
+                "public_support_count": 125,
+                "requires_review": False
+            }
+        }
+
+
+class PublicFeedbackCreate(BaseModel):
+    """Schema for creating public feedback."""
+    proposal_id: Optional[int] = Field(None, description="ID of the proposal being commented on")
+    amendment_id: Optional[int] = Field(None, description="ID of the amendment being commented on")
+    feedback_type: Optional[str] = Field(None, description="Type of feedback (support, oppose, suggestion, etc.)")
+    content: str = Field(..., min_length=10, max_length=5000, description="Feedback content")
+    submitter_name: Optional[str] = Field(None, max_length=100, description="Name of the submitter")
+    submitter_email: Optional[str] = Field(None, max_length=100, description="Email of the submitter")
+    stakeholder_group: str = Field(..., description="Stakeholder group of the submitter")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "proposal_id": 1,
+                "feedback_type": "support",
+                "content": "I strongly support this proposal as it addresses critical privacy concerns in AI governance. The proposed changes would significantly improve citizen trust.",
+                "submitter_name": "John Citizen",
+                "submitter_email": "john@example.com",
+                "stakeholder_group": "citizen"
+            }
+        }
+
+
+class PublicFeedbackResponse(BaseModel):
+    """Schema for public feedback response."""
+    id: int = Field(..., description="Unique feedback identifier")
+    proposal_id: Optional[int] = Field(None, description="ID of the related proposal")
+    amendment_id: Optional[int] = Field(None, description="ID of the related amendment")
+    feedback_type: str = Field(..., description="Type of feedback")
+    content: str = Field(..., description="Feedback content")
+    submitter_name: Optional[str] = Field(None, description="Name of the submitter")
+    stakeholder_group: str = Field(..., description="Stakeholder group")
+    sentiment_score: Optional[float] = Field(None, ge=0.0, le=1.0, description="Automated sentiment score")
+    is_verified: bool = Field(..., description="Whether submitter is verified")
+    created_at: datetime = Field(..., description="Feedback creation timestamp")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "proposal_id": 1,
+                "feedback_type": "support",
+                "content": "I strongly support this proposal as it addresses critical privacy concerns.",
+                "submitter_name": "John Citizen",
+                "stakeholder_group": "citizen",
+                "sentiment_score": 0.85,
+                "is_verified": True,
+                "created_at": "2024-01-15T14:30:00Z"
+            }
+        }
+
+
+class ConsultationMetricsResponse(BaseModel):
+    """Schema for consultation metrics response."""
+    total_proposals: int = Field(..., description="Total number of proposals")
+    active_consultations: int = Field(..., description="Number of active consultations")
+    total_participants: int = Field(..., description="Total number of participants")
+    feedback_count: int = Field(..., description="Total feedback items collected")
+    sentiment_distribution: Dict[str, int] = Field(..., description="Distribution of sentiment in feedback")
+    stakeholder_participation: Dict[str, int] = Field(..., description="Participation by stakeholder group")
+    engagement_rate: float = Field(..., ge=0.0, le=1.0, description="Overall engagement rate")
+    completion_rate: float = Field(..., ge=0.0, le=1.0, description="Consultation completion rate")
+    time_period_days: Optional[int] = Field(None, description="Time period for metrics calculation")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "total_proposals": 25,
+                "active_consultations": 8,
+                "total_participants": 342,
+                "feedback_count": 156,
+                "sentiment_distribution": {
+                    "positive": 45,
+                    "neutral": 35,
+                    "negative": 20
+                },
+                "stakeholder_participation": {
+                    "citizen": 60,
+                    "expert": 25,
+                    "civil_society": 10,
+                    "industry": 5
+                },
+                "engagement_rate": 0.75,
+                "completion_rate": 0.68,
+                "time_period_days": 30
+            }
+        }

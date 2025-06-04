@@ -6,6 +6,7 @@ import RegisterPage from './pages/Auth/RegisterPage';
 import ACManagementPage from './pages/AC/ACManagementPage'; // Using actual component
 import PolicySynthesisPage from './pages/Synthesis/PolicySynthesisPage'; // Using actual component
 import PolicyListPage from './pages/Policies/PolicyListPage'; // Using actual component
+import PublicConsultationPage from './pages/PublicConsultation/PublicConsultationPage'; // Public consultation component
 import Layout from './components/Layout/Layout'; // Import Layout
 
 // HomePage component (can be moved to pages/Home/HomePage.js later)
@@ -61,11 +62,15 @@ function App() {
                             path="/policy-synthesis" 
                             element={<ProtectedRoute><PolicySynthesisPage /></ProtectedRoute>} 
                         />
-                        <Route 
-                            path="/policies" 
-                            element={<ProtectedRoute><PolicyListPage /></ProtectedRoute>} 
+                        <Route
+                            path="/policies"
+                            element={<ProtectedRoute><PolicyListPage /></ProtectedRoute>}
                         />
-                        
+                        <Route
+                            path="/public-consultation"
+                            element={<PublicConsultationPage />}
+                        />
+
                         {/* Add more routes as needed */}
                         <Route path="*" element={<div>404 Not Found - Page does not exist</div>} />
                     </Routes>
