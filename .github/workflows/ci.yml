@@ -207,7 +207,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6.5.0
+        uses: docker/build-push-action@v6.18.0
         with:
           context: src/backend/${{ matrix.service }}
           file: src/backend/${{ matrix.service }}/Dockerfile
