@@ -87,10 +87,19 @@ class PolicyRule(Base):
     rule_name = Column(String(255), index=True, nullable=True) # Optional: a human-readable name for the rule, not necessarily unique
     datalog_content = Column(Text, nullable=False, unique=True) # Assuming datalog content should be unique for a given version
     version = Column(Integer, default=1, nullable=False)
-    
+
     # Link to the overarching Policy object this rule belongs to/is derived from (if any)
     policy_id = Column(Integer, ForeignKey("policies.id"), nullable=True)
     policy = relationship("Policy", back_populates="rules")
+
+    # Incremental compilation tracking (Task 8)
+    compilation_hash = Column(String(64), nullable=True, index=True)  # SHA-256 hash for change detection
+    last_compiled_at = Column(DateTime(timezone=True), nullable=True)
+    compilation_status = Column(String(50), default="pending", nullable=False, index=True)  # pending, compiled, failed
+    compilation_metrics = Column(JSONB, nullable=True)  # Performance metrics for compilation
+
+    # Policy version tracking for incremental compilation
+    policy_versions = relationship("PolicyVersion", back_populates="policy_rule", cascade="all, delete-orphan")
 
     source_principle_ids = Column(JSONB, nullable=True) # e.g., [1, 2, 3] - IDs from Principle table
     
@@ -165,7 +174,47 @@ class PolicyTemplate(Base):
     generated_policies = relationship("Policy", back_populates="template")
 
 
-class Policy(Base): 
+class PolicyVersion(Base):
+    """Policy version tracking for incremental compilation (Task 8)"""
+    __tablename__ = "policy_versions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_rule_id = Column(Integer, ForeignKey("policy_rules.id"), nullable=False)
+    policy_rule = relationship("PolicyRule", back_populates="policy_versions")
+
+    version_number = Column(Integer, nullable=False)
+    content_hash = Column(String(64), nullable=False, index=True)  # SHA-256 hash of policy content
+    compilation_hash = Column(String(64), nullable=True, index=True)  # Hash of compiled output
+
+    # Compilation metadata
+    compilation_status = Column(String(50), nullable=False, default="pending", index=True)
+    compilation_time_ms = Column(Float, nullable=True)  # Compilation time in milliseconds
+    compilation_strategy = Column(String(50), nullable=True)  # full, incremental, partial, optimized
+
+    # Version control and rollback support
+    is_active = Column(Boolean, default=False, nullable=False, index=True)
+    is_rollback_point = Column(Boolean, default=False, nullable=False)
+    rollback_reason = Column(Text, nullable=True)
+
+    # Constitutional amendment integration
+    amendment_id = Column(Integer, ForeignKey("ac_amendments.id"), nullable=True)
+    amendment = relationship("ACAmendment")
+
+    # Deployment tracking
+    deployed_at = Column(DateTime(timezone=True), nullable=True)
+    deployment_status = Column(String(50), default="pending", nullable=False, index=True)
+    deployment_metrics = Column(JSONB, nullable=True)
+
+    # Backward compatibility tracking (3-version requirement)
+    compatible_versions = Column(JSONB, nullable=True)  # List of compatible version numbers
+    breaking_changes = Column(JSONB, nullable=True)  # List of breaking changes from previous version
+
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_by_user = relationship("User")
+
+
+class Policy(Base):
     __tablename__ = "policies" # A high-level policy object, potentially composed of multiple rules
 
     id = Column(Integer, primary_key=True, index=True)

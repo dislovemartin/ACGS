@@ -1,0 +1,399 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acgs-pgp-dashboard
+  namespace: acgs-pgp
+  labels:
+    grafana_dashboard: "1"
+data:
+  acgs-pgp-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "ACGS-PGP Production Overview",
+        "tags": ["acgs-pgp", "production", "overview"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Service Availability (SLA: 99.9%)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "avg(up{job=~\"acgs-.*-service\"}) * 100",
+                "legendFormat": "Overall Availability %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 95},
+                    {"color": "green", "value": 99.9}
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "API Response Time (SLA: <200ms)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~\"acgs-.*-service\"}[5m])) * 1000",
+                "legendFormat": "95th Percentile (ms)"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 200},
+                    {"color": "red", "value": 500}
+                  ]
+                },
+                "unit": "ms"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Error Rate (SLA: <1%)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=~\"acgs-.*-service\",status=~\"5..\"}[5m]) / rate(http_requests_total{job=~\"acgs-.*-service\"}[5m]) * 100",
+                "legendFormat": "Error Rate %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 1},
+                    {"color": "red", "value": 5}
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+          },
+          {
+            "id": 4,
+            "title": "Concurrent Users",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"acgs-auth-service\"}[1m]))",
+                "legendFormat": "Active Sessions"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 80},
+                    {"color": "red", "value": 100}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+          },
+          {
+            "id": 5,
+            "title": "Service Response Times",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"acgs-auth-service\"}[5m])) * 1000",
+                "legendFormat": "Auth Service"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"acgs-ac-service\"}[5m])) * 1000",
+                "legendFormat": "AC Service"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"acgs-gs-service\"}[5m])) * 1000",
+                "legendFormat": "GS Service"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"acgs-fv-service\"}[5m])) * 1000",
+                "legendFormat": "FV Service"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "ms",
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 200},
+                    {"color": "red", "value": 500}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+          },
+          {
+            "id": 6,
+            "title": "Request Rate by Service",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"acgs-auth-service\"}[5m])",
+                "legendFormat": "Auth Service"
+              },
+              {
+                "expr": "rate(http_requests_total{job=\"acgs-ac-service\"}[5m])",
+                "legendFormat": "AC Service"
+              },
+              {
+                "expr": "rate(http_requests_total{job=\"acgs-gs-service\"}[5m])",
+                "legendFormat": "GS Service"
+              },
+              {
+                "expr": "rate(http_requests_total{job=\"acgs-fv-service\"}[5m])",
+                "legendFormat": "FV Service"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "reqps"
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acgs-pgp-sla-dashboard
+  namespace: acgs-pgp
+  labels:
+    grafana_dashboard: "1"
+data:
+  acgs-pgp-sla.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "ACGS-PGP SLA Monitoring",
+        "tags": ["acgs-pgp", "sla", "monitoring"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Monthly SLA Compliance",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "avg_over_time(up{job=~\"acgs-.*-service\"}[30d]) * 100",
+                "legendFormat": "{{job}}"
+              }
+            ],
+            "transformations": [
+              {
+                "id": "organize",
+                "options": {
+                  "excludeByName": {},
+                  "indexByName": {},
+                  "renameByName": {
+                    "job": "Service",
+                    "Value": "Uptime %"
+                  }
+                }
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 99},
+                    {"color": "green", "value": 99.9}
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "SLA Breach Incidents",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "increase(prometheus_notifications_total{alertname=\"ServiceDown\"}[1d])",
+                "legendFormat": "Service Down Events"
+              },
+              {
+                "expr": "increase(prometheus_notifications_total{alertname=\"HighResponseTime\"}[1d])",
+                "legendFormat": "High Response Time Events"
+              },
+              {
+                "expr": "increase(prometheus_notifications_total{alertname=\"HighErrorRate\"}[1d])",
+                "legendFormat": "High Error Rate Events"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Performance Metrics vs SLA",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~\"acgs-.*-service\"}[5m])) * 1000",
+                "legendFormat": "95th Percentile Response Time"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "ms",
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 200},
+                    {"color": "red", "value": 500}
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": {"id": "byName", "options": "SLA Threshold"},
+                  "properties": [
+                    {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+                    {"id": "custom.lineStyle", "value": {"dash": [10, 10]}}
+                  ]
+                }
+              ]
+            },
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          }
+        ],
+        "time": {
+          "from": "now-30d",
+          "to": "now"
+        },
+        "refresh": "5m"
+      }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acgs-pgp-business-dashboard
+  namespace: acgs-pgp
+  labels:
+    grafana_dashboard: "1"
+data:
+  acgs-pgp-business.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "ACGS-PGP Business Metrics",
+        "tags": ["acgs-pgp", "business", "metrics"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Policy Synthesis Success Rate",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(acgs_policy_synthesis_success_total[5m]) / rate(acgs_policy_synthesis_total[5m]) * 100",
+                "legendFormat": "Success Rate %"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 85},
+                    {"color": "green", "value": 95}
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Constitutional Council Activity",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(acgs_constitutional_council_decisions_total[1h])",
+                "legendFormat": "Decisions/Hour"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Z3 Verification Performance",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(acgs_z3_verification_duration_seconds_bucket[5m]))",
+                "legendFormat": "95th Percentile (s)"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 30},
+                    {"color": "red", "value": 60}
+                  ]
+                },
+                "unit": "s"
+              }
+            },
+            "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+          },
+          {
+            "id": 4,
+            "title": "LLM Token Usage",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "rate(acgs_llm_tokens_consumed_total[1h])",
+                "legendFormat": "Tokens/Hour"
+              }
+            ],
+            "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+          }
+        ],
+        "time": {
+          "from": "now-24h",
+          "to": "now"
+        },
+        "refresh": "1m"
+      }
+    }

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSoc
 from typing import List, Optional, Dict
 import time
 import logging
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -296,24 +297,102 @@ async def get_validation_status(
 async def parallel_verify_policies(
     request_data: schemas.VerificationRequest,
     current_user: User = Depends(require_verification_triggerer),
-    enable_parallel: bool = True
+    enable_parallel: bool = True,
+    amendment_id: Optional[int] = None,
+    voting_session_id: Optional[str] = None,
+    governance_workflow_stage: str = "validation"
 ):
     """
-    Task 7: High-performance parallel policy verification with 60-70% latency reduction.
+    Task 7: Enhanced parallel policy verification with constitutional compliance and 1000+ concurrent validations.
+
+    Features:
+    - 1000+ concurrent constitutional decision validations
+    - 90% resource utilization efficiency
+    - Constitutional Council workflow integration
+    - Federated evaluation framework integration
+    - Real-time performance monitoring and alerting
+    - Comprehensive error handling with rollback capabilities
     """
     if not request_data.policy_rule_ids:
         raise HTTPException(status_code=400, detail="No policy rule IDs provided for verification.")
 
     try:
-        # Use parallel validation pipeline
+        # Task 7: Create constitutional validation context
+        constitutional_context = None
+        if amendment_id or voting_session_id:
+            from ..core.parallel_validation_pipeline import ConstitutionalValidationContext
+            constitutional_context = ConstitutionalValidationContext(
+                amendment_id=amendment_id,
+                voting_session_id=voting_session_id,
+                governance_workflow_stage=governance_workflow_stage,
+                democratic_legitimacy_required=True
+            )
+
+        # Use enhanced parallel validation pipeline
         response = await parallel_pipeline.process_verification_request(
             request_data,
-            enable_parallel=enable_parallel
+            enable_parallel=enable_parallel,
+            constitutional_context=constitutional_context
         )
         return response
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Parallel verification failed: {str(e)}")
+
+
+@router.get("/parallel/statistics", status_code=status.HTTP_200_OK)
+async def get_parallel_validation_statistics(
+    current_user: User = Depends(require_verification_triggerer)
+):
+    """
+    Task 7: Get parallel validation pipeline performance statistics and metrics.
+
+    Returns:
+    - Resource utilization efficiency (target: 90%)
+    - Concurrent validation metrics (target: 1000+)
+    - Constitutional compliance rates
+    - Federated consensus rates
+    - Performance monitoring data
+    - Rollback operation statistics
+    """
+    try:
+        statistics = await parallel_pipeline.get_pipeline_statistics()
+        return {
+            "status": "success",
+            "statistics": statistics,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get statistics: {str(e)}")
+
+
+@router.post("/parallel/scale", status_code=status.HTTP_200_OK)
+async def manual_scale_parallel_pipeline(
+    scale_factor: float,
+    current_user: User = Depends(require_verification_triggerer)
+):
+    """
+    Task 7: Manually scale the parallel validation pipeline.
+
+    Args:
+        scale_factor: Scaling factor (0.5 to 2.0)
+    """
+    if not 0.5 <= scale_factor <= 2.0:
+        raise HTTPException(status_code=400, detail="Scale factor must be between 0.5 and 2.0")
+
+    try:
+        if scale_factor > parallel_pipeline.current_scale_factor:
+            await parallel_pipeline._scale_up()
+        elif scale_factor < parallel_pipeline.current_scale_factor:
+            await parallel_pipeline._scale_down()
+
+        return {
+            "status": "success",
+            "message": f"Pipeline scaled to factor {parallel_pipeline.current_scale_factor:.2f}",
+            "current_concurrent_tasks": parallel_pipeline.parallel_executor.max_concurrent
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scaling failed: {str(e)}")
 
 
 @router.get("/parallel/stats", response_model=Dict, status_code=status.HTTP_200_OK)

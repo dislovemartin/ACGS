@@ -65,6 +65,7 @@ NGINX_WORKER_CONNECTIONS=1024
 - `POST /auth/logout` - User logout
 - `GET /auth/me` - Get current user profile
 - `GET /auth/csrf-token` - Get CSRF token for form submissions
+- `GET /` - Root endpoint, provides basic service information.
 
 #### Health and Monitoring
 - `GET /health` - Service health check with database connectivity
@@ -168,6 +169,48 @@ curl -X GET https://api.acgs-pgp.example.com/auth/me \
 - `POST /api/v1/alphaevolve/evolve` - Trigger evolutionary optimization
 - `GET /api/v1/alphaevolve/population` - Get current population
 - `GET /api/v1/alphaevolve/metrics` - Get evolution metrics
+
+#### Policy and Template Management
+- `POST /api/v1/policy-management/templates/` - Create a new policy template.
+- `GET /api/v1/policy-management/templates/{template_id}` - Get a specific policy template by ID.
+- `GET /api/v1/policy-management/templates/` - List all policy templates.
+- `PUT /api/v1/policy-management/templates/{template_id}` - Update an existing policy template.
+- `DELETE /api/v1/policy-management/templates/{template_id}` - Delete a policy template.
+- `POST /api/v1/policy-management/policies/` - Create a new policy instance (from template or direct content).
+- `GET /api/v1/policy-management/policies/{policy_id}` - Get a specific policy instance by ID.
+- `GET /api/v1/policy-management/policies/` - List all policy instances.
+- `PUT /api/v1/policy-management/policies/{policy_id}` - Update an existing policy instance.
+- `DELETE /api/v1/policy-management/policies/{policy_id}` - Delete a policy instance.
+
+#### Constitutional Synthesis
+- `POST /api/v1/constitutional/synthesize` - Perform constitutional synthesis using constitutional prompting methodology.
+- `POST /api/v1/constitutional/analyze-context` - Analyze constitutional context for a given target context.
+- `GET /api/v1/constitutional/constitutional-context/{context}` - Get constitutional context information for a specific context.
+- `POST /api/v1/constitutional/environmental-factors` - Add an environmental factor for contextual analysis.
+- `GET /api/v1/constitutional/environmental-factors/{factor_type}` - Get all environmental factors of a specific type.
+- `GET /api/v1/constitutional/adaptation-triggers/{context}` - Get adaptation triggers for a specific context.
+- `GET /api/v1/constitutional/health` - Health check endpoint for constitutional synthesis service.
+
+#### Multi-Armed Bandit (MAB) Optimization
+- `GET /api/v1/mab/status` - Get comprehensive MAB integration status and metrics.
+- `GET /api/v1/mab/metrics` - Get detailed MAB optimization metrics.
+- `GET /api/v1/mab/templates/best` - Get top-performing prompt templates.
+- `POST /api/v1/mab/templates/register` - Register a new prompt template for MAB optimization.
+- `POST /api/v1/mab/synthesize` - Synthesize constitutional policies using MAB-optimized prompts.
+- `PUT /api/v1/mab/config` - Update MAB optimization configuration.
+- `GET /api/v1/mab/templates` - List all registered prompt templates.
+- `GET /api/v1/mab/algorithms` - List available MAB algorithms and their descriptions.
+
+#### WINA Rego Synthesis
+- `POST /api/v1/wina-rego-synthesis/synthesize` - Synthesize a Rego policy with WINA optimization.
+- `POST /api/v1/wina-rego-synthesis/batch` - Batch synthesize multiple Rego policies with WINA optimization.
+- `GET /api/v1/wina-rego-synthesis/performance` - Get WINA Rego synthesis performance metrics and statistics.
+- `DELETE /api/v1/wina-rego-synthesis/cache` - Clear WINA Rego synthesis cache and reset performance tracking.
+- `GET /api/v1/wina-rego-synthesis/health` - Health check endpoint for WINA Rego synthesis service.
+
+#### LLM Reliability Metrics
+- `GET /api/v1/reliability/reliability_metrics` - Retrieves the current reliability metrics from the LLM Reliability Framework.
+- `GET /api/v1/reliability/reliability_metrics/history` - Retrieves the historical reliability metrics from the LLM Reliability Framework.
 
 ### PGC Service (Port 8005)
 

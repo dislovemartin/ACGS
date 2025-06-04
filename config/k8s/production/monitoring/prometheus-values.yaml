@@ -1,0 +1,277 @@
+# Prometheus Operator Values for ACGS-PGP Production
+
+# Global configuration
+global:
+  rbac:
+    create: true
+    pspEnabled: false
+
+# Prometheus configuration
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 2
+    retention: 30d
+    retentionSize: 50GiB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: fast-ssd
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+    
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: 1000m
+      limits:
+        memory: 8Gi
+        cpu: 4000m
+    
+    # Service monitor selector
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        app: acgs-pgp
+    
+    # Rule selector
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector:
+      matchLabels:
+        app: acgs-pgp
+    
+    # Additional scrape configs for ACGS-PGP services
+    additionalScrapeConfigs:
+    - job_name: 'acgs-auth-service'
+      static_configs:
+      - targets: ['auth-service.acgs-pgp.svc.cluster.local:8000']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'acgs-ac-service'
+      static_configs:
+      - targets: ['ac-service.acgs-pgp.svc.cluster.local:8001']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'acgs-integrity-service'
+      static_configs:
+      - targets: ['integrity-service.acgs-pgp.svc.cluster.local:8002']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'acgs-fv-service'
+      static_configs:
+      - targets: ['fv-service.acgs-pgp.svc.cluster.local:8003']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'acgs-gs-service'
+      static_configs:
+      - targets: ['gs-service.acgs-pgp.svc.cluster.local:8004']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'acgs-pgc-service'
+      static_configs:
+      - targets: ['pgc-service.acgs-pgp.svc.cluster.local:8005']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'acgs-ec-service'
+      static_configs:
+      - targets: ['ec-service.acgs-pgp.svc.cluster.local:8006']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    
+    - job_name: 'nginx-gateway'
+      static_configs:
+      - targets: ['nginx-gateway.acgs-pgp.svc.cluster.local:9113']
+      metrics_path: '/metrics'
+      scrape_interval: 15s
+
+# Grafana configuration
+grafana:
+  enabled: true
+  replicas: 2
+  
+  persistence:
+    enabled: true
+    storageClassName: fast-ssd
+    size: 10Gi
+  
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+    limits:
+      memory: 2Gi
+      cpu: 1000m
+  
+  adminPassword: "CHANGE_ME_IN_PRODUCTION"
+  
+  grafana.ini:
+    server:
+      domain: monitoring.acgs-pgp.com
+      root_url: https://monitoring.acgs-pgp.com
+    
+    security:
+      admin_user: admin
+      cookie_secure: true
+      cookie_samesite: strict
+    
+    auth:
+      disable_login_form: false
+      disable_signout_menu: false
+    
+    auth.anonymous:
+      enabled: false
+    
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+  
+  # Dashboard providers
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'acgs-pgp'
+        orgId: 1
+        folder: 'ACGS-PGP'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/acgs-pgp
+  
+  # Dashboard config maps
+  dashboardsConfigMaps:
+    acgs-pgp: "acgs-pgp-dashboard"
+    acgs-pgp-sla: "acgs-pgp-sla-dashboard"
+    acgs-pgp-business: "acgs-pgp-business-dashboard"
+
+# Alertmanager configuration
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 2
+    retention: 120h
+    
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: fast-ssd
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+    
+    # Alertmanager configuration
+    config:
+      global:
+        smtp_smarthost: 'localhost:587'
+        smtp_from: 'alerts@acgs-pgp.com'
+        slack_api_url: 'SLACK_WEBHOOK_URL_PLACEHOLDER'
+      
+      route:
+        group_by: ['alertname', 'cluster', 'service']
+        group_wait: 10s
+        group_interval: 10s
+        repeat_interval: 1h
+        receiver: 'web.hook'
+        routes:
+        - match:
+            severity: critical
+          receiver: 'critical-alerts'
+        - match:
+            severity: warning
+          receiver: 'warning-alerts'
+      
+      receivers:
+      - name: 'web.hook'
+        webhook_configs:
+        - url: 'http://localhost:5001/'
+      
+      - name: 'critical-alerts'
+        slack_configs:
+        - api_url: 'SLACK_WEBHOOK_URL_PLACEHOLDER'
+          channel: '#acgs-pgp-alerts'
+          title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+          text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+          send_resolved: true
+        
+        email_configs:
+        - to: 'admin@acgs-pgp.com'
+          subject: 'CRITICAL Alert: {{ .GroupLabels.alertname }}'
+          body: |
+            {{ range .Alerts }}
+            Alert: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            {{ end }}
+      
+      - name: 'warning-alerts'
+        slack_configs:
+        - api_url: 'SLACK_WEBHOOK_URL_PLACEHOLDER'
+          channel: '#acgs-pgp-warnings'
+          title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+          text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+          send_resolved: true
+
+# Node Exporter
+nodeExporter:
+  enabled: true
+
+# Kube State Metrics
+kubeStateMetrics:
+  enabled: true
+
+# Prometheus Operator
+prometheusOperator:
+  enabled: true
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+# Additional components
+kubeApiServer:
+  enabled: true
+
+kubelet:
+  enabled: true
+
+kubeControllerManager:
+  enabled: true
+
+coreDns:
+  enabled: true
+
+kubeEtcd:
+  enabled: true
+
+kubeScheduler:
+  enabled: true
+
+kubeProxy:
+  enabled: true

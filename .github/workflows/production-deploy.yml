@@ -1,0 +1,331 @@
+name: ACGS-PGP Production Deployment
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment type'
+        required: true
+        default: 'blue-green'
+        type: choice
+        options:
+        - blue-green
+        - rolling
+        - canary
+      target_environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - staging
+        - production
+
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+jobs:
+  pre-deployment-checks:
+    runs-on: ubuntu-latest
+    name: Pre-deployment Checks
+    outputs:
+      should_deploy: ${{ steps.checks.outputs.should_deploy }}
+      deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Create deployment
+        id: deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: '${{ github.event.inputs.target_environment || "production" }}',
+              description: 'ACGS-PGP Production Deployment',
+              auto_merge: false,
+              required_contexts: []
+            });
+            core.setOutput('deployment_id', deployment.data.id);
+
+      - name: Run pre-deployment checks
+        id: checks
+        run: |
+          echo "Running pre-deployment checks..."
+          
+          # Check if all required secrets are available
+          if [ -z "${{ secrets.KUBE_CONFIG_DATA }}" ]; then
+            echo "ERROR: KUBE_CONFIG_DATA secret not found"
+            exit 1
+          fi
+          
+          # Check if this is a valid deployment branch/tag
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Notify deployment start
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🚀 ACGS-PGP Production Deployment Started\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || "production" }}"}' \
+            ${{ env.SLACK_WEBHOOK }} || true
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: pre-deployment-checks
+    if: needs.pre-deployment-checks.outputs.should_deploy == 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3.25.15
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    name: Build and Push Images
+    needs: [pre-deployment-checks, security-scan]
+    if: needs.pre-deployment-checks.outputs.should_deploy == 'true'
+    strategy:
+      matrix:
+        service: ['auth_service', 'ac_service', 'integrity_service', 'fv_service', 'gs_service', 'pgc_service', 'ec_service']
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.4.0
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3.2.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=production-{{sha}},enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.5.0
+        with:
+          context: src/backend/${{ matrix.service }}
+          file: src/backend/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  deploy-blue-green:
+    runs-on: ubuntu-latest
+    name: Blue-Green Deployment
+    needs: [pre-deployment-checks, build-and-push]
+    if: needs.pre-deployment-checks.outputs.should_deploy == 'true' && (github.event.inputs.deployment_type == 'blue-green' || github.event.inputs.deployment_type == '')
+    environment: 
+      name: ${{ github.event.inputs.target_environment || 'production' }}
+      url: https://api.acgs-pgp.com
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          kubectl config current-context
+
+      - name: Deploy to Blue Environment
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          # Update image tags for blue deployment
+          sed -i "s|image: .*auth-service:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/auth_service:production-${{ github.sha }}|g" config/k8s/auth-service.yaml
+          sed -i "s|image: .*ac-service:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ac_service:production-${{ github.sha }}|g" config/k8s/ac-service.yaml
+          sed -i "s|image: .*integrity-service:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/integrity_service:production-${{ github.sha }}|g" config/k8s/integrity-service.yaml
+          sed -i "s|image: .*fv-service:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/fv_service:production-${{ github.sha }}|g" config/k8s/fv-service.yaml
+          sed -i "s|image: .*gs-service:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gs_service:production-${{ github.sha }}|g" config/k8s/gs-service.yaml
+          sed -i "s|image: .*pgc-service:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/pgc_service:production-${{ github.sha }}|g" config/k8s/pgc-service.yaml
+          
+          # Create blue namespace if it doesn't exist
+          kubectl create namespace acgs-pgp-blue --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Deploy to blue environment
+          kubectl apply -f config/k8s/ -n acgs-pgp-blue
+          
+          # Wait for blue deployment to be ready
+          kubectl wait --for=condition=available --timeout=600s deployment --all -n acgs-pgp-blue
+
+      - name: Run Health Checks on Blue
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          # Get blue service endpoints
+          AUTH_ENDPOINT=$(kubectl get service auth-service -n acgs-pgp-blue -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          
+          # Health check script
+          services=("auth-service:8000" "ac-service:8001" "integrity-service:8002" "fv-service:8003" "gs-service:8004" "pgc-service:8005")
+          
+          for service in "${services[@]}"; do
+            service_name=$(echo $service | cut -d':' -f1)
+            service_port=$(echo $service | cut -d':' -f2)
+            
+            echo "Health checking $service_name..."
+            kubectl run health-check-$service_name-$(date +%s) --rm -i --restart=Never --image=curlimages/curl -n acgs-pgp-blue -- \
+              curl -f http://$service_name:$service_port/health --max-time 30
+            
+            if [ $? -ne 0 ]; then
+              echo "❌ Health check failed for $service_name"
+              exit 1
+            fi
+          done
+          
+          echo "✅ All health checks passed"
+
+      - name: Switch Traffic to Blue (Green to Blue)
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          # Update ingress to point to blue services
+          kubectl patch ingress acgs-pgp-ingress -n acgs-pgp -p '{"spec":{"rules":[{"host":"api.acgs-pgp.com","http":{"paths":[{"path":"/","pathType":"Prefix","backend":{"service":{"name":"nginx-gateway","port":{"number":80}}}}]}}]}}'
+          
+          # Update service selectors to point to blue deployment
+          kubectl patch service auth-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"blue"}}}'
+          kubectl patch service ac-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"blue"}}}'
+          kubectl patch service integrity-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"blue"}}}'
+          kubectl patch service fv-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"blue"}}}'
+          kubectl patch service gs-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"blue"}}}'
+          kubectl patch service pgc-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"blue"}}}'
+          
+          echo "✅ Traffic switched to blue environment"
+
+      - name: Post-deployment Verification
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          # Wait for traffic switch to complete
+          sleep 30
+          
+          # Run integration tests against production
+          echo "Running post-deployment verification..."
+          
+          # Test API endpoints
+          curl -f https://api.acgs-pgp.com/api/v1/auth/health --max-time 30
+          curl -f https://api.acgs-pgp.com/api/v1/ac/health --max-time 30
+          curl -f https://api.acgs-pgp.com/api/v1/integrity/health --max-time 30
+          curl -f https://api.acgs-pgp.com/api/v1/fv/health --max-time 30
+          curl -f https://api.acgs-pgp.com/api/v1/gs/health --max-time 30
+          curl -f https://api.acgs-pgp.com/api/v1/pgc/health --max-time 30
+          
+          echo "✅ Post-deployment verification completed"
+
+      - name: Cleanup Green Environment
+        if: success()
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          # Scale down green environment (previous production)
+          kubectl scale deployment --all --replicas=0 -n acgs-pgp-green || true
+          
+          # Clean up old resources after 24 hours (handled by separate cleanup job)
+          echo "Green environment scaled down, cleanup scheduled"
+
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          
+          echo "❌ Deployment failed, initiating rollback..."
+          
+          # Switch traffic back to green (previous production)
+          kubectl patch service auth-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"green"}}}'
+          kubectl patch service ac-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"green"}}}'
+          kubectl patch service integrity-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"green"}}}'
+          kubectl patch service fv-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"green"}}}'
+          kubectl patch service gs-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"green"}}}'
+          kubectl patch service pgc-service -n acgs-pgp -p '{"spec":{"selector":{"deployment":"green"}}}'
+          
+          # Scale down failed blue deployment
+          kubectl scale deployment --all --replicas=0 -n acgs-pgp-blue
+          
+          echo "✅ Rollback completed"
+
+  notify-deployment-result:
+    runs-on: ubuntu-latest
+    name: Notify Deployment Result
+    needs: [pre-deployment-checks, deploy-blue-green]
+    if: always() && needs.pre-deployment-checks.outputs.should_deploy == 'true'
+    steps:
+      - name: Update deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentId = '${{ needs.pre-deployment-checks.outputs.deployment_id }}';
+            const state = '${{ needs.deploy-blue-green.result }}' === 'success' ? 'success' : 'failure';
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deploymentId,
+              state: state,
+              description: state === 'success' ? 'Deployment completed successfully' : 'Deployment failed',
+              environment_url: 'https://api.acgs-pgp.com'
+            });
+
+      - name: Notify success
+        if: needs.deploy-blue-green.result == 'success'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ ACGS-PGP Production Deployment Successful\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || "production" }}\nDeployment URL: https://api.acgs-pgp.com"}' \
+            ${{ env.SLACK_WEBHOOK }} || true
+
+      - name: Notify failure
+        if: needs.deploy-blue-green.result == 'failure'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ ACGS-PGP Production Deployment Failed\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || "production" }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            ${{ env.SLACK_WEBHOOK }} || true

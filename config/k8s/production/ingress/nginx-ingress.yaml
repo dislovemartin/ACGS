@@ -1,0 +1,299 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: acgs-pgp
+  labels:
+    app: nginx-ingress
+    component: load-balancer
+data:
+  nginx.conf: |
+    # Rate limiting zones
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=auth_limit:10m rate=5r/s;
+    limit_req_zone $binary_remote_addr zone=heavy_limit:10m rate=2r/s;
+
+    # Connection limiting
+    limit_conn_zone $binary_remote_addr zone=conn_limit:10m;
+
+    # Upstream configurations with health checks
+    upstream auth_service {
+        least_conn;
+        server auth-service:8000 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+
+    upstream ac_service {
+        least_conn;
+        server ac-service:8001 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+
+    upstream integrity_service {
+        least_conn;
+        server integrity-service:8002 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+
+    upstream fv_service {
+        least_conn;
+        server fv-service:8003 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+
+    upstream gs_service {
+        least_conn;
+        server gs-service:8004 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+    
+    upstream pgc_service {
+        least_conn;
+        server pgc-service:8005 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+
+    upstream ec_service {
+        least_conn;
+        server ec-service:8006 max_fails=3 fail_timeout=30s weight=1;
+        keepalive 32;
+        keepalive_requests 100;
+        keepalive_timeout 60s;
+    }
+
+    # Global settings
+    client_max_body_size 10M;
+    client_body_timeout 60s;
+    client_header_timeout 60s;
+    send_timeout 60s;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+
+    # Logging
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for" '
+                    'rt=$request_time uct="$upstream_connect_time" '
+                    'uht="$upstream_header_time" urt="$upstream_response_time"';
+
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log warn;
+
+    server {
+        listen 80;
+        server_name _;
+        
+        # Redirect HTTP to HTTPS
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        server_name api.acgs-pgp.com;
+
+        # SSL Configuration
+        ssl_certificate /etc/ssl/certs/acgs-pgp.crt;
+        ssl_certificate_key /etc/ssl/private/acgs-pgp.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+        ssl_prefer_server_ciphers off;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 10m;
+
+        # Security headers
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Frame-Options DENY always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+        # Rate limiting
+        limit_conn conn_limit 20;
+        limit_req zone=api_limit burst=20 nodelay;
+
+        # Health check endpoint
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Metrics endpoint (restricted)
+        location /metrics {
+            allow 10.0.0.0/8;
+            allow 172.16.0.0/12;
+            allow 192.168.0.0/16;
+            deny all;
+            
+            proxy_pass http://prometheus:9090/metrics;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Authentication service (stricter rate limiting)
+        location /api/v1/auth/ {
+            limit_req zone=auth_limit burst=5 nodelay;
+            
+            proxy_pass http://auth_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 10s;
+            proxy_read_timeout 10s;
+        }
+
+        # AC Service
+        location /api/v1/ac/ {
+            proxy_pass http://ac_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # Integrity Service
+        location /api/v1/integrity/ {
+            proxy_pass http://integrity_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # FV Service (longer timeouts for Z3 solver)
+        location /api/v1/fv/ {
+            proxy_pass http://fv_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 10s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+        }
+
+        # GS Service (longer timeouts for LLM)
+        location /api/v1/gs/ {
+            proxy_pass http://gs_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 10s;
+            proxy_send_timeout 120s;
+            proxy_read_timeout 120s;
+        }
+
+        # PGC Service (Task 8 incremental compilation)
+        location /api/v1/pgc/ {
+            proxy_pass http://pgc_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # EC Service (WINA optimization)
+        location /api/v1/ec/ {
+            proxy_pass http://ec_service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
+        }
+
+        # WebSocket support for real-time features
+        location /ws/ {
+            proxy_pass http://fv_service;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+        }
+
+        # Static files and frontend
+        location / {
+            proxy_pass http://frontend-service:3000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Error pages
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root /usr/share/nginx/html;
+        }
+    }
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: acgs-pgp-ingress
+  namespace: acgs-pgp
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.acgs-pgp.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.acgs-pgp.com
+    secretName: acgs-pgp-tls
+  rules:
+  - host: api.acgs-pgp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-gateway
+            port:
+              number: 80

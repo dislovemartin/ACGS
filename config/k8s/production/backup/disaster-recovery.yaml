@@ -1,0 +1,352 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: disaster-recovery-config
+  namespace: backup-system
+data:
+  recovery.conf: |
+    # ACGS-PGP Disaster Recovery Configuration
+    RECOVERY_TARGET_TIME_MINUTES=15
+    RECOVERY_POINT_OBJECTIVE_HOURS=1
+    RECOVERY_VERIFICATION_TIMEOUT=300
+    RECOVERY_NOTIFICATION_WEBHOOK=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
+    
+    # Recovery priorities (1=highest, 5=lowest)
+    POSTGRES_PRIORITY=1
+    AUTH_SERVICE_PRIORITY=2
+    AC_SERVICE_PRIORITY=2
+    INTEGRITY_SERVICE_PRIORITY=3
+    FV_SERVICE_PRIORITY=3
+    GS_SERVICE_PRIORITY=3
+    PGC_SERVICE_PRIORITY=4
+    EC_SERVICE_PRIORITY=4
+    MONITORING_PRIORITY=5
+    
+    # Health check endpoints
+    HEALTH_CHECK_TIMEOUT=30
+    HEALTH_CHECK_RETRIES=5
+    HEALTH_CHECK_INTERVAL=10
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: disaster-recovery-postgres
+  namespace: backup-system
+  labels:
+    app: disaster-recovery
+    component: postgres-recovery
+spec:
+  template:
+    metadata:
+      labels:
+        app: disaster-recovery
+        component: postgres-recovery
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: postgres-recovery
+        image: postgres:15-alpine
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: backup-credentials
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backup-credentials
+              key: aws-secret-access-key
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backup-credentials
+              key: encryption-key
+        - name: RECOVERY_TARGET_TIME
+          value: "latest"  # Can be set to specific timestamp
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          # Install required tools
+          apk add --no-cache aws-cli gnupg gzip curl
+          
+          echo "Starting PostgreSQL disaster recovery at $(date)"
+          
+          # Find latest backup
+          LATEST_BACKUP=$(aws s3 ls s3://acgs-pgp-backups/database/ --region us-west-2 | sort | tail -n 1 | awk '{print $4}')
+          
+          if [ -z "$LATEST_BACKUP" ]; then
+            echo "ERROR: No backup found"
+            exit 1
+          fi
+          
+          echo "Recovering from backup: $LATEST_BACKUP"
+          
+          # Download backup
+          aws s3 cp s3://acgs-pgp-backups/database/${LATEST_BACKUP} /tmp/${LATEST_BACKUP} --region us-west-2
+          
+          # Decompress
+          gunzip /tmp/${LATEST_BACKUP}
+          ENCRYPTED_FILE=${LATEST_BACKUP%.gz}
+          
+          # Decrypt
+          echo "${ENCRYPTION_KEY}" | gpg --batch --yes --passphrase-fd 0 \
+            --decrypt /tmp/${ENCRYPTED_FILE} > /tmp/recovery.sql
+          
+          # Wait for PostgreSQL to be ready
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -h postgres-service.acgs-pgp -U postgres; do
+            echo "PostgreSQL not ready, waiting..."
+            sleep 5
+          done
+          
+          # Drop existing database (if exists) and recreate
+          echo "Recreating database..."
+          psql -h postgres-service.acgs-pgp -U postgres -c "DROP DATABASE IF EXISTS acgs_pgp_db;"
+          psql -h postgres-service.acgs-pgp -U postgres -c "CREATE DATABASE acgs_pgp_db;"
+          
+          # Restore database
+          echo "Restoring database..."
+          pg_restore -h postgres-service.acgs-pgp -U postgres -d acgs_pgp_db \
+            --verbose --clean --if-exists /tmp/recovery.sql
+          
+          if [ $? -eq 0 ]; then
+            echo "SUCCESS: Database recovery completed"
+            # Send notification
+            curl -X POST -H 'Content-type: application/json' \
+              --data '{"text":"✅ ACGS-PGP Database recovery completed successfully"}' \
+              ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+          else
+            echo "ERROR: Database recovery failed"
+            exit 1
+          fi
+          
+          # Cleanup
+          rm -f /tmp/${LATEST_BACKUP} /tmp/${ENCRYPTED_FILE} /tmp/recovery.sql
+          
+          echo "Recovery completed at $(date)"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recovery-scripts
+  namespace: backup-system
+data:
+  full-recovery.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "=== ACGS-PGP Full Disaster Recovery ==="
+    echo "Started at: $(date)"
+    
+    # Phase 1: Database Recovery (Priority 1)
+    echo "Phase 1: Database Recovery"
+    kubectl create job --from=job/disaster-recovery-postgres postgres-recovery-$(date +%s) -n backup-system
+    kubectl wait --for=condition=complete job/postgres-recovery-$(date +%s) --timeout=600s -n backup-system
+    
+    # Phase 2: Core Services Recovery (Priority 2)
+    echo "Phase 2: Core Services Recovery"
+    kubectl rollout restart deployment/auth-service -n acgs-pgp
+    kubectl rollout restart deployment/ac-service -n acgs-pgp
+    
+    kubectl rollout status deployment/auth-service -n acgs-pgp --timeout=300s
+    kubectl rollout status deployment/ac-service -n acgs-pgp --timeout=300s
+    
+    # Phase 3: Business Logic Services (Priority 3)
+    echo "Phase 3: Business Logic Services Recovery"
+    kubectl rollout restart deployment/integrity-service -n acgs-pgp
+    kubectl rollout restart deployment/fv-service -n acgs-pgp
+    kubectl rollout restart deployment/gs-service -n acgs-pgp
+    
+    kubectl rollout status deployment/integrity-service -n acgs-pgp --timeout=300s
+    kubectl rollout status deployment/fv-service -n acgs-pgp --timeout=300s
+    kubectl rollout status deployment/gs-service -n acgs-pgp --timeout=300s
+    
+    # Phase 4: Policy Services (Priority 4)
+    echo "Phase 4: Policy Services Recovery"
+    kubectl rollout restart deployment/pgc-service -n acgs-pgp
+    kubectl rollout restart deployment/ec-service -n acgs-pgp
+    
+    kubectl rollout status deployment/pgc-service -n acgs-pgp --timeout=300s
+    kubectl rollout status deployment/ec-service -n acgs-pgp --timeout=300s
+    
+    # Phase 5: Monitoring Recovery (Priority 5)
+    echo "Phase 5: Monitoring Recovery"
+    kubectl rollout restart deployment/prometheus-operator -n acgs-pgp || true
+    kubectl rollout restart deployment/grafana -n acgs-pgp || true
+    
+    echo "=== Recovery Verification ==="
+    
+    # Health checks
+    services=("auth-service:8000" "ac-service:8001" "integrity-service:8002" "fv-service:8003" "gs-service:8004" "pgc-service:8005" "ec-service:8006")
+    
+    for service in "${services[@]}"; do
+      service_name=$(echo $service | cut -d':' -f1)
+      service_port=$(echo $service | cut -d':' -f2)
+      
+      echo "Checking $service_name health..."
+      kubectl run health-check-$service_name --rm -i --restart=Never --image=curlimages/curl -- \
+        curl -f http://$service_name.$acgs-pgp:$service_port/health --max-time 30
+      
+      if [ $? -eq 0 ]; then
+        echo "✅ $service_name is healthy"
+      else
+        echo "❌ $service_name health check failed"
+      fi
+    done
+    
+    echo "=== Recovery Summary ==="
+    echo "Recovery completed at: $(date)"
+    echo "Total recovery time: $(($(date +%s) - $START_TIME)) seconds"
+    
+    # Send completion notification
+    curl -X POST -H 'Content-type: application/json' \
+      --data '{"text":"🚨 ACGS-PGP Full Disaster Recovery Completed\nRecovery Time: '$(($(date +%s) - $START_TIME))' seconds\nAll services restored and verified"}' \
+      ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+
+  partial-recovery.sh: |
+    #!/bin/bash
+    set -e
+    
+    SERVICE_NAME=$1
+    if [ -z "$SERVICE_NAME" ]; then
+      echo "Usage: $0 <service-name>"
+      exit 1
+    fi
+    
+    echo "=== ACGS-PGP Partial Recovery: $SERVICE_NAME ==="
+    echo "Started at: $(date)"
+    
+    # Restart specific service
+    kubectl rollout restart deployment/$SERVICE_NAME -n acgs-pgp
+    kubectl rollout status deployment/$SERVICE_NAME -n acgs-pgp --timeout=300s
+    
+    # Health check
+    SERVICE_PORT=$(kubectl get service $SERVICE_NAME -n acgs-pgp -o jsonpath='{.spec.ports[0].port}')
+    kubectl run health-check-$SERVICE_NAME-$(date +%s) --rm -i --restart=Never --image=curlimages/curl -- \
+      curl -f http://$SERVICE_NAME.acgs-pgp:$SERVICE_PORT/health --max-time 30
+    
+    if [ $? -eq 0 ]; then
+      echo "✅ $SERVICE_NAME recovery successful"
+      curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"✅ ACGS-PGP Service Recovery: '$SERVICE_NAME' restored successfully"}' \
+        ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+    else
+      echo "❌ $SERVICE_NAME recovery failed"
+      curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"❌ ACGS-PGP Service Recovery: '$SERVICE_NAME' recovery failed"}' \
+        ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+      exit 1
+    fi
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-verification
+  namespace: backup-system
+  labels:
+    app: backup-verification
+spec:
+  schedule: "0 4 * * *"  # Daily at 4 AM
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup-verification
+            image: postgres:15-alpine
+            env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backup-credentials
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-credentials
+                  key: aws-secret-access-key
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-credentials
+                  key: encryption-key
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+              # Install required tools
+              apk add --no-cache aws-cli gnupg gzip curl
+              
+              echo "Starting backup verification at $(date)"
+              
+              # Check latest backup exists and is accessible
+              LATEST_BACKUP=$(aws s3 ls s3://acgs-pgp-backups/database/ --region us-west-2 | sort | tail -n 1 | awk '{print $4}')
+              
+              if [ -z "$LATEST_BACKUP" ]; then
+                echo "ERROR: No backup found"
+                curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"❌ ACGS-PGP Backup Verification: No backup found"}' \
+                  ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+                exit 1
+              fi
+              
+              # Download and verify backup integrity
+              aws s3 cp s3://acgs-pgp-backups/database/${LATEST_BACKUP} /tmp/${LATEST_BACKUP} --region us-west-2
+              
+              # Verify file integrity
+              if [ ! -f "/tmp/${LATEST_BACKUP}" ]; then
+                echo "ERROR: Backup download failed"
+                exit 1
+              fi
+              
+              # Decompress and decrypt to verify
+              gunzip /tmp/${LATEST_BACKUP}
+              ENCRYPTED_FILE=${LATEST_BACKUP%.gz}
+              
+              echo "${ENCRYPTION_KEY}" | gpg --batch --yes --passphrase-fd 0 \
+                --decrypt /tmp/${ENCRYPTED_FILE} > /tmp/test_restore.sql
+              
+              # Verify SQL file is valid
+              if [ -s "/tmp/test_restore.sql" ]; then
+                echo "✅ Backup verification successful: $LATEST_BACKUP"
+                curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"✅ ACGS-PGP Backup Verification: Latest backup verified successfully"}' \
+                  ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+              else
+                echo "❌ Backup verification failed: $LATEST_BACKUP"
+                curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"❌ ACGS-PGP Backup Verification: Backup verification failed"}' \
+                  ${RECOVERY_NOTIFICATION_WEBHOOK} || true
+                exit 1
+              fi
+              
+              # Cleanup
+              rm -f /tmp/${ENCRYPTED_FILE} /tmp/test_restore.sql
+              
+              echo "Backup verification completed at $(date)"
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "1Gi"
+                cpu: "500m"

@@ -4,6 +4,7 @@ from app.api.v1.democratic_governance import router as democratic_governance_rou
 from app.api.v1.fidelity_monitor import router as fidelity_monitor_router
 from app.api.v1.principles import router as principles_router
 from app.api.v1.voting import router as voting_router
+from app.api.hitl_sampling import router as hitl_sampling_router
 from fastapi import FastAPI
 
 from shared.metrics import create_metrics_endpoint, get_metrics, metrics_middleware
@@ -39,6 +40,7 @@ app.include_router(
 )
 app.include_router(voting_router, prefix="/api/v1", tags=["Voting Mechanism"])
 app.include_router(democratic_governance_router, prefix="/api/v1")
+app.include_router(hitl_sampling_router, prefix="/api/v1")
 
 
 @app.on_event("startup")

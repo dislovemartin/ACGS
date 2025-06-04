@@ -1,0 +1,230 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alert-rules
+  namespace: acgs-pgp
+  labels:
+    app: prometheus
+    component: monitoring
+data:
+  acgs-pgp-alerts.yml: |
+    groups:
+      - name: acgs-pgp-production-alerts
+        rules:
+          # Critical Service Availability Alerts
+          - alert: ServiceDown
+            expr: up == 0
+            for: 30s
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "ACGS-PGP Service {{ $labels.job }} is down"
+              description: "Service {{ $labels.job }} has been down for more than 30 seconds. Immediate attention required."
+              runbook_url: "https://docs.acgs-pgp.com/runbooks/service-down"
+
+          - alert: HighErrorRate
+            expr: |
+              (
+                rate(http_requests_total{status=~"5.."}[5m]) /
+                rate(http_requests_total[5m])
+              ) > 0.05
+            for: 2m
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "High error rate on {{ $labels.service }}"
+              description: "Service {{ $labels.service }} has error rate above 5% for more than 2 minutes. Current rate: {{ $value | humanizePercentage }}"
+
+          # Performance SLA Alerts (200ms target)
+          - alert: HighResponseTime
+            expr: |
+              histogram_quantile(0.95, 
+                rate(http_request_duration_seconds_bucket[5m])
+              ) > 0.2
+            for: 2m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "High response time on {{ $labels.service }}"
+              description: "Service {{ $labels.service }} 95th percentile response time is {{ $value }}s, above 200ms SLA for more than 2 minutes"
+
+          # Uptime SLA Alerts (99.9% target)
+          - alert: UptimeSLABreach
+            expr: |
+              (
+                avg_over_time(up[1h]) < 0.999
+              )
+            for: 5m
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "Uptime SLA breach for {{ $labels.job }}"
+              description: "Service {{ $labels.job }} uptime is {{ $value | humanizePercentage }} over the last hour, below 99.9% SLA"
+
+          # Authentication & Security Alerts
+          - alert: HighAuthFailureRate
+            expr: |
+              rate(auth_attempts_total{status="failed"}[5m]) > 10
+            for: 3m
+            labels:
+              severity: warning
+              team: security
+            annotations:
+              summary: "High authentication failure rate"
+              description: "Authentication failure rate is {{ $value }} failures/sec for more than 3 minutes. Possible attack in progress."
+
+          - alert: SuspiciousAuthActivity
+            expr: |
+              rate(auth_attempts_total{status="failed"}[1m]) > 50
+            for: 1m
+            labels:
+              severity: critical
+              team: security
+            annotations:
+              summary: "Suspicious authentication activity detected"
+              description: "Extremely high authentication failure rate: {{ $value }} failures/sec. Immediate security review required."
+
+          # Database Performance Alerts
+          - alert: DatabaseConnectionPoolExhaustion
+            expr: |
+              (
+                database_connections_active /
+                database_connections_max
+              ) > 0.9
+            for: 2m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "Database connection pool near exhaustion"
+              description: "Database connection pool utilization is {{ $value | humanizePercentage }} for service {{ $labels.service }}"
+
+          - alert: DatabaseSlowQueries
+            expr: |
+              rate(database_query_duration_seconds{quantile="0.95"}[5m]) > 1
+            for: 3m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "Slow database queries detected"
+              description: "95th percentile database query time is {{ $value }}s for service {{ $labels.service }}"
+
+          # Resource Utilization Alerts
+          - alert: HighCPUUsage
+            expr: |
+              (
+                rate(container_cpu_usage_seconds_total[5m]) * 100
+              ) > 80
+            for: 5m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "High CPU usage on {{ $labels.pod }}"
+              description: "Pod {{ $labels.pod }} CPU usage is {{ $value }}% for more than 5 minutes"
+
+          - alert: HighMemoryUsage
+            expr: |
+              (
+                container_memory_usage_bytes /
+                container_spec_memory_limit_bytes * 100
+              ) > 85
+            for: 5m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "High memory usage on {{ $labels.pod }}"
+              description: "Pod {{ $labels.pod }} memory usage is {{ $value }}% for more than 5 minutes"
+
+          - alert: PodCrashLooping
+            expr: |
+              rate(kube_pod_container_status_restarts_total[15m]) > 0
+            for: 5m
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "Pod {{ $labels.pod }} is crash looping"
+              description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+
+          # Constitutional Compliance Alerts (Task 8 Integration)
+          - alert: ConstitutionalComplianceFailure
+            expr: |
+              rate(constitutional_validation_failures_total[5m]) > 0.01
+            for: 2m
+            labels:
+              severity: critical
+              team: governance
+            annotations:
+              summary: "Constitutional compliance failures detected"
+              description: "Constitutional validation failure rate is {{ $value }} failures/sec. Governance review required."
+
+          - alert: PolicyCompilationFailure
+            expr: |
+              rate(policy_compilation_failures_total[5m]) > 0
+            for: 1m
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "Policy compilation failures in PGC service"
+              description: "Policy compilation failure rate is {{ $value }} failures/sec. Task 8 incremental compilation may be affected."
+
+          # Backup & Recovery Alerts
+          - alert: BackupFailure
+            expr: |
+              time() - backup_last_success_timestamp > 86400
+            for: 1m
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "Database backup failure"
+              description: "Last successful backup was {{ $value | humanizeDuration }} ago. Backup system requires immediate attention."
+
+          - alert: DiskSpaceHigh
+            expr: |
+              (
+                (node_filesystem_size_bytes - node_filesystem_avail_bytes) /
+                node_filesystem_size_bytes * 100
+              ) > 85
+            for: 5m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "High disk usage on {{ $labels.instance }}"
+              description: "Disk usage is {{ $value }}% on {{ $labels.instance }}. Cleanup or expansion required."
+
+          # Network & Connectivity Alerts
+          - alert: HighNetworkLatency
+            expr: |
+              histogram_quantile(0.95, 
+                rate(network_latency_seconds_bucket[5m])
+              ) > 0.1
+            for: 3m
+            labels:
+              severity: warning
+              team: platform
+            annotations:
+              summary: "High network latency detected"
+              description: "95th percentile network latency is {{ $value }}s between services"
+
+          # Load Balancer Health
+          - alert: LoadBalancerUnhealthy
+            expr: |
+              nginx_upstream_server_health{state!="up"} > 0
+            for: 1m
+            labels:
+              severity: critical
+              team: platform
+            annotations:
+              summary: "Load balancer backend unhealthy"
+              description: "Nginx upstream server {{ $labels.server }} is in {{ $labels.state }} state"

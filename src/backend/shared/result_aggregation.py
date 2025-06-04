@@ -341,9 +341,9 @@ class WebSocketStreamer:
         logger.info(f"WebSocket disconnected: {client_id}")
     
     async def send_progress_update(
-        self, 
-        task_id: str, 
-        progress: float, 
+        self,
+        task_id: str,
+        progress: float,
         status: str,
         details: Optional[Dict[str, Any]] = None
     ) -> None:
@@ -356,7 +356,22 @@ class WebSocketStreamer:
             'timestamp': datetime.now(timezone.utc).isoformat(),
             'details': details or {}
         }
-        
+
+        await self._broadcast_message(message)
+
+    async def send_alert(
+        self,
+        alert_type: str,
+        details: Dict[str, Any]
+    ) -> None:
+        """Send alert message to all connected clients."""
+        message = {
+            'type': 'alert',
+            'alert_type': alert_type,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'details': details
+        }
+
         await self._broadcast_message(message)
     
     async def send_result_update(self, result: AggregatedResult) -> None:

@@ -21,12 +21,14 @@ from ....shared.models import User
 
 # Import QEC enhancement components and service
 from ...services.qec_conflict_resolver import QECConflictResolver
+from ...services.conflict_resolution_orchestrator import ConflictResolutionOrchestrator
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Initialize QEC conflict resolver
+# Initialize conflict resolution systems
 qec_resolver = QECConflictResolver()
+orchestrator = ConflictResolutionOrchestrator()
 
 
 @router.post("/", response_model=ACConflictResolution)
@@ -281,3 +283,169 @@ async def get_conflict_qec_insights(
         "qec_metadata": qec_analysis.get("qec_metadata", {}),
         "analysis_timestamp": qec_analysis.get("qec_metadata", {}).get("analysis_timestamp")
     }
+
+
+# New Intelligent Conflict Resolution Endpoints
+
+@router.post("/detect-conflicts")
+async def detect_conflicts(
+    principle_ids: Optional[List[int]] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+):
+    """Run intelligent conflict detection scan."""
+    try:
+        detected_conflicts = await orchestrator.run_conflict_detection_scan(
+            db, principle_ids, current_user.id
+        )
+
+        return {
+            "scan_completed": True,
+            "conflicts_detected": len(detected_conflicts),
+            "conflicts": [
+                {
+                    "conflict_type": conflict.conflict_type.value,
+                    "severity": conflict.severity.value,
+                    "principle_ids": conflict.principle_ids,
+                    "confidence_score": conflict.confidence_score,
+                    "priority_score": conflict.priority_score,
+                    "description": conflict.description,
+                    "recommended_strategy": conflict.recommended_strategy
+                }
+                for conflict in detected_conflicts
+            ],
+            "timestamp": datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Conflict detection scan failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Conflict detection failed: {str(e)}"
+        )
+
+
+@router.post("/{conflict_id}/resolve-automatically")
+async def resolve_conflict_automatically(
+    conflict_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+):
+    """Attempt automatic resolution of a conflict."""
+    try:
+        success, resolution_result, escalation_request = await orchestrator.resolve_conflict_automatically(
+            db, conflict_id, None, current_user.id
+        )
+
+        response = {
+            "conflict_id": conflict_id,
+            "resolution_attempted": True,
+            "success": success,
+            "timestamp": datetime.now().isoformat()
+        }
+
+        if resolution_result:
+            response["resolution_details"] = {
+                "strategy_used": resolution_result.strategy_used.value,
+                "confidence_score": resolution_result.confidence_score,
+                "validation_passed": resolution_result.validation_passed,
+                "processing_time": resolution_result.processing_time,
+                "generated_patch": resolution_result.generated_patch is not None
+            }
+
+        if escalation_request:
+            response["escalation"] = {
+                "escalated": True,
+                "escalation_level": escalation_request.escalation_level.value,
+                "escalation_reason": escalation_request.escalation_reason.value,
+                "urgency_score": escalation_request.urgency_score,
+                "timeout_deadline": escalation_request.timeout_deadline.isoformat()
+            }
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Automatic resolution failed for conflict {conflict_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Automatic resolution failed: {str(e)}"
+        )
+
+
+@router.post("/{conflict_id}/human-intervention")
+async def handle_human_intervention(
+    conflict_id: int,
+    intervention_data: Dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "policy_manager", "constitutional_council"]))
+):
+    """Handle human intervention in conflict resolution."""
+    try:
+        success = await orchestrator.handle_human_intervention(
+            db, conflict_id, intervention_data, current_user.id
+        )
+
+        return {
+            "conflict_id": conflict_id,
+            "intervention_processed": success,
+            "decision": intervention_data.get("decision"),
+            "processed_by": current_user.id,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Human intervention failed for conflict {conflict_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Human intervention failed: {str(e)}"
+        )
+
+
+@router.get("/performance-report")
+async def get_performance_report(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "auditor"]))
+):
+    """Get comprehensive system performance report."""
+    try:
+        report = await orchestrator.get_system_performance_report(db)
+        return report
+
+    except Exception as e:
+        logger.error(f"Performance report generation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Performance report generation failed: {str(e)}"
+        )
+
+
+@router.get("/{conflict_id}/audit-trace")
+async def get_conflict_audit_trace(
+    conflict_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "auditor"]))
+):
+    """Get complete audit trace for a conflict resolution process."""
+    try:
+        trace = await orchestrator.auditor.generate_conflict_trace(db, conflict_id)
+
+        return {
+            "conflict_id": conflict_id,
+            "trace": {
+                "detection_trace": trace.detection_trace,
+                "resolution_attempts": trace.resolution_attempts,
+                "escalation_trace": trace.escalation_trace,
+                "final_outcome": trace.final_outcome,
+                "total_processing_time": trace.total_processing_time,
+                "integrity_verified": trace.integrity_verified,
+                "audit_entries_count": len(trace.audit_entries)
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Audit trace generation failed for conflict {conflict_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Audit trace generation failed: {str(e)}"
+        )

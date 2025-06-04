@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api.v1.enforcement import router as enforcement_router
 from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement_router # Added Phase 2
+from app.api.v1.incremental_compilation import router as incremental_compilation_router # Added Task 8
 from app.core.policy_manager import policy_manager
 from app.services.integrity_client import integrity_service_client
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
@@ -20,6 +21,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Include the API router for policy enforcement
 app.include_router(enforcement_router, prefix="/api/v1/enforcement", tags=["Policy Enforcement"])
 app.include_router(alphaevolve_enforcement_router, prefix="/api/v1/alphaevolve", tags=["AlphaEvolve Enforcement"]) # Added Phase 2
+app.include_router(incremental_compilation_router, prefix="/api/v1/incremental", tags=["Incremental Compilation"]) # Added Task 8
 
 @app.on_event("startup")
 async def on_startup():

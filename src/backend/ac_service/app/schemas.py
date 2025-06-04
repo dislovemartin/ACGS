@@ -357,3 +357,173 @@ class ACConflictResolution(ACConflictResolutionBase):
 
     class Config:
         from_attributes = True
+
+
+# Human-in-the-Loop Sampling Schemas
+
+class UncertaintyMetrics(BaseModel):
+    """Schema for uncertainty metrics in different dimensions."""
+    constitutional: float = Field(..., ge=0.0, le=1.0, description="Constitutional interpretation uncertainty")
+    technical: float = Field(..., ge=0.0, le=1.0, description="Technical implementation uncertainty")
+    stakeholder: float = Field(..., ge=0.0, le=1.0, description="Stakeholder consensus uncertainty")
+    precedent: float = Field(..., ge=0.0, le=1.0, description="Historical precedent uncertainty")
+    complexity: float = Field(..., ge=0.0, le=1.0, description="Overall complexity uncertainty")
+
+
+class HITLSamplingRequest(BaseModel):
+    """Schema for requesting human-in-the-loop sampling assessment."""
+    decision_id: str = Field(..., description="Unique identifier for the decision")
+    decision_context: Dict[str, Any] = Field(..., description="Context information for the decision")
+    ai_confidence: Optional[float] = Field(None, ge=0.0, le=1.0, description="AI confidence score if available")
+    principle_ids: Optional[List[int]] = Field(None, description="Related constitutional principle IDs")
+
+    # Decision characteristics
+    decision_scope: Optional[str] = Field("local", description="Scope of decision (local, service, system, global)")
+    time_pressure: Optional[str] = Field("normal", description="Time pressure level (low, normal, high, critical)")
+    reversibility: Optional[str] = Field("reversible", description="Reversibility (reversible, difficult, irreversible)")
+    impact_magnitude: Optional[str] = Field("low", description="Impact magnitude (low, medium, high, critical)")
+    safety_critical: bool = Field(False, description="Whether decision is safety-critical")
+
+    # Stakeholder information
+    stakeholder_count: Optional[int] = Field(1, ge=1, description="Number of stakeholders involved")
+    stakeholder_diversity: Optional[float] = Field(0.5, ge=0.0, le=1.0, description="Stakeholder diversity score")
+    stakeholder_conflicts: bool = Field(False, description="Whether stakeholder conflicts exist")
+    requires_public_consultation: bool = Field(False, description="Whether public consultation is required")
+
+    # Technical factors
+    multi_service: bool = Field(False, description="Decision affects multiple services")
+    database_changes: bool = Field(False, description="Requires database modifications")
+    external_apis: bool = Field(False, description="Involves external API calls")
+    real_time_processing: bool = Field(False, description="Requires real-time processing")
+    security_implications: bool = Field(False, description="Has security implications")
+    performance_critical: bool = Field(False, description="Performance-critical operation")
+    novel_technology: bool = Field(False, description="Uses novel or experimental technology")
+
+    # Context flags
+    novel_scenario: bool = Field(False, description="Novel scenario without precedent")
+    has_training_data: bool = Field(True, description="AI has relevant training data")
+    domain_expertise_available: bool = Field(True, description="Domain expertise is available")
+    clear_requirements: bool = Field(True, description="Requirements are clear and well-defined")
+    has_implementation_precedent: bool = Field(True, description="Implementation precedent exists")
+    has_stakeholder_feedback: bool = Field(False, description="Previous stakeholder feedback available")
+    escalation_required: bool = Field(False, description="Escalation from conflict resolution")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "decision_id": "policy_update_2024_001",
+                "decision_context": {
+                    "policy_type": "privacy_protection",
+                    "affected_users": 10000,
+                    "regulatory_compliance": True
+                },
+                "ai_confidence": 0.72,
+                "principle_ids": [1, 3, 7],
+                "decision_scope": "system",
+                "safety_critical": True,
+                "stakeholder_count": 5,
+                "stakeholder_conflicts": True
+            }
+        }
+
+
+class HITLSamplingResult(BaseModel):
+    """Schema for human-in-the-loop sampling assessment result."""
+    decision_id: str = Field(..., description="Decision identifier")
+    overall_uncertainty: float = Field(..., ge=0.0, le=1.0, description="Overall uncertainty score")
+    dimensional_uncertainties: UncertaintyMetrics = Field(..., description="Uncertainty by dimension")
+    confidence_score: float = Field(..., ge=0.0, le=1.0, description="AI confidence in decision")
+
+    # Sampling decision
+    requires_human_oversight: bool = Field(..., description="Whether human oversight is required")
+    recommended_oversight_level: str = Field(..., description="Recommended level of oversight")
+    triggers_activated: List[str] = Field(..., description="List of activated sampling triggers")
+
+    # Assessment metadata
+    assessment_timestamp: datetime = Field(..., description="When assessment was performed")
+    assessment_metadata: Dict[str, Any] = Field(..., description="Additional assessment metadata")
+
+    # Performance tracking
+    processing_time_ms: Optional[float] = Field(None, description="Assessment processing time in milliseconds")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "decision_id": "policy_update_2024_001",
+                "overall_uncertainty": 0.78,
+                "dimensional_uncertainties": {
+                    "constitutional": 0.65,
+                    "technical": 0.45,
+                    "stakeholder": 0.85,
+                    "precedent": 0.70,
+                    "complexity": 0.75
+                },
+                "confidence_score": 0.72,
+                "requires_human_oversight": True,
+                "recommended_oversight_level": "constitutional_council",
+                "triggers_activated": ["high_uncertainty", "stakeholder_conflict", "safety_critical"],
+                "assessment_timestamp": "2024-01-15T10:30:00Z"
+            }
+        }
+
+
+class HITLFeedbackRequest(BaseModel):
+    """Schema for submitting human feedback on HITL sampling decisions."""
+    assessment_id: str = Field(..., description="ID of the original assessment")
+    human_decision: Dict[str, Any] = Field(..., description="Human decision and reasoning")
+    agreed_with_assessment: bool = Field(..., description="Whether human agreed with AI assessment")
+    reasoning: Optional[str] = Field(None, description="Human reasoning for the decision")
+    quality_score: Optional[float] = Field(0.8, ge=0.0, le=1.0, description="Quality score for the decision")
+    feedback_metadata: Optional[Dict[str, Any]] = Field(None, description="Additional feedback metadata")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "assessment_id": "policy_update_2024_001",
+                "human_decision": {
+                    "oversight_needed": True,
+                    "final_decision": "approved_with_conditions",
+                    "conditions": ["additional_stakeholder_review", "security_audit"]
+                },
+                "agreed_with_assessment": True,
+                "reasoning": "Assessment correctly identified stakeholder conflicts requiring Constitutional Council review",
+                "quality_score": 0.9
+            }
+        }
+
+
+class HITLPerformanceMetrics(BaseModel):
+    """Schema for HITL sampling performance metrics."""
+    total_assessments: int = Field(..., description="Total number of assessments performed")
+    human_oversight_triggered: int = Field(..., description="Number of times human oversight was triggered")
+    oversight_rate: float = Field(..., ge=0.0, le=1.0, description="Rate of human oversight triggers")
+    accuracy_rate: float = Field(..., ge=0.0, le=1.0, description="Accuracy rate of oversight predictions")
+    false_positive_rate: float = Field(..., ge=0.0, le=1.0, description="False positive rate")
+    recent_accuracy: float = Field(..., ge=0.0, le=1.0, description="Recent accuracy (last 50 assessments)")
+    recent_quality: float = Field(..., ge=0.0, le=1.0, description="Recent decision quality score")
+
+    # Configuration
+    current_thresholds: Dict[str, float] = Field(..., description="Current uncertainty and confidence thresholds")
+    learning_enabled: bool = Field(..., description="Whether adaptive learning is enabled")
+    feedback_samples: int = Field(..., description="Number of feedback samples collected")
+    threshold_adjustments_count: int = Field(..., description="Number of threshold adjustments made")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "total_assessments": 1250,
+                "human_oversight_triggered": 187,
+                "oversight_rate": 0.15,
+                "accuracy_rate": 0.94,
+                "false_positive_rate": 0.04,
+                "recent_accuracy": 0.96,
+                "recent_quality": 0.88,
+                "current_thresholds": {
+                    "uncertainty_threshold": 0.75,
+                    "confidence_threshold": 0.75
+                },
+                "learning_enabled": True,
+                "feedback_samples": 89,
+                "threshold_adjustments_count": 3
+            }
+        }

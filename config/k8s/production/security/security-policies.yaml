@@ -1,0 +1,423 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security-system
+  labels:
+    name: security-system
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: acgs-pgp-network-policy
+  namespace: acgs-pgp
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: nginx-ingress
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    - podSelector:
+        matchLabels:
+          app: nginx-gateway
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8001
+    - protocol: TCP
+      port: 8002
+    - protocol: TCP
+      port: 8003
+    - protocol: TCP
+      port: 8004
+    - protocol: TCP
+      port: 8005
+    - protocol: TCP
+      port: 8006
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS
+    - protocol: TCP
+      port: 53   # DNS
+    - protocol: UDP
+      port: 53   # DNS
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-network-policy
+  namespace: acgs-pgp
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: auth-service
+    - podSelector:
+        matchLabels:
+          app: ac-service
+    - podSelector:
+        matchLabels:
+          app: integrity-service
+    - podSelector:
+        matchLabels:
+          app: fv-service
+    - podSelector:
+        matchLabels:
+          app: gs-service
+    - podSelector:
+        matchLabels:
+          app: pgc-service
+    - podSelector:
+        matchLabels:
+          app: ec-service
+    - namespaceSelector:
+        matchLabels:
+          name: backup-system
+    ports:
+    - protocol: TCP
+      port: 5432
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monitoring-network-policy
+  namespace: acgs-pgp
+spec:
+  podSelector:
+    matchLabels:
+      app: prometheus
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    - podSelector:
+        matchLabels:
+          app: grafana
+    ports:
+    - protocol: TCP
+      port: 9090
+  egress:
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8001
+    - protocol: TCP
+      port: 8002
+    - protocol: TCP
+      port: 8003
+    - protocol: TCP
+      port: 8004
+    - protocol: TCP
+      port: 8005
+    - protocol: TCP
+      port: 8006
+    - protocol: TCP
+      port: 9113  # Nginx metrics
+
+---
+apiVersion: v1
+kind: SecurityContext
+metadata:
+  name: acgs-pgp-security-context
+  namespace: acgs-pgp
+spec:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+    - ALL
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: acgs-pgp-psp
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: true
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: acgs-pgp
+  name: acgs-pgp-role
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: acgs-pgp-rolebinding
+  namespace: acgs-pgp
+subjects:
+- kind: ServiceAccount
+  name: acgs-pgp-service-account
+  namespace: acgs-pgp
+roleRef:
+  kind: Role
+  name: acgs-pgp-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: acgs-pgp-service-account
+  namespace: acgs-pgp
+automountServiceAccountToken: false
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-scan
+  namespace: security-system
+  labels:
+    app: security-scan
+spec:
+  schedule: "0 1 * * *"  # Daily at 1 AM
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: trivy-scanner
+            image: aquasec/trivy:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+              echo "Starting security scan at $(date)"
+              
+              # Scan all ACGS-PGP images
+              images=(
+                "auth-service:latest"
+                "ac-service:latest"
+                "integrity-service:latest"
+                "fv-service:latest"
+                "gs-service:latest"
+                "pgc-service:latest"
+                "ec-service:latest"
+              )
+              
+              for image in "${images[@]}"; do
+                echo "Scanning $image..."
+                trivy image --format json --output /tmp/${image//[\/:]/_}_scan.json $image || true
+              done
+              
+              # Scan Kubernetes configurations
+              echo "Scanning Kubernetes configurations..."
+              trivy config --format json --output /tmp/k8s_config_scan.json /etc/kubernetes/ || true
+              
+              # Generate summary report
+              echo "Generating security report..."
+              cat > /tmp/security_report.json << EOF
+              {
+                "scan_date": "$(date -Iseconds)",
+                "scan_type": "comprehensive",
+                "images_scanned": ${#images[@]},
+                "k8s_config_scanned": true,
+                "report_location": "/tmp/security_reports/"
+              }
+              EOF
+              
+              echo "Security scan completed at $(date)"
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "200m"
+              limits:
+                memory: "2Gi"
+                cpu: "1000m"
+            volumeMounts:
+            - name: scan-results
+              mountPath: /tmp
+          volumes:
+          - name: scan-results
+            emptyDir: {}
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: compliance-check
+  namespace: security-system
+  labels:
+    app: compliance-check
+spec:
+  schedule: "0 6 * * 1"  # Weekly on Monday at 6 AM
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: compliance-service-account
+          containers:
+          - name: compliance-checker
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+              echo "Starting compliance check at $(date)"
+              
+              # Check Pod Security Standards
+              echo "Checking Pod Security Standards..."
+              kubectl get pods -n acgs-pgp -o json | jq -r '.items[] | select(.spec.securityContext.runAsNonRoot != true) | .metadata.name' > /tmp/non_compliant_pods.txt
+              
+              # Check Network Policies
+              echo "Checking Network Policies..."
+              kubectl get networkpolicies -n acgs-pgp --no-headers | wc -l > /tmp/network_policies_count.txt
+              
+              # Check RBAC
+              echo "Checking RBAC..."
+              kubectl auth can-i --list --as=system:serviceaccount:acgs-pgp:acgs-pgp-service-account -n acgs-pgp > /tmp/rbac_permissions.txt
+              
+              # Check Resource Limits
+              echo "Checking Resource Limits..."
+              kubectl get pods -n acgs-pgp -o json | jq -r '.items[] | select(.spec.containers[].resources.limits == null) | .metadata.name' > /tmp/no_limits_pods.txt
+              
+              # Generate compliance report
+              cat > /tmp/compliance_report.json << EOF
+              {
+                "check_date": "$(date -Iseconds)",
+                "namespace": "acgs-pgp",
+                "non_compliant_pods": $(cat /tmp/non_compliant_pods.txt | wc -l),
+                "network_policies": $(cat /tmp/network_policies_count.txt),
+                "pods_without_limits": $(cat /tmp/no_limits_pods.txt | wc -l),
+                "overall_score": "$(if [ $(cat /tmp/non_compliant_pods.txt | wc -l) -eq 0 ] && [ $(cat /tmp/no_limits_pods.txt | wc -l) -eq 0 ]; then echo 'PASS'; else echo 'FAIL'; fi)"
+              }
+              EOF
+              
+              echo "Compliance check completed at $(date)"
+              cat /tmp/compliance_report.json
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: compliance-service-account
+  namespace: security-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: compliance-checker
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["authorization.k8s.io"]
+  resources: ["subjectaccessreviews"]
+  verbs: ["create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: compliance-checker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: compliance-checker
+subjects:
+- kind: ServiceAccount
+  name: compliance-service-account
+  namespace: security-system

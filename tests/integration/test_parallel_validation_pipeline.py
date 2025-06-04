@@ -288,18 +288,23 @@ async def test_parallel_validation_performance():
 
 @pytest.mark.asyncio
 async def test_concurrent_request_handling():
-    """Test handling of 50+ concurrent validation requests."""
+    """Test handling of 1000+ concurrent validation requests (Task 7 enhancement)."""
     try:
         from src.backend.fv_service.app.core.parallel_validation_pipeline import (
             ParallelValidationPipeline, PipelineConfig
         )
         from src.backend.fv_service.app.schemas import VerificationRequest
-        
+
+        # Task 7: Enhanced configuration for 1000+ concurrent validations
         config = PipelineConfig(
-            max_concurrent_tasks=50,
-            max_batch_size=10,
+            max_concurrent_tasks=1000,
+            max_batch_size=100,
             default_timeout_seconds=10.0,
-            enable_celery=False
+            enable_celery=False,
+            target_resource_utilization=0.90,
+            enable_adaptive_scaling=True,
+            enable_constitutional_validation=True,
+            enable_federated_validation=True
         )
         
         pipeline = ParallelValidationPipeline(config)
@@ -409,6 +414,245 @@ async def test_redis_caching_integration():
         pytest.fail(f"Redis caching test failed: {e}")
 
 
+@pytest.mark.asyncio
+async def test_constitutional_validation_integration():
+    """Test Task 7 constitutional validation integration."""
+    try:
+        from src.backend.fv_service.app.core.parallel_validation_pipeline import (
+            ParallelValidationPipeline, PipelineConfig, ConstitutionalValidationContext
+        )
+        from src.backend.fv_service.app.schemas import VerificationRequest, PolicyRuleRef
+
+        config = PipelineConfig(
+            enable_constitutional_validation=True,
+            constitutional_compliance_threshold=0.85
+        )
+
+        pipeline = ParallelValidationPipeline(config)
+
+        # Create constitutional context
+        constitutional_context = ConstitutionalValidationContext(
+            amendment_id=1,
+            voting_session_id="test_session_123",
+            governance_workflow_stage="validation",
+            democratic_legitimacy_required=True,
+            constitutional_principles=[
+                {
+                    "id": 1,
+                    "name": "fairness_principle",
+                    "compliance_threshold": 0.9
+                }
+            ]
+        )
+
+        # Mock service clients
+        with patch('src.backend.fv_service.app.services.integrity_client.integrity_service_client') as mock_integrity, \
+             patch('src.backend.fv_service.app.services.ac_client.ac_service_client') as mock_ac:
+
+            mock_integrity.get_policy_rules_by_ids = AsyncMock(return_value=[
+                MagicMock(id=1, content='test_rule')
+            ])
+            mock_ac.get_principles_by_ids = AsyncMock(return_value=[])
+
+            request = VerificationRequest(
+                policy_rule_refs=[PolicyRuleRef(id=1, version=1)],
+                ac_principle_refs=[]
+            )
+
+            # Test constitutional validation
+            response = await pipeline.process_verification_request(
+                request,
+                enable_parallel=True,
+                constitutional_context=constitutional_context
+            )
+
+            assert response is not None
+            assert response.overall_status in ["all_verified", "constitutional_violation"]
+
+            print("✅ Constitutional validation integration test successful")
+
+    except ImportError as e:
+        pytest.skip(f"Constitutional validation components not available: {e}")
+    except Exception as e:
+        pytest.fail(f"Constitutional validation test failed: {e}")
+
+
+@pytest.mark.asyncio
+async def test_resource_monitoring_and_adaptive_scaling():
+    """Test Task 7 resource monitoring and adaptive scaling."""
+    try:
+        from src.backend.fv_service.app.core.parallel_validation_pipeline import (
+            ResourceMonitor, PipelineConfig, ResourceMetrics
+        )
+
+        config = PipelineConfig(
+            enable_adaptive_scaling=True,
+            target_resource_utilization=0.90,
+            resource_monitoring_interval=1
+        )
+
+        monitor = ResourceMonitor(config)
+
+        # Test resource monitoring
+        monitor.start_monitoring()
+
+        # Wait for some metrics to be collected
+        await asyncio.sleep(2)
+
+        current_metrics = monitor.get_current_metrics()
+        assert current_metrics is not None
+        assert isinstance(current_metrics.cpu_percent, float)
+        assert isinstance(current_metrics.memory_percent, float)
+        assert isinstance(current_metrics.utilization_efficiency, float)
+
+        # Test scaling decisions
+        scaling_up = monitor.should_scale_up()
+        scaling_down = monitor.should_scale_down()
+
+        # At least one should be false (can't scale both ways simultaneously)
+        assert not (scaling_up and scaling_down)
+
+        monitor.stop_monitoring()
+
+        print("✅ Resource monitoring and adaptive scaling test successful")
+
+    except ImportError as e:
+        pytest.skip(f"Resource monitoring components not available: {e}")
+    except Exception as e:
+        pytest.fail(f"Resource monitoring test failed: {e}")
+
+
+@pytest.mark.asyncio
+async def test_federated_validation_integration():
+    """Test Task 7 federated validation integration."""
+    try:
+        from src.backend.fv_service.app.core.parallel_validation_pipeline import (
+            ParallelValidationPipeline, PipelineConfig
+        )
+        from src.backend.fv_service.app.schemas import VerificationRequest, PolicyRuleRef
+
+        config = PipelineConfig(
+            enable_federated_validation=True,
+            federated_consensus_threshold=0.75,
+            max_federated_nodes=5
+        )
+
+        pipeline = ParallelValidationPipeline(config)
+
+        # Mock federated coordinator
+        mock_coordinator = AsyncMock()
+        mock_coordinator.coordinate_evaluation = AsyncMock(return_value="test_task_123")
+        mock_coordinator.get_evaluation_result = AsyncMock(return_value={
+            'status': 'completed',
+            'consensus_level': 0.85,
+            'individual_results': [
+                {
+                    'policy_rule_id': 1,
+                    'status': 'verified',
+                    'message': 'Federated validation successful'
+                }
+            ]
+        })
+
+        pipeline.federated_coordinator = mock_coordinator
+
+        # Test federated validation with multiple rules (triggers federated processing)
+        request = VerificationRequest(
+            policy_rule_refs=[PolicyRuleRef(id=i, version=1) for i in range(1, 6)],  # 5 rules
+            ac_principle_refs=[]
+        )
+
+        with patch('src.backend.fv_service.app.services.integrity_client.integrity_service_client') as mock_integrity:
+            mock_integrity.get_policy_rules_by_ids = AsyncMock(return_value=[
+                MagicMock(id=i, content=f'rule_{i}') for i in range(1, 6)
+            ])
+
+            response = await pipeline.process_verification_request(request, enable_parallel=True)
+
+            assert response is not None
+            assert "federated" in response.overall_status
+            assert pipeline.pipeline_metrics['federated_consensus_rate'] > 0
+
+            print("✅ Federated validation integration test successful")
+
+    except ImportError as e:
+        pytest.skip(f"Federated validation components not available: {e}")
+    except Exception as e:
+        pytest.fail(f"Federated validation test failed: {e}")
+
+
+@pytest.mark.asyncio
+async def test_performance_monitoring_and_alerting():
+    """Test Task 7 performance monitoring and alerting."""
+    try:
+        from src.backend.fv_service.app.core.parallel_validation_pipeline import (
+            ParallelValidationPipeline, PipelineConfig
+        )
+
+        config = PipelineConfig(
+            enable_performance_monitoring=True,
+            performance_alert_threshold_ms=100.0,  # Low threshold for testing
+            enable_websocket_streaming=True
+        )
+
+        pipeline = ParallelValidationPipeline(config)
+
+        # Test performance alert triggering
+        request_id = "test_request_123"
+        high_latency = 150.0  # Above threshold
+
+        # Mock WebSocket streamer
+        with patch('src.backend.shared.result_aggregation.websocket_streamer') as mock_streamer:
+            mock_streamer.send_alert = AsyncMock()
+
+            await pipeline._trigger_performance_alert(request_id, high_latency)
+
+            # Verify alert was triggered
+            mock_streamer.send_alert.assert_called_once()
+            call_args = mock_streamer.send_alert.call_args
+            assert call_args[1]['alert_type'] == 'performance_degradation'
+            assert call_args[1]['details']['latency_ms'] == high_latency
+
+            print("✅ Performance monitoring and alerting test successful")
+
+    except ImportError as e:
+        pytest.skip(f"Performance monitoring components not available: {e}")
+    except Exception as e:
+        pytest.fail(f"Performance monitoring test failed: {e}")
+
+
+@pytest.mark.asyncio
+async def test_rollback_mechanisms():
+    """Test Task 7 rollback mechanisms for failed operations."""
+    try:
+        from src.backend.fv_service.app.core.parallel_validation_pipeline import (
+            ParallelValidationPipeline, PipelineConfig
+        )
+
+        config = PipelineConfig()
+        pipeline = ParallelValidationPipeline(config)
+
+        # Add a task to active tasks
+        request_id = "test_request_rollback"
+        pipeline.active_tasks[request_id] = MagicMock()
+
+        initial_rollback_count = pipeline.pipeline_metrics['rollback_operations']
+
+        # Test rollback
+        await pipeline._attempt_rollback(request_id, "Test error")
+
+        # Verify rollback was performed
+        assert request_id not in pipeline.active_tasks
+        assert pipeline.pipeline_metrics['rollback_operations'] == initial_rollback_count + 1
+
+        print("✅ Rollback mechanisms test successful")
+
+    except ImportError as e:
+        pytest.skip(f"Rollback mechanism components not available: {e}")
+    except Exception as e:
+        pytest.fail(f"Rollback mechanisms test failed: {e}")
+
+
 if __name__ == "__main__":
     # Run tests individually for debugging
     asyncio.run(test_parallel_validation_pipeline_initialization())
@@ -418,5 +662,12 @@ if __name__ == "__main__":
     asyncio.run(test_parallel_validation_performance())
     asyncio.run(test_concurrent_request_handling())
     asyncio.run(test_redis_caching_integration())
-    
-    print("\n🎉 All parallel validation pipeline tests completed successfully!")
+
+    # Task 7 enhanced tests
+    asyncio.run(test_constitutional_validation_integration())
+    asyncio.run(test_resource_monitoring_and_adaptive_scaling())
+    asyncio.run(test_federated_validation_integration())
+    asyncio.run(test_performance_monitoring_and_alerting())
+    asyncio.run(test_rollback_mechanisms())
+
+    print("\n🎉 All parallel validation pipeline tests (including Task 7 enhancements) completed successfully!")

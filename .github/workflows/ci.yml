@@ -259,11 +259,103 @@ jobs:
             docs/research/AlphaEvolve-ACGS_Integration_System/*.pdf
           if-no-files-found: warn
 
+  # Adversarial Testing Framework
+  adversarial_tests:
+    runs-on: ubuntu-latest
+    name: Adversarial Security Testing
+    needs: [preflight, build_images]
+    if: needs.preflight.outputs.should_run_tests == 'true'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_USER: testuser
+          POSTGRES_DB: acgs_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.1.1
+        with:
+          python-version: '3.11'
+
+      - name: Install security scanning tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety semgrep
+          # Install Trivy
+          sudo apt-get update
+          sudo apt-get install wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy
+
+      - name: Install project dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio aiohttp psutil
+
+      - name: Create adversarial test directories
+        run: |
+          mkdir -p tests/adversarial/logs
+          mkdir -p tests/adversarial/reports
+
+      - name: Start ACGS-PGP services
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 30  # Wait for services to start
+
+      - name: Run adversarial testing framework
+        run: |
+          python tests/adversarial/test_adversarial_framework.py
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          TESTING: true
+          DATABASE_URL: postgresql+asyncpg://testuser:testpass@localhost:5432/acgs_test
+
+      - name: Upload adversarial test reports
+        uses: actions/upload-artifact@v4.3.4
+        if: always()
+        with:
+          name: adversarial-test-reports
+          path: |
+            tests/adversarial/reports/
+            tests/adversarial/logs/
+          retention-days: 30
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4.3.4
+        if: always()
+        with:
+          name: security-scan-results
+          path: |
+            bandit-report.json
+            safety-report.json
+            semgrep-report.json
+            trivy-report.json
+          if-no-files-found: ignore
+
+      - name: Stop ACGS-PGP services
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down
+
   # Integration tests
   integration_tests:
     runs-on: ubuntu-latest
     name: Integration Tests
-    needs: [preflight, build_images]
+    needs: [preflight, build_images, adversarial_tests]
     if: needs.preflight.outputs.should_run_tests == 'true'
     services:
       postgres:

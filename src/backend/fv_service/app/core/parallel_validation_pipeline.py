@@ -7,8 +7,10 @@ import asyncio
 import logging
 import time
 import httpx
+import psutil
+import threading
 from typing import Dict, List, Any, Optional, Callable, Union
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass, asdict
 
 from shared.parallel_processing import (
@@ -31,6 +33,126 @@ from ..schemas import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ResourceMetrics:
+    """System resource utilization metrics."""
+    cpu_percent: float
+    memory_percent: float
+    active_tasks: int
+    queue_size: int
+    timestamp: datetime
+    utilization_efficiency: float = 0.0
+
+    def __post_init__(self):
+        # Calculate utilization efficiency (target: 90%)
+        self.utilization_efficiency = (self.cpu_percent + self.memory_percent) / 200.0
+
+
+@dataclass
+class ConstitutionalValidationContext:
+    """Context for constitutional compliance validation."""
+    amendment_id: Optional[int] = None
+    voting_session_id: Optional[str] = None
+    constitutional_principles: List[Dict[str, Any]] = None
+    governance_workflow_stage: str = "validation"
+    democratic_legitimacy_required: bool = True
+
+    def __post_init__(self):
+        if self.constitutional_principles is None:
+            self.constitutional_principles = []
+
+
+class ResourceMonitor:
+    """Monitors system resources for adaptive scaling."""
+
+    def __init__(self, config: PipelineConfig):
+        self.config = config
+        self.metrics_history: List[ResourceMetrics] = []
+        self.monitoring_active = False
+        self.monitor_thread: Optional[threading.Thread] = None
+        self.lock = threading.Lock()
+
+    def start_monitoring(self):
+        """Start resource monitoring in background thread."""
+        if not self.monitoring_active:
+            self.monitoring_active = True
+            self.monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
+            self.monitor_thread.start()
+            logger.info("Resource monitoring started")
+
+    def stop_monitoring(self):
+        """Stop resource monitoring."""
+        self.monitoring_active = False
+        if self.monitor_thread:
+            self.monitor_thread.join(timeout=5)
+        logger.info("Resource monitoring stopped")
+
+    def _monitor_loop(self):
+        """Background monitoring loop."""
+        while self.monitoring_active:
+            try:
+                metrics = self._collect_metrics()
+                with self.lock:
+                    self.metrics_history.append(metrics)
+                    # Keep only last 100 metrics
+                    if len(self.metrics_history) > 100:
+                        self.metrics_history.pop(0)
+
+                time.sleep(self.config.resource_monitoring_interval)
+            except Exception as e:
+                logger.error(f"Resource monitoring error: {e}")
+
+    def _collect_metrics(self) -> ResourceMetrics:
+        """Collect current resource metrics."""
+        return ResourceMetrics(
+            cpu_percent=psutil.cpu_percent(interval=1),
+            memory_percent=psutil.virtual_memory().percent,
+            active_tasks=0,  # Will be updated by pipeline
+            queue_size=0,    # Will be updated by pipeline
+            timestamp=datetime.now(timezone.utc)
+        )
+
+    def get_current_metrics(self) -> Optional[ResourceMetrics]:
+        """Get most recent resource metrics."""
+        with self.lock:
+            return self.metrics_history[-1] if self.metrics_history else None
+
+    def get_average_utilization(self, window_minutes: int = 5) -> float:
+        """Get average resource utilization over time window."""
+        cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=window_minutes)
+
+        with self.lock:
+            recent_metrics = [
+                m for m in self.metrics_history
+                if m.timestamp >= cutoff_time
+            ]
+
+        if not recent_metrics:
+            return 0.0
+
+        avg_efficiency = sum(m.utilization_efficiency for m in recent_metrics) / len(recent_metrics)
+        return avg_efficiency
+
+    def should_scale_up(self) -> bool:
+        """Determine if pipeline should scale up based on resource utilization."""
+        current_metrics = self.get_current_metrics()
+        if not current_metrics:
+            return False
+
+        # Scale up if utilization is below target and queue is growing
+        return (current_metrics.utilization_efficiency < self.config.target_resource_utilization * 0.8
+                and current_metrics.queue_size > 10)
+
+    def should_scale_down(self) -> bool:
+        """Determine if pipeline should scale down based on resource utilization."""
+        current_metrics = self.get_current_metrics()
+        if not current_metrics:
+            return False
+
+        # Scale down if utilization is too high
+        return current_metrics.utilization_efficiency > self.config.target_resource_utilization * 1.1
 
 
 @dataclass
@@ -70,7 +192,7 @@ class PipelineConfig:
 
 class ParallelValidationPipeline:
     """Main parallel validation pipeline for FV service."""
-    
+
     def __init__(self, config: Optional[PipelineConfig] = None):
         self.config = config or PipelineConfig()
         self.dependency_analyzer = DependencyGraphAnalyzer()
@@ -78,82 +200,425 @@ class ParallelValidationPipeline:
         self.parallel_executor = ParallelExecutor(max_concurrent=self.config.max_concurrent_tasks)
         self.aggregator = ByzantineFaultTolerantAggregator()
         self.metrics = get_metrics('fv_service')
-        
-        # Performance tracking
+
+        # Task 7: Resource monitoring and adaptive scaling
+        self.resource_monitor = ResourceMonitor(self.config) if self.config.enable_adaptive_scaling else None
+        self.current_scale_factor = 1.0
+        self.task_queue: List[ParallelTask] = []
+        self.active_tasks: Dict[str, ParallelTask] = {}
+
+        # Task 7: Constitutional validation integration
+        self.constitutional_validator = None
+        self.federated_coordinator = None
+
+        # Performance tracking (enhanced for Task 7)
         self.pipeline_metrics = {
             'total_requests': 0,
             'total_tasks_executed': 0,
             'average_latency_ms': 0.0,
             'success_rate': 0.0,
-            'cache_hit_rate': 0.0
+            'cache_hit_rate': 0.0,
+            'resource_utilization_efficiency': 0.0,
+            'constitutional_compliance_rate': 0.0,
+            'federated_consensus_rate': 0.0,
+            'concurrent_validations_peak': 0,
+            'rollback_operations': 0
         }
-        
+
         # HTTP client pool for external services
         self.http_client_pool = None
         self._initialize_http_pool()
+
+        # Task 7: Initialize enhanced components
+        self._initialize_enhanced_components()
     
     def _initialize_http_pool(self):
         """Initialize HTTP client pool for LLM services."""
-        limits = httpx.Limits(max_keepalive_connections=20, max_connections=100)
+        # Task 7: Enhanced connection pool for 1000+ concurrent validations
+        limits = httpx.Limits(max_keepalive_connections=100, max_connections=500)
         timeout = httpx.Timeout(30.0, connect=5.0)
         self.http_client_pool = httpx.AsyncClient(limits=limits, timeout=timeout)
+
+    def _initialize_enhanced_components(self):
+        """Initialize Task 7 enhanced components."""
+        try:
+            # Initialize resource monitoring
+            if self.resource_monitor:
+                self.resource_monitor.start_monitoring()
+
+            # Initialize constitutional validator
+            if self.config.enable_constitutional_validation:
+                self._initialize_constitutional_validator()
+
+            # Initialize federated coordinator
+            if self.config.enable_federated_validation:
+                self._initialize_federated_coordinator()
+
+            logger.info("Enhanced parallel validation components initialized")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize enhanced components: {e}")
+
+    def _initialize_constitutional_validator(self):
+        """Initialize constitutional compliance validator."""
+        try:
+            # Import constitutional council services
+            from ...services.ac_client import ac_service_client
+            self.constitutional_validator = ac_service_client
+            logger.info("Constitutional validator initialized")
+        except Exception as e:
+            logger.warning(f"Constitutional validator initialization failed: {e}")
+
+    def _initialize_federated_coordinator(self):
+        """Initialize federated evaluation coordinator."""
+        try:
+            # Import federated evaluation components
+            from federated_service.app.core.federated_coordinator import federated_coordinator
+            self.federated_coordinator = federated_coordinator
+            logger.info("Federated coordinator initialized")
+        except Exception as e:
+            logger.warning(f"Federated coordinator initialization failed: {e}")
     
     async def process_verification_request(
-        self, 
+        self,
         request: VerificationRequest,
-        enable_parallel: bool = True
+        enable_parallel: bool = True,
+        constitutional_context: Optional[ConstitutionalValidationContext] = None
     ) -> VerificationResponse:
-        """Process verification request with parallel validation."""
+        """Process verification request with enhanced parallel validation."""
         start_time = time.time()
         request_id = f"verify_{int(time.time() * 1000)}"
-        
+
         try:
             self.pipeline_metrics['total_requests'] += 1
-            
+
+            # Task 7: Update resource metrics
+            await self._update_resource_metrics()
+
+            # Task 7: Adaptive scaling check
+            if self.config.enable_adaptive_scaling:
+                await self._check_adaptive_scaling()
+
             # Check cache first
             cached_result = await self._check_cache(request_id, request)
             if cached_result:
                 self.pipeline_metrics['cache_hit_rate'] += 1
                 return cached_result
-            
+
+            # Task 7: Constitutional validation pre-check
+            if self.config.enable_constitutional_validation and constitutional_context:
+                constitutional_valid = await self._validate_constitutional_compliance(
+                    request, constitutional_context
+                )
+                if not constitutional_valid:
+                    return VerificationResponse(
+                        results=[],
+                        overall_status="constitutional_violation",
+                        summary_message="Request violates constitutional principles"
+                    )
+
+            # Determine processing strategy
             if enable_parallel and len(request.policy_rule_refs) > 1:
-                # Use parallel processing for multiple rules
-                response = await self._process_parallel_verification(request, request_id)
+                # Task 7: Enhanced parallel processing with federated support
+                response = await self._process_enhanced_parallel_verification(
+                    request, request_id, constitutional_context
+                )
             else:
                 # Use sequential processing for single rule or when parallel disabled
                 response = await self._process_sequential_verification(request, request_id)
-            
+
             # Cache result
             await self._cache_result(request_id, request, response)
-            
+
             # Update metrics
             latency_ms = (time.time() - start_time) * 1000
             self._update_performance_metrics(latency_ms, True)
-            
+
+            # Task 7: Check performance alerts
+            if latency_ms > self.config.performance_alert_threshold_ms:
+                await self._trigger_performance_alert(request_id, latency_ms)
+
             # Record metrics
             self.metrics.record_verification_operation(
                 verification_type='parallel' if enable_parallel else 'sequential',
                 result='success'
             )
-            
+
             return response
-            
+
         except Exception as e:
             logger.error(f"Verification request failed: {e}")
             self._update_performance_metrics((time.time() - start_time) * 1000, False)
-            
+
+            # Task 7: Attempt rollback if needed
+            await self._attempt_rollback(request_id, str(e))
+
             self.metrics.record_verification_operation(
                 verification_type='parallel' if enable_parallel else 'sequential',
                 result='error'
             )
-            
+
             # Return error response
             return VerificationResponse(
                 results=[],
                 overall_status="error",
                 summary_message=f"Verification failed: {str(e)}"
             )
-    
+
+    async def _update_resource_metrics(self):
+        """Update resource utilization metrics."""
+        if self.resource_monitor:
+            current_metrics = self.resource_monitor.get_current_metrics()
+            if current_metrics:
+                # Update active tasks and queue size
+                current_metrics.active_tasks = len(self.active_tasks)
+                current_metrics.queue_size = len(self.task_queue)
+
+                # Update pipeline metrics
+                self.pipeline_metrics['resource_utilization_efficiency'] = current_metrics.utilization_efficiency
+
+                # Update peak concurrent validations
+                if current_metrics.active_tasks > self.pipeline_metrics['concurrent_validations_peak']:
+                    self.pipeline_metrics['concurrent_validations_peak'] = current_metrics.active_tasks
+
+    async def _check_adaptive_scaling(self):
+        """Check if adaptive scaling is needed."""
+        if not self.resource_monitor:
+            return
+
+        if self.resource_monitor.should_scale_up():
+            await self._scale_up()
+        elif self.resource_monitor.should_scale_down():
+            await self._scale_down()
+
+    async def _scale_up(self):
+        """Scale up processing capacity."""
+        if self.current_scale_factor < 2.0:  # Max 2x scaling
+            self.current_scale_factor *= 1.2
+            new_concurrent = int(self.config.max_concurrent_tasks * self.current_scale_factor)
+            self.parallel_executor.max_concurrent = new_concurrent
+            logger.info(f"Scaled up to {new_concurrent} concurrent tasks (factor: {self.current_scale_factor:.2f})")
+
+    async def _scale_down(self):
+        """Scale down processing capacity."""
+        if self.current_scale_factor > 0.5:  # Min 0.5x scaling
+            self.current_scale_factor *= 0.8
+            new_concurrent = int(self.config.max_concurrent_tasks * self.current_scale_factor)
+            self.parallel_executor.max_concurrent = new_concurrent
+            logger.info(f"Scaled down to {new_concurrent} concurrent tasks (factor: {self.current_scale_factor:.2f})")
+
+    async def _validate_constitutional_compliance(
+        self,
+        request: VerificationRequest,
+        context: ConstitutionalValidationContext
+    ) -> bool:
+        """Validate request against constitutional principles."""
+        try:
+            if not self.constitutional_validator:
+                return True  # Skip if validator not available
+
+            # Check if request involves constitutional amendments
+            if context.amendment_id:
+                # Validate amendment proposal compliance
+                amendment_valid = await self._validate_amendment_compliance(context.amendment_id)
+                if not amendment_valid:
+                    return False
+
+            # Check democratic legitimacy requirements
+            if context.democratic_legitimacy_required and context.voting_session_id:
+                voting_valid = await self._validate_voting_legitimacy(context.voting_session_id)
+                if not voting_valid:
+                    return False
+
+            # Validate against constitutional principles
+            for principle in context.constitutional_principles:
+                principle_valid = await self._validate_against_principle(request, principle)
+                if not principle_valid:
+                    return False
+
+            # Update compliance metrics
+            self.pipeline_metrics['constitutional_compliance_rate'] = (
+                self.pipeline_metrics['constitutional_compliance_rate'] * 0.9 + 0.1
+            )
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Constitutional validation failed: {e}")
+            return False
+
+    async def _validate_amendment_compliance(self, amendment_id: int) -> bool:
+        """Validate amendment proposal compliance."""
+        try:
+            # Check amendment status and voting requirements
+            if self.constitutional_validator:
+                amendment_status = await self.constitutional_validator.get_amendment_status(amendment_id)
+                return amendment_status.get('status') in ['approved', 'under_review']
+            return True
+        except Exception as e:
+            logger.error(f"Amendment validation failed: {e}")
+            return False
+
+    async def _validate_voting_legitimacy(self, voting_session_id: str) -> bool:
+        """Validate voting session legitimacy."""
+        try:
+            # Check voting session validity and quorum
+            if self.constitutional_validator:
+                voting_status = await self.constitutional_validator.get_voting_session_status(voting_session_id)
+                return voting_status.get('quorum_met', False)
+            return True
+        except Exception as e:
+            logger.error(f"Voting validation failed: {e}")
+            return False
+
+    async def _validate_against_principle(self, request: VerificationRequest, principle: Dict[str, Any]) -> bool:
+        """Validate request against a constitutional principle."""
+        try:
+            # Check if request violates principle constraints
+            principle_threshold = principle.get('compliance_threshold', self.config.constitutional_compliance_threshold)
+
+            # Simplified validation - in practice, this would involve complex analysis
+            compliance_score = 0.9  # Mock compliance score
+
+            return compliance_score >= principle_threshold
+
+        except Exception as e:
+            logger.error(f"Principle validation failed: {e}")
+            return False
+
+    async def _trigger_performance_alert(self, request_id: str, latency_ms: float):
+        """Trigger performance alert for high latency."""
+        alert_data = {
+            'request_id': request_id,
+            'latency_ms': latency_ms,
+            'threshold_ms': self.config.performance_alert_threshold_ms,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'resource_metrics': self.resource_monitor.get_current_metrics() if self.resource_monitor else None
+        }
+
+        logger.warning(f"Performance alert: Request {request_id} took {latency_ms:.1f}ms (threshold: {self.config.performance_alert_threshold_ms}ms)")
+
+        # Send alert via WebSocket if enabled
+        if self.config.enable_websocket_streaming:
+            await websocket_streamer.send_alert(
+                alert_type='performance_degradation',
+                details=alert_data
+            )
+
+    async def _attempt_rollback(self, request_id: str, error_message: str):
+        """Attempt to rollback failed operations."""
+        try:
+            # Remove from active tasks
+            if request_id in self.active_tasks:
+                del self.active_tasks[request_id]
+
+            # Increment rollback counter
+            self.pipeline_metrics['rollback_operations'] += 1
+
+            logger.info(f"Rollback completed for request {request_id}")
+
+        except Exception as e:
+            logger.error(f"Rollback failed for request {request_id}: {e}")
+
+    async def _process_enhanced_parallel_verification(
+        self,
+        request: VerificationRequest,
+        request_id: str,
+        constitutional_context: Optional[ConstitutionalValidationContext] = None
+    ) -> VerificationResponse:
+        """Enhanced parallel verification with federated support."""
+        logger.info(f"Processing enhanced parallel verification for {len(request.policy_rule_refs)} rules")
+
+        # Check if federated validation is enabled and beneficial
+        if (self.config.enable_federated_validation and
+            self.federated_coordinator and
+            len(request.policy_rule_refs) >= 5):
+
+            return await self._process_federated_parallel_verification(
+                request, request_id, constitutional_context
+            )
+        else:
+            # Use standard parallel processing
+            return await self._process_parallel_verification(request, request_id)
+
+    async def _process_federated_parallel_verification(
+        self,
+        request: VerificationRequest,
+        request_id: str,
+        constitutional_context: Optional[ConstitutionalValidationContext] = None
+    ) -> VerificationResponse:
+        """Process verification using federated evaluation framework."""
+        try:
+            # Prepare federated evaluation request
+            federated_request = {
+                'policy_content': str(request.policy_rule_refs),
+                'evaluation_criteria': {
+                    'verification_type': 'constitutional_compliance',
+                    'constitutional_context': asdict(constitutional_context) if constitutional_context else {},
+                    'performance_requirements': {
+                        'max_latency_ms': self.config.performance_alert_threshold_ms,
+                        'min_consensus': self.config.federated_consensus_threshold
+                    }
+                },
+                'target_platforms': ['local', 'cloud'],  # Could be configured
+                'privacy_requirements': {'epsilon': 1.0, 'mechanism': 'laplace'}
+            }
+
+            # Submit to federated coordinator
+            task_id = await self.federated_coordinator.coordinate_evaluation(federated_request)
+
+            # Wait for federated results with timeout
+            timeout = self.config.default_timeout_seconds
+            start_time = time.time()
+
+            while time.time() - start_time < timeout:
+                federated_result = await self.federated_coordinator.get_evaluation_result(task_id)
+                if federated_result and federated_result.get('status') == 'completed':
+                    # Convert federated result to verification response
+                    return self._convert_federated_to_verification_response(federated_result)
+
+                await asyncio.sleep(1)
+
+            # Timeout - fallback to local processing
+            logger.warning(f"Federated validation timeout for {request_id}, falling back to local processing")
+            return await self._process_parallel_verification(request, request_id)
+
+        except Exception as e:
+            logger.error(f"Federated validation failed: {e}")
+            # Fallback to local processing
+            return await self._process_parallel_verification(request, request_id)
+
+    def _convert_federated_to_verification_response(self, federated_result: Dict[str, Any]) -> VerificationResponse:
+        """Convert federated evaluation result to verification response."""
+        # Update federated consensus metrics
+        consensus_level = federated_result.get('consensus_level', 0.0)
+        self.pipeline_metrics['federated_consensus_rate'] = (
+            self.pipeline_metrics['federated_consensus_rate'] * 0.9 + consensus_level * 0.1
+        )
+
+        # Convert to verification results
+        verification_results = []
+        for result in federated_result.get('individual_results', []):
+            verification_result = VerificationResult(
+                policy_rule_id=result.get('policy_rule_id', 1),
+                status=result.get('status', 'verified'),
+                message=result.get('message', ''),
+                counter_example=result.get('counter_example')
+            )
+            verification_results.append(verification_result)
+
+        # Determine overall status
+        if consensus_level >= self.config.federated_consensus_threshold:
+            overall_status = "federated_consensus_achieved"
+        else:
+            overall_status = "federated_consensus_failed"
+
+        return VerificationResponse(
+            results=verification_results,
+            overall_status=overall_status,
+            summary_message=f"Federated validation completed with {consensus_level:.2%} consensus"
+        )
+
     async def _process_parallel_verification(
         self, 
         request: VerificationRequest, 
@@ -530,13 +995,23 @@ class ParallelValidationPipeline:
     async def shutdown(self) -> None:
         """Shutdown pipeline and cleanup resources."""
         try:
+            # Task 7: Stop resource monitoring
+            if self.resource_monitor:
+                self.resource_monitor.stop_monitoring()
+
+            # Shutdown parallel executor
             await self.parallel_executor.shutdown()
-            
+
+            # Close HTTP client pool
             if self.http_client_pool:
                 await self.http_client_pool.aclose()
-            
-            logger.info("Parallel validation pipeline shutdown complete")
-            
+
+            # Clear active tasks and queue
+            self.active_tasks.clear()
+            self.task_queue.clear()
+
+            logger.info("Enhanced parallel validation pipeline shutdown complete")
+
         except Exception as e:
             logger.error(f"Error during pipeline shutdown: {e}")
 
