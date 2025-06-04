@@ -166,7 +166,7 @@ jobs:
           python -m pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4.5.0
+        uses: codecov/codecov-action@v5.4.3
         with:
           file: src/backend/${{ matrix.service }}/coverage.xml
           flags: ${{ matrix.service }}
@@ -207,7 +207,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6.5.0
+        uses: docker/build-push-action@v6.18.0
         with:
           context: src/backend/${{ matrix.service }}
           file: src/backend/${{ matrix.service }}/Dockerfile
