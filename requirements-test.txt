@@ -16,7 +16,7 @@ pytest-json-report==1.5.0              # JSON test reports
 httpx==0.25.2                          # Async HTTP client for testing
 responses==0.24.1                      # HTTP request mocking
 aioresponses==0.7.4                    # Async HTTP mocking
-pytest-httpserver==1.0.8               # Local HTTP server for testing
+pytest-httpserver==1.1.3               # Local HTTP server for testing
 requests-mock==1.11.0                  # Requests library mocking
 
 # Database testing
