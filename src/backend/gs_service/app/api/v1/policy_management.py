@@ -14,9 +14,9 @@ from ...crud_gs import ( # Goes up 3 levels from v1 to app for crud_gs
 )
 
 
-from shared.database import get_async_db
-# from shared.models import User # For auth dependency if needed
-# from ....app.core.auth import require_gs_admin # Placeholder for auth
+from src.backend.shared.database import get_async_db
+# from src.backend.shared.models import User # For auth dependency if needed
+# from src.backend.app.core.auth import require_gs_admin # Placeholder for auth
 
 router = APIRouter()
 

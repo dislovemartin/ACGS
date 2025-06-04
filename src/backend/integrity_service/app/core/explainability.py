@@ -7,7 +7,7 @@ import time
 import logging
 import asyncio
 from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..schemas import ExplainabilityRequest, ExplainabilityResponse, RuleProvenanceResponse
 from .. import crud, models
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -2,7 +2,11 @@ import os
 import httpx
 from typing import List, Optional
 from ..schemas import ACPrinciple # Using the schema defined in gs_service
-from shared.auth import get_service_token, get_auth_headers
+try:
+    from src.backend.shared.auth import get_service_token, get_auth_headers
+except ImportError:
+    # Fallback for different import contexts
+    from shared.auth import get_service_token, get_auth_headers
 
 # Load environment variables
 AC_SERVICE_URL = os.getenv("AC_SERVICE_URL", "http://ac_service:8001/api/v1") # Default for Docker Compose

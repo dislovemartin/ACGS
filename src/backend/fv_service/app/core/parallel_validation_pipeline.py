@@ -36,8 +36,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PipelineConfig:
     """Configuration for parallel validation pipeline."""
-    max_concurrent_tasks: int = 50
-    max_batch_size: int = 25
+    # Task 7 Enhancement: Scale to 1000+ concurrent validations
+    max_concurrent_tasks: int = 1000
+    max_batch_size: int = 100
     default_timeout_seconds: float = 30.0
     enable_celery: bool = True
     enable_websocket_streaming: bool = True
@@ -45,6 +46,26 @@ class PipelineConfig:
     cache_ttl_seconds: int = 300
     retry_failed_tasks: bool = True
     max_retries: int = 3
+
+    # Task 7: Resource utilization optimization (90% efficiency target)
+    target_resource_utilization: float = 0.90
+    enable_adaptive_scaling: bool = True
+    resource_monitoring_interval: int = 5  # seconds
+
+    # Task 7: Constitutional Council integration
+    enable_constitutional_validation: bool = True
+    constitutional_compliance_threshold: float = 0.85
+    enable_democratic_governance_validation: bool = True
+
+    # Task 7: Performance monitoring and alerting
+    enable_performance_monitoring: bool = True
+    performance_alert_threshold_ms: float = 200.0
+    enable_prometheus_metrics: bool = True
+
+    # Task 7: Federated evaluation integration
+    enable_federated_validation: bool = True
+    federated_consensus_threshold: float = 0.75
+    max_federated_nodes: int = 10
 
 
 class ParallelValidationPipeline:

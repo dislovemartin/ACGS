@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Reliability Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>LLM Reliability Dashboard</h1>
+        <div class="metrics-summary">
+            <h2>Current Metrics Summary</h2>
+            <p><strong>Overall Reliability:</strong> <span id="overall-reliability">Loading...</span></p>
+            <p><strong>Reliability Trend:</strong> <span id="reliability-trend">Loading...</span></p>
+            <p><strong>Target Achievement:</strong> <span id="target-achievement">Loading...</span></p>
+            <p><strong>Average Success Rate:</strong> <span id="avg-success-rate">Loading...</span></p>
+            <p><strong>Average Consensus Rate:</strong> <span id="avg-consensus-rate">Loading...</span></p>
+            <p><strong>Average Bias Detection Rate:</strong> <span id="avg-bias-detection-rate">Loading...</span></p>
+            <p><strong>Average Semantic Faithfulness:</strong> <span id="avg-semantic-faithfulness">Loading...</span></p>
+            <p><strong>Average Response Time:</strong> <span id="avg-response-time">Loading...</span></p>
+            <p><strong>Average Error Rate:</strong> <span id="avg-error-rate">Loading...</span></p>
+            <p><strong>Cache Hit Rate:</strong> <span id="cache-hit-rate">Loading...</span></p>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Response Time History (seconds)</h3>
+                <canvas id="responseTimeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Success Rate History</h3>
+                <canvas id="successRateChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Error Rate History</h3>
+                <canvas id="errorRateChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Model Failure Counts</h3>
+                <canvas id="modelFailureChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,2 +1,0 @@
-# Monitoring and metrics dependencies for ACGS-PGP services
-prometheus-client==0.21.1

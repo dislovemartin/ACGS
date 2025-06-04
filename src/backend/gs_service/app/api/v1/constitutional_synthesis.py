@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.llm_integration import query_llm_for_constitutional_synthesis
 from ...core.contextual_analyzer import contextual_analyzer, EnvironmentalFactor
-from shared.database import get_async_db
+from src.backend.shared.database import get_async_db
 from ...schemas import (
     ConstitutionalSynthesisInput,
     ConstitutionalSynthesisOutput,

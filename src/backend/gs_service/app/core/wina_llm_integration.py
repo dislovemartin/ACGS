@@ -11,12 +11,14 @@ This module provides:
 - Performance metrics collection
 """
 
-import logging
+import logging # Moved to top
 import asyncio
 import time
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger(__name__)
 
 # Import WINA components
 from ....shared.wina import WINACore, WINAConfig, WINAIntegrationConfig
@@ -86,7 +88,7 @@ except ImportError as e:
         return ConstitutionalSynthesisOutput(generated_rules=["mock rule"])
 
 try:
-    from .constitutional_prompting import ConstitutionalPromptingEngine
+    from .constitutional_prompting import ConstitutionalPromptBuilder
 except ImportError:
     logger.warning("Constitutional prompting engine not available. Using mock.")
     class ConstitutionalPromptingEngine:
@@ -99,7 +101,6 @@ except ImportError:
     class EnhancedLLMReliabilityFramework:
         pass
 
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -142,7 +143,7 @@ class WINAOptimizedLLMClient:
                 self.enable_wina = False
         
         # Initialize constitutional prompting and reliability framework
-        self.constitutional_engine = ConstitutionalPromptingEngine()
+        self.constitutional_engine = ConstitutionalPromptBuilder()
         self.reliability_framework = EnhancedLLMReliabilityFramework()
         
         # Performance tracking

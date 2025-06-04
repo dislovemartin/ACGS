@@ -18,6 +18,8 @@ import json
 import hashlib
 import re
 from datetime import datetime, timezone
+import statistics
+from collections import defaultdict, deque
 
 # Core dependencies
 from ..schemas import LLMInterpretationInput, LLMStructuredOutput, ConstitutionalSynthesisInput, ConstitutionalSynthesisOutput
@@ -53,9 +55,69 @@ logger = logging.getLogger(__name__)
 class ReliabilityLevel(Enum):
     """Reliability levels for different application contexts."""
     STANDARD = "standard"  # 95% reliability
-    HIGH = "high"  # 99% reliability  
+    HIGH = "high"  # 99% reliability
     SAFETY_CRITICAL = "safety_critical"  # 99.9% reliability
+
+
+class RecoveryStrategy(Enum):
+    """Recovery strategies for automatic reliability recovery."""
+    MODEL_REROUTING = "model_rerouting"
+    MODEL_RETRAINING = "model_retraining"
+    TRAFFIC_REDISTRIBUTION = "traffic_redistribution"
+    CONFIGURATION_ADJUSTMENT = "configuration_adjustment"
+    CIRCUIT_BREAKER = "circuit_breaker"
+    FALLBACK_ACTIVATION = "fallback_activation"
+    EMERGENCY_SAFEGUARDS = "emergency_safeguards"
+    HUMAN_ESCALATION = "human_escalation"
+
+
+class RecoveryTrigger(Enum):
+    """Triggers that initiate automatic recovery procedures."""
+    RELIABILITY_THRESHOLD_BREACH = "reliability_threshold_breach"
+    MODEL_FAILURE_RATE_HIGH = "model_failure_rate_high"
+    RESPONSE_TIME_DEGRADATION = "response_time_degradation"
+    CONSENSUS_FAILURE = "consensus_failure"
+    BIAS_DETECTION_SPIKE = "bias_detection_spike"
+    SEMANTIC_FAITHFULNESS_DROP = "semantic_faithfulness_drop"
+    SYSTEM_OVERLOAD = "system_overload"
+    PREDICTIVE_FAILURE = "predictive_failure"
+
+
+class RecoveryStatus(Enum):
+    """Status of recovery operations."""
+    INITIATED = "initiated"
+    IN_PROGRESS = "in_progress"
+    SUCCESSFUL = "successful"
+    FAILED = "failed"
+    PARTIALLY_SUCCESSFUL = "partially_successful"
+    CANCELLED = "cancelled"
     MISSION_CRITICAL = "mission_critical"  # 99.99% reliability
+
+
+@dataclass
+class RecoveryAction:
+    """Represents a recovery action to be executed."""
+    strategy: RecoveryStrategy
+    trigger: RecoveryTrigger
+    priority: int  # 1 = highest priority
+    target_component: str  # Model name, service, or "system"
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    estimated_recovery_time: float = 30.0  # seconds
+    success_probability: float = 0.8
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+@dataclass
+class RecoveryExecution:
+    """Tracks the execution of a recovery action."""
+    action: RecoveryAction
+    status: RecoveryStatus
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    metrics_before: Optional[Dict[str, float]] = None
+    metrics_after: Optional[Dict[str, float]] = None
+    effectiveness_score: Optional[float] = None  # 0.0 to 1.0
 
 
 @dataclass
@@ -72,6 +134,22 @@ class LLMReliabilityConfig:
     max_retries: int = 3
     llm_failure_threshold: int = 5 # New: Threshold for consecutive LLM failures before degradation
     timeout_seconds: int = 30
+
+    # Automatic Recovery Configuration
+    auto_recovery_enabled: bool = True
+    recovery_trigger_thresholds: Dict[RecoveryTrigger, float] = field(default_factory=lambda: {
+        RecoveryTrigger.RELIABILITY_THRESHOLD_BREACH: 0.95,  # Below 95% reliability
+        RecoveryTrigger.MODEL_FAILURE_RATE_HIGH: 0.1,  # Above 10% failure rate
+        RecoveryTrigger.RESPONSE_TIME_DEGRADATION: 2.0,  # 2x normal response time
+        RecoveryTrigger.CONSENSUS_FAILURE: 0.7,  # Below 70% consensus rate
+        RecoveryTrigger.BIAS_DETECTION_SPIKE: 0.05,  # Above 5% bias detection
+        RecoveryTrigger.SEMANTIC_FAITHFULNESS_DROP: 0.85,  # Below 85% faithfulness
+    })
+    max_concurrent_recoveries: int = 3
+    recovery_cooldown_seconds: int = 300  # 5 minutes between recovery attempts
+    recovery_timeout_seconds: int = 180  # 3 minutes max per recovery
+    enable_predictive_recovery: bool = True
+    recovery_effectiveness_threshold: float = 0.6  # Minimum effectiveness to consider successful
     default_fallback_response: str = "An automated policy could not be generated due to system constraints. Please try again later or consult support." # New: Default response for critical failures
     enable_model_degradation: bool = True # New: Enable/disable dynamic model degradation
     # Updated to match protocol's UltraReliableConsensus.confidence_threshold
@@ -158,6 +236,7 @@ class ReliabilityMetrics:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     request_id: Optional[str] = None
     model_versions: Dict[str, str] = field(default_factory=dict)
+    model_failures_total: Dict[str, int] = field(default_factory=dict) # New: Total failures per model for this metric snapshot
 
     def overall_reliability_score(self) -> float:
         """Calculate overall reliability score combining all metrics."""
@@ -189,6 +268,7 @@ class UltraReliableResult:
     formal_verification_status: Optional[Dict[str, Any]] = None
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     status: Optional[str] = None # Added status field
+    performance_metrics_details: Optional[Dict[str, Any]] = None # New field for detailed performance metrics
 
 
 class PrometheusMetricsCollector:
@@ -256,6 +336,12 @@ class PrometheusMetricsCollector:
             ['model_name'], # Label for model name
             registry=self.registry
         )
+        self.recoveries_total = Counter(
+            'llm_recoveries_total',
+            'Total number of automatic recovery actions executed',
+            ['strategy'], # Label for recovery strategy
+            registry=self.registry
+        )
 
     def record_metrics(self, metrics: ReliabilityMetrics):
         """Record metrics to Prometheus."""
@@ -292,6 +378,12 @@ class PrometheusMetricsCollector:
         if self.enabled:
             self.model_failures_total.labels(model_name=model_name).inc()
             logger.debug(f"Prometheus: Model {model_name} failure incremented.")
+
+    def increment_recoveries(self, strategy: str):
+        """Increment the total number of automatic recovery actions for a specific strategy."""
+        if self.enabled:
+            self.recoveries_total.labels(strategy=strategy).inc()
+            logger.debug(f"Prometheus: Recovery {strategy} incremented.")
 
 
 class CacheManager:
@@ -365,16 +457,565 @@ class CacheManager:
             logger.warning(f"Cache storage error: {e}")
 
 
+class AutomaticRecoveryOrchestrator:
+    """
+    Orchestrates automatic reliability recovery procedures.
+    Implements self-healing mechanisms to restore system reliability without manual intervention.
+    """
+
+    def __init__(self, config: LLMReliabilityConfig, metrics_collector: PrometheusMetricsCollector):
+        self.config = config
+        self.metrics_collector = metrics_collector
+        self.active_recoveries: Dict[str, RecoveryExecution] = {}
+        self.recovery_history: deque = deque(maxlen=1000)
+        self.last_recovery_attempt: Dict[str, datetime] = {}
+        self.recovery_effectiveness_history: Dict[RecoveryStrategy, deque] = defaultdict(lambda: deque(maxlen=100))
+        self.baseline_metrics: Dict[str, float] = {}
+        self.trend_analyzer = TrendAnalyzer()
+
+    async def monitor_and_recover(
+        self,
+        current_metrics: Dict[str, float],
+        component_status: Dict[str, Any],
+        request_id: str
+    ) -> List[RecoveryExecution]:
+        """
+        Main monitoring and recovery coordination method.
+        Analyzes current system state and triggers appropriate recovery actions.
+        """
+        if not self.config.auto_recovery_enabled:
+            return []
+
+        # Update baseline metrics if not set
+        if not self.baseline_metrics:
+            self.baseline_metrics = current_metrics.copy()
+
+        # Detect triggers that require recovery
+        triggered_recoveries = await self._detect_recovery_triggers(current_metrics, component_status, request_id)
+
+        if not triggered_recoveries:
+            return []
+
+        # Filter out recoveries that are in cooldown
+        filtered_recoveries = self._filter_cooldown_recoveries(triggered_recoveries, request_id)
+
+        # Prioritize and limit concurrent recoveries
+        prioritized_recoveries = self._prioritize_recoveries(filtered_recoveries)
+
+        # Execute recovery actions
+        executed_recoveries = []
+        for recovery_action in prioritized_recoveries:
+            if len(self.active_recoveries) >= self.config.max_concurrent_recoveries:
+                logger.warning(f"Request {request_id}: Maximum concurrent recoveries reached, queuing {recovery_action.strategy.value}")
+                break
+
+            execution = await self._execute_recovery_action(recovery_action, current_metrics, request_id)
+            if execution:
+                executed_recoveries.append(execution)
+
+        return executed_recoveries
+
+    async def _detect_recovery_triggers(
+        self,
+        current_metrics: Dict[str, float],
+        component_status: Dict[str, Any],
+        request_id: str
+    ) -> List[RecoveryAction]:
+        """Detect conditions that trigger automatic recovery."""
+        triggered_actions = []
+
+        # Check reliability threshold breach
+        overall_reliability = current_metrics.get('overall_reliability', 1.0)
+        reliability_threshold = self.config.recovery_trigger_thresholds.get(
+            RecoveryTrigger.RELIABILITY_THRESHOLD_BREACH, 0.95
+        )
+
+        if overall_reliability < reliability_threshold:
+            logger.warning(f"Request {request_id}: Reliability threshold breach detected: {overall_reliability:.3f} < {reliability_threshold}")
+            triggered_actions.append(RecoveryAction(
+                strategy=RecoveryStrategy.MODEL_REROUTING,
+                trigger=RecoveryTrigger.RELIABILITY_THRESHOLD_BREACH,
+                priority=1,
+                target_component="system",
+                parameters={"current_reliability": overall_reliability, "threshold": reliability_threshold}
+            ))
+
+        # Check model failure rates
+        for model_name, status in component_status.get('models', {}).items():
+            failure_rate = status.get('failure_rate', 0.0)
+            failure_threshold = self.config.recovery_trigger_thresholds.get(
+                RecoveryTrigger.MODEL_FAILURE_RATE_HIGH, 0.1
+            )
+
+            if failure_rate > failure_threshold:
+                logger.warning(f"Request {request_id}: High failure rate detected for {model_name}: {failure_rate:.3f}")
+                triggered_actions.append(RecoveryAction(
+                    strategy=RecoveryStrategy.CIRCUIT_BREAKER,
+                    trigger=RecoveryTrigger.MODEL_FAILURE_RATE_HIGH,
+                    priority=2,
+                    target_component=model_name,
+                    parameters={"failure_rate": failure_rate, "threshold": failure_threshold}
+                ))
+
+        # Check response time degradation
+        avg_response_time = current_metrics.get('avg_response_time', 0.0)
+        baseline_response_time = self.baseline_metrics.get('avg_response_time', avg_response_time)
+        degradation_threshold = self.config.recovery_trigger_thresholds.get(
+            RecoveryTrigger.RESPONSE_TIME_DEGRADATION, 2.0
+        )
+
+        if baseline_response_time > 0 and avg_response_time > baseline_response_time * degradation_threshold:
+            logger.warning(f"Request {request_id}: Response time degradation detected: {avg_response_time:.3f}s vs baseline {baseline_response_time:.3f}s")
+            triggered_actions.append(RecoveryAction(
+                strategy=RecoveryStrategy.TRAFFIC_REDISTRIBUTION,
+                trigger=RecoveryTrigger.RESPONSE_TIME_DEGRADATION,
+                priority=3,
+                target_component="system",
+                parameters={"current_time": avg_response_time, "baseline_time": baseline_response_time}
+            ))
+
+        # Check consensus failure rate
+        consensus_rate = current_metrics.get('consensus_rate', 1.0)
+        consensus_threshold = self.config.recovery_trigger_thresholds.get(
+            RecoveryTrigger.CONSENSUS_FAILURE, 0.7
+        )
+
+        if consensus_rate < consensus_threshold:
+            logger.warning(f"Request {request_id}: Low consensus rate detected: {consensus_rate:.3f}")
+            triggered_actions.append(RecoveryAction(
+                strategy=RecoveryStrategy.CONFIGURATION_ADJUSTMENT,
+                trigger=RecoveryTrigger.CONSENSUS_FAILURE,
+                priority=2,
+                target_component="consensus_system",
+                parameters={"consensus_rate": consensus_rate, "threshold": consensus_threshold}
+            ))
+
+        # Check bias detection spike
+        bias_detection_rate = current_metrics.get('bias_detection_rate', 0.0)
+        bias_threshold = self.config.recovery_trigger_thresholds.get(
+            RecoveryTrigger.BIAS_DETECTION_SPIKE, 0.05
+        )
+
+        if bias_detection_rate > bias_threshold:
+            logger.warning(f"Request {request_id}: Bias detection spike: {bias_detection_rate:.3f}")
+            triggered_actions.append(RecoveryAction(
+                strategy=RecoveryStrategy.FALLBACK_ACTIVATION,
+                trigger=RecoveryTrigger.BIAS_DETECTION_SPIKE,
+                priority=1,
+                target_component="bias_detection",
+                parameters={"bias_rate": bias_detection_rate, "threshold": bias_threshold}
+            ))
+
+        # Predictive failure detection using trend analysis
+        if self.config.enable_predictive_recovery:
+            predictive_triggers = await self._detect_predictive_failures(current_metrics, request_id)
+            triggered_actions.extend(predictive_triggers)
+
+        return triggered_actions
+
+    async def _detect_predictive_failures(self, current_metrics: Dict[str, float], request_id: str) -> List[RecoveryAction]:
+        """Detect potential future failures using trend analysis."""
+        predictive_actions = []
+
+        # Add current metrics to trend analyzer
+        self.trend_analyzer.add_metrics(current_metrics)
+
+        # Check for predictive reliability failure
+        reliability_failure_prob = self.trend_analyzer.predict_failure_probability('overall_reliability')
+        if reliability_failure_prob > 0.7:  # 70% probability of failure
+            logger.info(f"Request {request_id}: Predictive reliability failure detected (probability: {reliability_failure_prob:.2f})")
+            predictive_actions.append(RecoveryAction(
+                strategy=RecoveryStrategy.MODEL_REROUTING,
+                trigger=RecoveryTrigger.PREDICTIVE_FAILURE,
+                priority=2,
+                target_component="system",
+                parameters={"failure_probability": reliability_failure_prob, "metric": "overall_reliability"}
+            ))
+
+        # Check for predictive response time failure
+        response_time_failure_prob = self.trend_analyzer.predict_failure_probability('avg_response_time')
+        if response_time_failure_prob > 0.6:  # 60% probability of failure
+            logger.info(f"Request {request_id}: Predictive response time failure detected (probability: {response_time_failure_prob:.2f})")
+            predictive_actions.append(RecoveryAction(
+                strategy=RecoveryStrategy.TRAFFIC_REDISTRIBUTION,
+                trigger=RecoveryTrigger.PREDICTIVE_FAILURE,
+                priority=3,
+                target_component="system",
+                parameters={"failure_probability": response_time_failure_prob, "metric": "avg_response_time"}
+            ))
+
+        return predictive_actions
+
+    def _filter_cooldown_recoveries(self, recovery_actions: List[RecoveryAction], request_id: str) -> List[RecoveryAction]:
+        """Filter out recovery actions that are in cooldown period."""
+        filtered_actions = []
+        current_time = datetime.now(timezone.utc)
+
+        for action in recovery_actions:
+            cooldown_key = f"{action.strategy.value}_{action.target_component}"
+            last_attempt = self.last_recovery_attempt.get(cooldown_key)
+
+            if last_attempt:
+                time_since_last = (current_time - last_attempt).total_seconds()
+                if time_since_last < self.config.recovery_cooldown_seconds:
+                    logger.debug(f"Request {request_id}: Recovery action {action.strategy.value} for {action.target_component} is in cooldown")
+                    continue
+
+            filtered_actions.append(action)
+
+        return filtered_actions
+
+    def _prioritize_recoveries(self, recovery_actions: List[RecoveryAction]) -> List[RecoveryAction]:
+        """Prioritize recovery actions based on priority and effectiveness history."""
+        if not recovery_actions:
+            return []
+
+        # Sort by priority (lower number = higher priority)
+        sorted_actions = sorted(recovery_actions, key=lambda x: x.priority)
+
+        # Adjust priority based on historical effectiveness
+        for action in sorted_actions:
+            effectiveness_history = self.recovery_effectiveness_history.get(action.strategy, deque())
+            if effectiveness_history:
+                avg_effectiveness = statistics.mean(effectiveness_history)
+                # Boost priority for historically effective strategies
+                if avg_effectiveness > 0.8:
+                    action.priority = max(1, action.priority - 1)
+                elif avg_effectiveness < 0.4:
+                    action.priority = min(5, action.priority + 1)
+
+        # Re-sort after priority adjustment
+        return sorted(sorted_actions, key=lambda x: x.priority)
+
+    async def _execute_recovery_action(
+        self,
+        action: RecoveryAction,
+        current_metrics: Dict[str, float],
+        request_id: str
+    ) -> Optional[RecoveryExecution]:
+        """Execute a specific recovery action."""
+        execution_id = f"{action.strategy.value}_{action.target_component}_{int(time.time())}"
+
+        execution = RecoveryExecution(
+            action=action,
+            status=RecoveryStatus.INITIATED,
+            started_at=datetime.now(timezone.utc),
+            metrics_before=current_metrics.copy()
+        )
+
+        self.active_recoveries[execution_id] = execution
+        logger.info(f"Request {request_id}: Executing recovery action {action.strategy.value} for {action.target_component}")
+
+        try:
+            execution.status = RecoveryStatus.IN_PROGRESS
+
+            # Execute the specific recovery strategy
+            success = await self._execute_strategy(action, request_id)
+
+            if success:
+                execution.status = RecoveryStatus.SUCCESSFUL
+                logger.info(f"Request {request_id}: Recovery action {action.strategy.value} completed successfully")
+            else:
+                execution.status = RecoveryStatus.FAILED
+                logger.warning(f"Request {request_id}: Recovery action {action.strategy.value} failed")
+
+        except Exception as e:
+            execution.status = RecoveryStatus.FAILED
+            execution.error_message = str(e)
+            logger.error(f"Request {request_id}: Recovery action {action.strategy.value} failed with error: {e}")
+
+        finally:
+            execution.completed_at = datetime.now(timezone.utc)
+
+            # Update recovery attempt timestamp
+            cooldown_key = f"{action.strategy.value}_{action.target_component}"
+            self.last_recovery_attempt[cooldown_key] = execution.completed_at
+
+            # Move from active to history
+            if execution_id in self.active_recoveries:
+                del self.active_recoveries[execution_id]
+            self.recovery_history.append(execution)
+
+        return execution
+
+    async def _execute_strategy(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute the specific recovery strategy."""
+        try:
+            if action.strategy == RecoveryStrategy.MODEL_REROUTING:
+                return await self._execute_model_rerouting(action, request_id)
+            elif action.strategy == RecoveryStrategy.CIRCUIT_BREAKER:
+                return await self._execute_circuit_breaker(action, request_id)
+            elif action.strategy == RecoveryStrategy.TRAFFIC_REDISTRIBUTION:
+                return await self._execute_traffic_redistribution(action, request_id)
+            elif action.strategy == RecoveryStrategy.CONFIGURATION_ADJUSTMENT:
+                return await self._execute_configuration_adjustment(action, request_id)
+            elif action.strategy == RecoveryStrategy.FALLBACK_ACTIVATION:
+                return await self._execute_fallback_activation(action, request_id)
+            elif action.strategy == RecoveryStrategy.EMERGENCY_SAFEGUARDS:
+                return await self._execute_emergency_safeguards(action, request_id)
+            elif action.strategy == RecoveryStrategy.MODEL_RETRAINING:
+                return await self._execute_model_retraining(action, request_id)
+            else:
+                logger.warning(f"Request {request_id}: Unknown recovery strategy: {action.strategy}")
+                return False
+        except Exception as e:
+            logger.error(f"Request {request_id}: Error executing strategy {action.strategy}: {e}")
+            return False
+
+    async def _execute_model_rerouting(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute model rerouting recovery strategy."""
+        logger.info(f"Request {request_id}: Executing model rerouting for {action.target_component}")
+
+        # This would integrate with the EnhancedMultiModelValidator to reroute traffic
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("model_rerouting")
+
+        return True
+
+    async def _execute_circuit_breaker(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute circuit breaker recovery strategy."""
+        logger.info(f"Request {request_id}: Activating circuit breaker for {action.target_component}")
+
+        # This would temporarily disable the failing component
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("circuit_breaker")
+
+        return True
+
+    async def _execute_traffic_redistribution(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute traffic redistribution recovery strategy."""
+        logger.info(f"Request {request_id}: Redistributing traffic for {action.target_component}")
+
+        # This would redistribute load across healthy components
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("traffic_redistribution")
+
+        return True
+
+    async def _execute_configuration_adjustment(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute configuration adjustment recovery strategy."""
+        logger.info(f"Request {request_id}: Adjusting configuration for {action.target_component}")
+
+        # This would adjust system parameters like timeouts, thresholds, etc.
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("configuration_adjustment")
+
+        return True
+
+    async def _execute_fallback_activation(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute fallback activation recovery strategy."""
+        logger.info(f"Request {request_id}: Activating fallback for {action.target_component}")
+
+        # This would activate fallback mechanisms
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("fallback_activation")
+
+        return True
+
+    async def _execute_emergency_safeguards(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute emergency safeguards recovery strategy."""
+        logger.info(f"Request {request_id}: Activating emergency safeguards for {action.target_component}")
+
+        # This would activate emergency safeguards
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("emergency_safeguards")
+
+        return True
+
+    async def _execute_model_retraining(self, action: RecoveryAction, request_id: str) -> bool:
+        """Execute model retraining recovery strategy."""
+        logger.info(f"Request {request_id}: Initiating model retraining for {action.target_component}")
+
+        # This would trigger model retraining
+        # For now, we'll simulate the action
+        await asyncio.sleep(0.1)  # Simulate processing time
+
+        # Record the recovery action in metrics
+        self.metrics_collector.increment_recoveries("model_retraining")
+
+        return True
+
+    async def measure_recovery_effectiveness(
+        self,
+        execution: RecoveryExecution,
+        metrics_after: Dict[str, float]
+    ) -> float:
+        """Measure the effectiveness of a recovery action."""
+        if not execution.metrics_before or not metrics_after:
+            return 0.0
+
+        execution.metrics_after = metrics_after.copy()
+
+        # Calculate improvement in key metrics
+        improvements = []
+
+        # Check reliability improvement
+        reliability_before = execution.metrics_before.get('overall_reliability', 0.0)
+        reliability_after = metrics_after.get('overall_reliability', 0.0)
+        if reliability_before > 0:
+            reliability_improvement = (reliability_after - reliability_before) / reliability_before
+            improvements.append(max(0.0, reliability_improvement))
+
+        # Check response time improvement (lower is better)
+        response_time_before = execution.metrics_before.get('avg_response_time', 0.0)
+        response_time_after = metrics_after.get('avg_response_time', 0.0)
+        if response_time_before > 0:
+            response_time_improvement = (response_time_before - response_time_after) / response_time_before
+            improvements.append(max(0.0, response_time_improvement))
+
+        # Check consensus rate improvement
+        consensus_before = execution.metrics_before.get('consensus_rate', 0.0)
+        consensus_after = metrics_after.get('consensus_rate', 0.0)
+        if consensus_before > 0:
+            consensus_improvement = (consensus_after - consensus_before) / consensus_before
+            improvements.append(max(0.0, consensus_improvement))
+
+        # Calculate overall effectiveness
+        if improvements:
+            effectiveness = min(1.0, statistics.mean(improvements))
+        else:
+            effectiveness = 0.5 if execution.status == RecoveryStatus.SUCCESSFUL else 0.0
+
+        execution.effectiveness_score = effectiveness
+
+        # Update effectiveness history
+        self.recovery_effectiveness_history[execution.action.strategy].append(effectiveness)
+
+        logger.info(f"Recovery effectiveness for {execution.action.strategy.value}: {effectiveness:.3f}")
+
+        return effectiveness
+
+    def get_recovery_statistics(self) -> Dict[str, Any]:
+        """Get comprehensive recovery statistics."""
+        if not self.recovery_history:
+            return {"status": "no_data"}
+
+        recent_recoveries = list(self.recovery_history)[-100:]  # Last 100 recoveries
+
+        # Calculate success rates by strategy
+        strategy_stats = defaultdict(lambda: {"total": 0, "successful": 0, "avg_effectiveness": 0.0})
+
+        for execution in recent_recoveries:
+            strategy = execution.action.strategy
+            strategy_stats[strategy]["total"] += 1
+
+            if execution.status == RecoveryStatus.SUCCESSFUL:
+                strategy_stats[strategy]["successful"] += 1
+
+            if execution.effectiveness_score is not None:
+                current_avg = strategy_stats[strategy]["avg_effectiveness"]
+                total = strategy_stats[strategy]["total"]
+                strategy_stats[strategy]["avg_effectiveness"] = (
+                    (current_avg * (total - 1) + execution.effectiveness_score) / total
+                )
+
+        # Calculate overall statistics
+        total_recoveries = len(recent_recoveries)
+        successful_recoveries = sum(1 for e in recent_recoveries if e.status == RecoveryStatus.SUCCESSFUL)
+
+        avg_recovery_time = 0.0
+        if recent_recoveries:
+            recovery_times = []
+            for execution in recent_recoveries:
+                if execution.completed_at and execution.started_at:
+                    recovery_time = (execution.completed_at - execution.started_at).total_seconds()
+                    recovery_times.append(recovery_time)
+            if recovery_times:
+                avg_recovery_time = statistics.mean(recovery_times)
+
+        return {
+            "total_recoveries": total_recoveries,
+            "success_rate": successful_recoveries / total_recoveries if total_recoveries > 0 else 0.0,
+            "avg_recovery_time_seconds": avg_recovery_time,
+            "active_recoveries": len(self.active_recoveries),
+            "strategy_statistics": dict(strategy_stats),
+            "recent_recovery_count": len(recent_recoveries)
+        }
+
+
+class TrendAnalyzer:
+    """Analyzes trends in metrics to predict potential failures."""
+
+    def __init__(self):
+        self.metric_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=50))
+
+    def add_metrics(self, metrics: Dict[str, float]):
+        """Add new metrics to history for trend analysis."""
+        timestamp = time.time()
+        for metric_name, value in metrics.items():
+            self.metric_history[metric_name].append((timestamp, value))
+
+    def predict_failure_probability(self, metric_name: str, lookahead_seconds: int = 300) -> float:
+        """Predict probability of failure for a specific metric."""
+        if metric_name not in self.metric_history or len(self.metric_history[metric_name]) < 10:
+            return 0.0
+
+        history = list(self.metric_history[metric_name])
+        timestamps = [item[0] for item in history]
+        values = [item[1] for item in history]
+
+        # Simple linear regression for trend prediction
+        if len(values) < 3:
+            return 0.0
+
+        try:
+            # Calculate trend slope
+            x = np.array(range(len(values)))
+            y = np.array(values)
+            slope = np.polyfit(x, y, 1)[0]
+
+            # Predict future value
+            future_steps = lookahead_seconds / 60  # Assuming 1-minute intervals
+            predicted_value = values[-1] + slope * future_steps
+
+            # Calculate failure probability based on predicted value and thresholds
+            if metric_name == 'overall_reliability':
+                if predicted_value < 0.95:
+                    return min(1.0, (0.95 - predicted_value) * 10)
+            elif metric_name == 'avg_response_time':
+                baseline = np.mean(values[:len(values)//2]) if len(values) > 6 else values[0]
+                if predicted_value > baseline * 2:
+                    return min(1.0, (predicted_value / baseline - 2) * 0.5)
+
+            return 0.0
+
+        except Exception as e:
+            logger.warning(f"Error in trend prediction for {metric_name}: {e}")
+            return 0.0
+
+
 class EnhancedMultiModelValidator:
     """Enhanced multi-model validator using LangChain and multiple providers."""
 
-    def __init__(self, config: LLMReliabilityConfig):
+    def __init__(self, config: LLMReliabilityConfig, metrics_collector: PrometheusMetricsCollector): # Add metrics_collector param
         self.config = config
         self.models = {}
         self.cache_manager = CacheManager(config)
+        self.metrics_collector = metrics_collector # Store it
         self.performance_history = []
         self.model_failure_counts: Dict[str, int] = {} # Track consecutive failures per model
         self.active_models: List[str] = [] # List of currently active models
+        self.model_health_status: Dict[str, Dict[str, Any]] = {} # Track model health metrics
+        self.degraded_models: Dict[str, Dict[str, Any]] = {} # Track degraded models for potential recovery
+        self.last_health_check: Dict[str, float] = {} # Track last health check timestamp per model
 
     async def initialize(self):
         """Initialize multiple LLM models for ensemble validation based on config."""
@@ -494,7 +1135,8 @@ class EnhancedMultiModelValidator:
                 confidence=0.0,
                 validation_path="failed_synthesis",
                 requires_human_review=True,
-                error_message=f"All models failed initial synthesis: {'; '.join(synthesis_errors)}"
+                error_message=f"All models failed initial synthesis: {'; '.join(synthesis_errors)}",
+                performance_metrics_details=synthesis_metrics_details # Pass the metrics
             )
 
         # Stage 2: Cross-validation matrix
@@ -531,14 +1173,16 @@ class EnhancedMultiModelValidator:
                 confidence=final_confidence,
                 validation_path="automated_consensus",
                 requires_human_review=False,
-                synthesis_details=consensus_details
+                synthesis_details=consensus_details,
+                performance_metrics_details=synthesis_metrics_details # Pass the metrics
             )
         else:
             logger.warning(f"Request {request_id}: Automated consensus failed or confidence too low ({final_confidence:.4f}). Escalating.")
             # Pass all gathered information to the escalation process
             return await self._escalate_to_expert_review(
                 synthesis_results, validation_matrix, semantic_scores, formal_verification_results,
-                final_policy, final_confidence, principle_text, synthesis_context, request_id
+                final_policy, final_confidence, principle_text, synthesis_context, request_id,
+                synthesis_metrics_details # Pass the metrics to escalation
             )
 
     async def _parallel_synthesis(
@@ -617,7 +1261,27 @@ class EnhancedMultiModelValidator:
                 errors.append(error_message)
                 logger.error(f"Request {request_id}: {error_message}")
 
-        metrics_details = {"response_times_map": response_times_map, "synthesis_attempts": len(self.models)}
+        metrics_details = {
+            "response_times_map": response_times_map,
+            "synthesis_attempts": len(self.models),
+            "successful_synthesis_count": len(responses_data)
+        }
+        
+        # Calculate aggregated response times for individual model calls within this stage
+        individual_response_times = list(response_times_map.values())
+        if individual_response_times:
+            metrics_details["avg_individual_response_time"] = np.mean(individual_response_times)
+            metrics_details["p95_individual_response_time"] = np.percentile(individual_response_times, 95)
+            metrics_details["p99_individual_response_time"] = np.percentile(individual_response_times, 99)
+        else:
+            metrics_details["avg_individual_response_time"] = 0.0
+            metrics_details["p95_individual_response_time"] = 0.0
+            metrics_details["p99_individual_response_time"] = 0.0
+
+        # Calculate throughput for this stage (requests per second)
+        total_synthesis_time = time.time() - start_time # This start_time is for _parallel_synthesis
+        metrics_details["synthesis_throughput_rps"] = len(responses_data) / total_synthesis_time if total_synthesis_time > 0 else 0.0
+        
         logger.info(f"Request {request_id}: Stage 1 - Parallel Synthesis completed. Successes: {len(responses_data)}, Failures: {len(errors)}")
         return responses_data, errors, metrics_details
 
@@ -984,7 +1648,8 @@ class EnhancedMultiModelValidator:
         current_confidence: float,
         principle_text: str,
         context: Optional[str],
-        request_id: str
+        request_id: str,
+        synthesis_metrics_details: Dict[str, Any], # New parameter
     ) -> UltraReliableResult:
         """
         Handle escalation to expert review when automated consensus is insufficient.
@@ -1034,7 +1699,8 @@ class EnhancedMultiModelValidator:
             validation_path="expert_review_required",
             requires_human_review=True,
             synthesis_details=escalation_details,
-            error_message="Automated consensus confidence below threshold or no policy selected; expert review required."
+            error_message="Automated consensus confidence below threshold or no policy selected; expert review required.",
+            performance_metrics_details=synthesis_metrics_details # Pass the metrics
         )
 
 
@@ -1581,7 +2247,6 @@ class EnhancedSemanticFaithfulnessValidator:
         overlap = len(principle_words & policy_words)
         total_principle_words = len(principle_words)
         score = overlap / total_principle_words
-
         return {
             "score": score,
             "overlap": overlap,
@@ -1759,20 +2424,24 @@ class EnhancedLLMReliabilityFramework:
     def __init__(self, config: LLMReliabilityConfig = None):
         self.config = config or LLMReliabilityConfig()
 
-        # Initialize enhanced components
-        self.multi_model_validator = EnhancedMultiModelValidator(self.config)
-        self.bias_detector = EnhancedBiasDetectionFramework(self.config)
-        self.faithfulness_validator = EnhancedSemanticFaithfulnessValidator(self.config)
-
-        # Initialize monitoring and metrics
+        # Initialize monitoring and metrics first
         self.metrics_collector = PrometheusMetricsCollector(self.config.prometheus_metrics_enabled)
         self.performance_metrics = []
         self.reliability_history = []
 
-        logger.info("Enhanced LLM Reliability Framework initialized")
+        # Initialize enhanced components
+        self.multi_model_validator = EnhancedMultiModelValidator(self.config, self.metrics_collector)
+        self.bias_detector = EnhancedBiasDetectionFramework(self.config)
+        self.faithfulness_validator = EnhancedSemanticFaithfulnessValidator(self.config)
+
+        # Initialize automatic recovery orchestrator
+        self.recovery_orchestrator = AutomaticRecoveryOrchestrator(self.config, self.metrics_collector)
+
+        logger.info("Enhanced LLM Reliability Framework initialized with automatic recovery")
 
     async def initialize(self):
         """Initialize all framework components."""
+        # Initialize multi_model_validator first, as it needs metrics_collector
         await self.multi_model_validator.initialize()
         # After multi_model_validator initializes its models, populate active_models and failure_counts
         self.multi_model_validator.active_models = list(self.multi_model_validator.models.keys())
@@ -1849,7 +2518,7 @@ class EnhancedLLMReliabilityFramework:
                 consensus_rate=ultra_reliable_result.confidence,
                 bias_detection_rate=0.0, # To be updated by bias_detector
                 semantic_faithfulness_score=0.0, # To be updated by faithfulness_validator
-                average_response_time=time.time() - start_time,
+                average_response_time=ultra_reliable_result.performance_metrics_details.get("avg_individual_response_time", time.time() - start_time), # Use individual avg
                 error_rate=1.0 if ultra_reliable_result.error_message and not ultra_reliable_result.policy else 0.0,
                 fallback_usage_rate=1.0 if ultra_reliable_result.requires_human_review else 0.0,
                 confidence_score=ultra_reliable_result.confidence,
@@ -1859,7 +2528,11 @@ class EnhancedLLMReliabilityFramework:
                 # Placeholder for hallucination_rate and factual_accuracy_score
                 # These would ideally come from a dedicated quality assessment module
                 hallucination_rate=ultra_reliable_result.validation_details.get("hallucination_score", 0.0) if ultra_reliable_result.validation_details else 0.0,
-                factual_accuracy_score=ultra_reliable_result.validation_details.get("factual_accuracy_score", 0.0) if ultra_reliable_result.validation_details else 0.0
+                factual_accuracy_score=ultra_reliable_result.validation_details.get("factual_accuracy_score", 0.0) if ultra_reliable_result.validation_details else 0.0,
+                p95_response_time=ultra_reliable_result.performance_metrics_details.get("p95_individual_response_time", 0.0), # New
+                p99_response_time=ultra_reliable_result.performance_metrics_details.get("p99_individual_response_time", 0.0), # New
+                throughput_requests_per_second=ultra_reliable_result.performance_metrics_details.get("synthesis_throughput_rps", 0.0), # New
+                model_failures_total=self.multi_model_validator.model_failure_counts # Populate with current failure counts
             )
             
             if ultra_reliable_result.requires_human_review:
@@ -1960,6 +2633,72 @@ class EnhancedLLMReliabilityFramework:
             # Record metrics to Prometheus
             self.metrics_collector.record_metrics(metrics)
 
+            # Automatic Recovery Monitoring and Execution
+            if self.config.auto_recovery_enabled:
+                try:
+                    # Prepare current metrics for recovery monitoring
+                    current_metrics = {
+                        'overall_reliability': overall_reliability,
+                        'avg_response_time': metrics.average_response_time,
+                        'consensus_rate': metrics.consensus_rate,
+                        'bias_detection_rate': metrics.bias_detection_rate,
+                        'semantic_faithfulness_score': metrics.semantic_faithfulness_score,
+                        'error_rate': metrics.error_rate,
+                        'success_rate': metrics.success_rate
+                    }
+
+                    # Prepare component status for recovery monitoring
+                    component_status = {
+                        'models': {
+                            model_name: {
+                                'failure_rate': self.multi_model_validator.model_failure_counts.get(model_name, 0) / max(1, len(self.performance_metrics)),
+                                'active': model_name in self.multi_model_validator.active_models,
+                                'health_status': self.multi_model_validator.model_health_status.get(model_name, {})
+                            }
+                            for model_name in self.multi_model_validator.models.keys()
+                        },
+                        'system': {
+                            'total_requests': len(self.performance_metrics),
+                            'recent_reliability': overall_reliability
+                        }
+                    }
+
+                    # Execute recovery monitoring and actions
+                    recovery_executions = await self.recovery_orchestrator.monitor_and_recover(
+                        current_metrics, component_status, process_request_id
+                    )
+
+                    # Log recovery actions if any were executed
+                    if recovery_executions:
+                        logger.info(f"Request {process_request_id}: Executed {len(recovery_executions)} recovery actions")
+                        for execution in recovery_executions:
+                            logger.info(f"Recovery: {execution.action.strategy.value} for {execution.action.target_component} - Status: {execution.status.value}")
+
+                        # Measure recovery effectiveness after a brief delay
+                        await asyncio.sleep(1.0)  # Allow recovery actions to take effect
+
+                        # Re-calculate metrics to measure recovery effectiveness
+                        post_recovery_metrics = {
+                            'overall_reliability': self.get_overall_reliability(),
+                            'avg_response_time': metrics.average_response_time,  # Would be updated in real implementation
+                            'consensus_rate': metrics.consensus_rate,
+                            'bias_detection_rate': metrics.bias_detection_rate,
+                            'semantic_faithfulness_score': metrics.semantic_faithfulness_score,
+                            'error_rate': metrics.error_rate,
+                            'success_rate': metrics.success_rate
+                        }
+
+                        # Measure effectiveness for each recovery execution
+                        for execution in recovery_executions:
+                            effectiveness = await self.recovery_orchestrator.measure_recovery_effectiveness(
+                                execution, post_recovery_metrics
+                            )
+                            logger.info(f"Recovery effectiveness for {execution.action.strategy.value}: {effectiveness:.3f}")
+
+                except Exception as recovery_error:
+                    logger.error(f"Request {process_request_id}: Error in automatic recovery monitoring: {recovery_error}")
+                    # Don't fail the main request due to recovery errors
+
             # Log reliability status
             if overall_reliability >= self.config.reliability_target:
                 logger.info(f"Request {process_request_id}: Reliability target achieved: {overall_reliability:.3f}")
@@ -2051,25 +2790,84 @@ class EnhancedLLMReliabilityFramework:
                 raw_llm_response=default_policy_text
             ), "Rule-based fallback: Conservative default policy applied."
 
-        # If no specific rule applies, return None and a message
-        logger.info("No specific rule-based fallback applied.")
         # Example rule 4: If all models are degraded, return a hardcoded default response
-        if not self.active_models:
+        if not self.multi_model_validator.active_models:
             logger.critical(f"All LLM models are degraded. Returning default fallback response: {self.config.default_fallback_response}")
             return LLMStructuredOutput(
                 interpretations=[],
                 raw_llm_response=self.config.default_fallback_response
             ), "Rule-based fallback: All models degraded, returned default response."
 
-        # If no specific rule applies, return None and a message
-        logger.info("No specific rule-based fallback applied.")
-        return None, "No specific rule-based fallback applied."
+        # If no specific rule applies, try re-routing to a healthy model
+        if self.multi_model_validator.active_models:
+            logger.info("No specific rule-based fallback applied, attempting to re-route to a healthy model.")
+            rerouted_policy, reroute_message = await self._re_route_to_healthy_model(input_data, current_best_policy)
+            if rerouted_policy:
+                return rerouted_policy, reroute_message
+            else:
+                logger.warning(f"Re-routing to healthy model failed: {reroute_message}")
+                return None, reroute_message
+
+        logger.info("No specific rule-based fallback applied and no active models for re-routing.")
+        return None, "No specific rule-based fallback applied and no active models for re-routing."
+
+    async def _re_route_to_healthy_model(
+        self,
+        input_data: LLMInterpretationInput,
+        current_best_policy: Optional[LLMStructuredOutput]
+    ) -> Tuple[Optional[LLMStructuredOutput], str]:
+        """
+        Attempts to re-route the request to a different, healthy model if the primary model fails or is degraded.
+        This is a key part of Automatic Reliability Recovery.
+        """
+        logger.info(f"Attempting to re-route request for principle {input_data.principle_id} to a healthy model.")
+
+        # Filter out models that have been degraded or have high failure counts
+        eligible_models = [
+            model_name for model_name in self.multi_model_validator.active_models
+            if self.multi_model_validator.model_failure_counts.get(model_name, 0) < self.config.llm_failure_threshold
+        ]
+
+        if not eligible_models:
+            return None, "No eligible healthy models available for re-routing."
+
+        # Prioritize models that haven't been used recently or have lower failure rates
+        # For simplicity, we'll just pick the first eligible model for now.
+        # A more sophisticated approach would involve a round-robin or a more intelligent selection.
+        target_model_name = eligible_models[0]
+        target_model_info = self.multi_model_validator.models.get(target_model_name)
+
+        if not target_model_info:
+            return None, f"Target model {target_model_name} not found in initialized models."
+
+        try:
+            logger.info(f"Re-routing request to model: {target_model_name}")
+            # Re-process the input data using the selected healthy model
+            # This will bypass the full consensus process and directly call the model
+            rerouted_output, _ = await self.multi_model_validator._call_individual_model_for_synthesis(
+                target_model_name, target_model_info, input_data, input_data.principle_id # Using principle_id as request_id for simplicity here
+            )
+            
+            if rerouted_output:
+                logger.info(f"Successfully re-routed and obtained response from {target_model_name}.")
+                return rerouted_output, f"Re-routed to {target_model_name} due to previous failure."
+            else:
+                return None, f"Re-routed model {target_model_name} returned no output."
+
+        except Exception as e:
+            logger.error(f"Error during re-routing to model {target_model_name}: {e}", exc_info=True)
+            # Increment failure count for the re-routed model
+            self.multi_model_validator.model_failure_counts[target_model_name] = self.multi_model_validator.model_failure_counts.get(target_model_name, 0) + 1
+            self.metrics_collector.increment_model_failures(target_model_name)
+            if self.config.enable_model_degradation and self.multi_model_validator.model_failure_counts[target_model_name] >= self.config.llm_failure_threshold:
+                await self.multi_model_validator._degrade_model(target_model_name, input_data.principle_id) # Use principle_id as request_id
+            return None, f"Failed to re-route to {target_model_name}: {e}"
 
     async def _degrade_model(self, model_name: str, request_id: str):
         """Degrade (disable) a model that has consistently failed."""
-        if model_name in self.active_models:
-            self.active_models.remove(model_name)
-            logger.warning(f"Request {request_id}: Model {model_name} has been degraded due to {self.model_failure_counts[model_name]} consecutive failures.")
+        if model_name in self.multi_model_validator.active_models:
+            self.multi_model_validator.active_models.remove(model_name)
+            logger.warning(f"Request {request_id}: Model {model_name} has been degraded due to {self.multi_model_validator.model_failure_counts[model_name]} consecutive failures.")
             # Optionally, notify monitoring systems or trigger an alert
             self.metrics_collector.increment_escalations() # Consider model degradation an escalation
         else:
@@ -2153,6 +2951,59 @@ class EnhancedLLMReliabilityFramework:
         }
 
         return summary
+
+    def get_recovery_statistics(self) -> Dict[str, Any]:
+        """Get comprehensive automatic recovery statistics."""
+        if not hasattr(self, 'recovery_orchestrator'):
+            return {"status": "recovery_not_enabled"}
+
+        return self.recovery_orchestrator.get_recovery_statistics()
+
+    async def trigger_manual_recovery(
+        self,
+        strategy: RecoveryStrategy,
+        target_component: str,
+        parameters: Dict[str, Any] = None,
+        request_id: str = None
+    ) -> Optional[RecoveryExecution]:
+        """Manually trigger a specific recovery action."""
+        if not hasattr(self, 'recovery_orchestrator'):
+            logger.warning("Recovery orchestrator not available for manual recovery")
+            return None
+
+        if not request_id:
+            request_id = f"manual_{int(time.time())}"
+
+        # Create manual recovery action
+        action = RecoveryAction(
+            strategy=strategy,
+            trigger=RecoveryTrigger.RELIABILITY_THRESHOLD_BREACH,  # Use generic trigger for manual
+            priority=1,  # High priority for manual actions
+            target_component=target_component,
+            parameters=parameters or {}
+        )
+
+        # Get current metrics for recovery execution
+        current_metrics = {}
+        if self.performance_metrics:
+            latest_metrics = self.performance_metrics[-1]
+            current_metrics = {
+                'overall_reliability': self.get_overall_reliability(),
+                'avg_response_time': latest_metrics.average_response_time,
+                'consensus_rate': latest_metrics.consensus_rate,
+                'bias_detection_rate': latest_metrics.bias_detection_rate,
+                'semantic_faithfulness_score': latest_metrics.semantic_faithfulness_score,
+                'error_rate': latest_metrics.error_rate,
+                'success_rate': latest_metrics.success_rate
+            }
+
+        # Execute the recovery action
+        execution = await self.recovery_orchestrator._execute_recovery_action(
+            action, current_metrics, request_id
+        )
+
+        logger.info(f"Manual recovery triggered: {strategy.value} for {target_component}")
+        return execution
 
 
 # Backward compatibility alias

@@ -107,21 +107,26 @@ class FederatedEvaluator:
         logger.info("Initialized Federated Evaluator")
     
     async def initialize(self):
-        """Initialize the federated evaluator."""
+        """Initialize the federated evaluator with enhanced multi-node support."""
         try:
             # Import here to avoid circular imports
             from .secure_aggregation import SecureAggregator
             from .privacy_metrics import DifferentialPrivacyManager
+            from .cross_platform_coordinator import CrossPlatformCoordinator
 
             # Initialize components
             self.secure_aggregator = SecureAggregator()
             self.privacy_manager = DifferentialPrivacyManager(epsilon=1.0)
+            self.cross_platform_coordinator = CrossPlatformCoordinator()
 
-            # Initialize secure aggregator
+            # Initialize secure aggregator with enhanced Byzantine fault tolerance
             await self.secure_aggregator.initialize()
 
-            # Initialize privacy manager
+            # Initialize privacy manager with multi-node support
             await self.privacy_manager.initialize()
+
+            # Initialize cross-platform coordinator for 10+ nodes
+            await self.cross_platform_coordinator.initialize()
 
             # Initialize MAB client connection to GS service
             await self._initialize_mab_client()
@@ -129,11 +134,206 @@ class FederatedEvaluator:
             # Load existing nodes from database
             await self._load_federated_nodes()
 
-            logger.info("Federated Evaluator initialized successfully")
+            # Initialize node health monitoring
+            await self._initialize_node_monitoring()
+
+            # Setup Byzantine fault detection
+            await self._initialize_byzantine_detection()
+
+            logger.info("Federated Evaluator initialized successfully with multi-node support")
 
         except Exception as e:
             logger.error(f"Failed to initialize Federated Evaluator: {e}")
             raise
+
+    async def _initialize_node_monitoring(self):
+        """Initialize node health monitoring for 10+ federated nodes."""
+        try:
+            # Setup periodic health checks
+            self.node_health_check_interval = 30  # seconds
+            self.node_timeout_threshold = 120  # seconds
+            self.max_concurrent_evaluations_per_node = 5
+
+            # Initialize node load balancing
+            self.node_load_balancer = {
+                "strategy": "least_loaded",  # "round_robin", "least_loaded", "performance_based"
+                "weights": {},  # Node performance weights
+                "current_loads": {}  # Current evaluation loads per node
+            }
+
+            # Start background health monitoring task
+            asyncio.create_task(self._monitor_node_health())
+
+            logger.info("Node monitoring initialized for multi-node federation")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize node monitoring: {e}")
+            raise
+
+    async def _initialize_byzantine_detection(self):
+        """Initialize Byzantine fault detection algorithms."""
+        try:
+            # Byzantine detection configuration
+            self.byzantine_config = {
+                "detection_threshold": 0.3,  # Threshold for marking node as Byzantine
+                "consensus_threshold": 0.67,  # Minimum agreement for consensus
+                "outlier_detection_method": "statistical",  # "statistical", "ml_based", "consensus"
+                "max_byzantine_nodes": 3,  # Maximum tolerable Byzantine nodes
+                "quarantine_duration": 300  # seconds to quarantine suspected nodes
+            }
+
+            # Initialize detection algorithms
+            self.byzantine_detector = {
+                "statistical_outlier_detector": self._statistical_outlier_detection,
+                "consensus_validator": self._validate_consensus,
+                "performance_anomaly_detector": self._detect_performance_anomalies
+            }
+
+            # Quarantined nodes tracking
+            self.quarantined_nodes = {}
+
+            logger.info("Byzantine fault detection initialized")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize Byzantine detection: {e}")
+            raise
+
+    async def _monitor_node_health(self):
+        """Background task to monitor node health and performance."""
+        while True:
+            try:
+                current_time = datetime.now(timezone.utc)
+
+                for node_id, node in self.nodes.items():
+                    # Check heartbeat timeout
+                    if node.last_heartbeat:
+                        time_since_heartbeat = (current_time - node.last_heartbeat).total_seconds()
+
+                        if time_since_heartbeat > self.node_timeout_threshold:
+                            await self._handle_node_timeout(node_id)
+
+                    # Update node health score based on recent performance
+                    await self._update_node_health_score(node_id)
+
+                    # Check for performance anomalies
+                    await self._check_node_performance_anomalies(node_id)
+
+                # Update load balancing weights
+                await self._update_load_balancing_weights()
+
+                # Sleep until next health check
+                await asyncio.sleep(self.node_health_check_interval)
+
+            except Exception as e:
+                logger.error(f"Error in node health monitoring: {e}")
+                await asyncio.sleep(self.node_health_check_interval)
+
+    async def _handle_node_timeout(self, node_id: str):
+        """Handle node timeout by marking as inactive and redistributing tasks."""
+        try:
+            if node_id in self.nodes:
+                self.nodes[node_id].status = "inactive"
+                logger.warning(f"Node {node_id} marked as inactive due to timeout")
+
+                # Redistribute active evaluations from this node
+                await self._redistribute_node_evaluations(node_id)
+
+                # Update metrics
+                self.evaluation_metrics["failed_evaluations"] += 1
+
+        except Exception as e:
+            logger.error(f"Error handling node timeout for {node_id}: {e}")
+
+    async def _update_node_health_score(self, node_id: str):
+        """Update node health score based on recent performance metrics."""
+        try:
+            if node_id not in self.nodes:
+                return
+
+            node = self.nodes[node_id]
+
+            # Calculate health score based on multiple factors
+            success_rate = (node.successful_evaluations / max(node.total_evaluations, 1))
+            response_time_factor = min(1.0, 1000.0 / max(node.average_response_time_ms, 100.0))
+
+            # Combine factors with weights
+            health_score = (
+                0.6 * success_rate +
+                0.3 * response_time_factor +
+                0.1 * (1.0 if node.status == "active" else 0.0)
+            )
+
+            node.health_score = max(0.0, min(1.0, health_score))
+
+            # Update load balancing weights
+            self.node_load_balancer["weights"][node_id] = node.health_score
+
+        except Exception as e:
+            logger.error(f"Error updating health score for node {node_id}: {e}")
+
+    async def _check_node_performance_anomalies(self, node_id: str):
+        """Check for performance anomalies that might indicate Byzantine behavior."""
+        try:
+            if node_id not in self.nodes:
+                return
+
+            node = self.nodes[node_id]
+
+            # Check for suspicious patterns
+            anomalies = []
+
+            # Unusually high failure rate
+            if node.total_evaluations > 10:
+                failure_rate = (node.failed_evaluations / node.total_evaluations)
+                if failure_rate > 0.5:
+                    anomalies.append("high_failure_rate")
+
+            # Unusually slow response times
+            if node.average_response_time_ms > 10000:  # 10 seconds
+                anomalies.append("slow_response")
+
+            # Inconsistent results (would need historical data)
+            # This would be implemented with more sophisticated analysis
+
+            if anomalies:
+                await self._handle_performance_anomaly(node_id, anomalies)
+
+        except Exception as e:
+            logger.error(f"Error checking performance anomalies for node {node_id}: {e}")
+
+    async def _handle_performance_anomaly(self, node_id: str, anomalies: List[str]):
+        """Handle detected performance anomalies."""
+        try:
+            logger.warning(f"Performance anomalies detected for node {node_id}: {anomalies}")
+
+            # Increase monitoring frequency for this node
+            # Reduce evaluation assignments temporarily
+            # Consider quarantine if anomalies persist
+
+            if len(anomalies) >= 2:
+                await self._quarantine_node(node_id, "performance_anomalies")
+
+        except Exception as e:
+            logger.error(f"Error handling performance anomaly for node {node_id}: {e}")
+
+    async def _quarantine_node(self, node_id: str, reason: str):
+        """Quarantine a node suspected of Byzantine behavior."""
+        try:
+            if node_id in self.nodes:
+                self.nodes[node_id].status = "maintenance"
+                self.quarantined_nodes[node_id] = {
+                    "reason": reason,
+                    "quarantined_at": datetime.now(timezone.utc),
+                    "duration": self.byzantine_config["quarantine_duration"]
+                }
+
+                logger.warning(f"Node {node_id} quarantined for {reason}")
+
+                # Redistribute evaluations
+                await self._redistribute_node_evaluations(node_id)
+
+        except Exception as e:
+            logger.error(f"Error quarantining node {node_id}: {e}")
     
     async def _initialize_mab_client(self):
         """Initialize connection to GS service MAB system."""
@@ -185,13 +385,19 @@ class FederatedEvaluator:
             raise
     
     async def submit_evaluation(self, request: Any) -> str:
-        """Submit a new federated evaluation task."""
+        """Submit a new federated evaluation task with enhanced multi-node support."""
         try:
             task_id = hashlib.md5(f"{request.policy_content}_{time.time()}".encode()).hexdigest()[:16]
-            
+
             # Get MAB-optimized context if available
             mab_context = await self._get_mab_context(request)
-            
+
+            # Select optimal nodes for this evaluation
+            selected_nodes = await self._select_optimal_nodes(request.target_platforms, request.evaluation_criteria)
+
+            if len(selected_nodes) < 2:
+                raise ValueError("Insufficient active nodes for federated evaluation")
+
             task = EvaluationTask(
                 task_id=task_id,
                 policy_content=request.policy_content,
@@ -200,18 +406,168 @@ class FederatedEvaluator:
                 mab_context=mab_context,
                 privacy_requirements=request.privacy_requirements
             )
-            
+
             self.active_evaluations[task_id] = task
-            
-            # Start evaluation asynchronously
-            asyncio.create_task(self._execute_federated_evaluation(task))
-            
-            logger.info(f"Submitted federated evaluation: {task_id}")
+
+            # Store evaluation in database
+            await self._store_evaluation_in_db(task, selected_nodes)
+
+            # Start evaluation asynchronously with selected nodes
+            asyncio.create_task(self._execute_federated_evaluation(task, selected_nodes))
+
+            logger.info(f"Submitted federated evaluation: {task_id} with {len(selected_nodes)} nodes")
             return task_id
             
         except Exception as e:
             logger.error(f"Failed to submit evaluation: {e}")
             raise
+
+    async def _select_optimal_nodes(self, target_platforms: List[str], evaluation_criteria: Dict[str, Any]) -> List[str]:
+        """Select optimal nodes for federated evaluation based on platform requirements and performance."""
+        try:
+            # Filter nodes by platform type and status
+            available_nodes = []
+            for node_id, node in self.nodes.items():
+                if (node.status == "active" and
+                    node.platform_type.value in target_platforms and
+                    node_id not in self.quarantined_nodes):
+                    available_nodes.append((node_id, node))
+
+            if len(available_nodes) < 2:
+                raise ValueError(f"Insufficient nodes available for platforms: {target_platforms}")
+
+            # Sort nodes by health score and current load
+            def node_score(node_data):
+                node_id, node = node_data
+                current_load = self.node_load_balancer["current_loads"].get(node_id, 0)
+                load_factor = max(0.1, 1.0 - (current_load / self.max_concurrent_evaluations_per_node))
+                return node.health_score * load_factor
+
+            available_nodes.sort(key=node_score, reverse=True)
+
+            # Select top nodes (minimum 2, maximum based on evaluation requirements)
+            min_nodes = max(2, len(target_platforms))
+            max_nodes = min(10, len(available_nodes))  # Cap at 10 nodes for performance
+
+            # Determine optimal number of nodes based on evaluation criteria
+            complexity_factor = evaluation_criteria.get("complexity", "medium")
+            if complexity_factor == "high":
+                target_node_count = min(max_nodes, 6)
+            elif complexity_factor == "medium":
+                target_node_count = min(max_nodes, 4)
+            else:
+                target_node_count = min(max_nodes, 3)
+
+            selected_node_count = max(min_nodes, target_node_count)
+            selected_nodes = [node_id for node_id, _ in available_nodes[:selected_node_count]]
+
+            # Update current loads
+            for node_id in selected_nodes:
+                current_load = self.node_load_balancer["current_loads"].get(node_id, 0)
+                self.node_load_balancer["current_loads"][node_id] = current_load + 1
+
+            logger.info(f"Selected {len(selected_nodes)} nodes for evaluation: {selected_nodes}")
+            return selected_nodes
+
+        except Exception as e:
+            logger.error(f"Failed to select optimal nodes: {e}")
+            raise
+
+    async def _store_evaluation_in_db(self, task: EvaluationTask, selected_nodes: List[str]):
+        """Store evaluation task and node assignments in database."""
+        try:
+            from shared.database import get_async_db
+            from shared.models import FederatedEvaluation, EvaluationNodeAssignment
+
+            async with get_async_db() as db:
+                # Create federated evaluation record
+                db_evaluation = FederatedEvaluation(
+                    task_id=task.task_id,
+                    policy_content=task.policy_content,
+                    evaluation_criteria=task.evaluation_criteria,
+                    target_platforms=task.target_platforms,
+                    privacy_requirements=task.privacy_requirements,
+                    mab_context=task.mab_context,
+                    status=task.status.value,
+                    participant_count=len(selected_nodes)
+                )
+
+                db.add(db_evaluation)
+                await db.flush()  # Get the ID
+
+                # Create node assignments
+                for i, node_id in enumerate(selected_nodes):
+                    assignment = EvaluationNodeAssignment(
+                        evaluation_id=db_evaluation.id,
+                        node_id=self._get_node_db_id(node_id),
+                        priority=1 if i < 2 else 2,  # First 2 nodes get high priority
+                        status="assigned"
+                    )
+                    db.add(assignment)
+
+                await db.commit()
+
+                logger.info(f"Stored evaluation {task.task_id} in database with {len(selected_nodes)} node assignments")
+
+        except Exception as e:
+            logger.error(f"Failed to store evaluation in database: {e}")
+            raise
+
+    def _get_node_db_id(self, node_id: str) -> int:
+        """Get database ID for a node (placeholder - would need actual implementation)."""
+        # This would need to be implemented to map node_id to database ID
+        # For now, return a placeholder
+        return hash(node_id) % 1000000
+
+    async def _redistribute_node_evaluations(self, failed_node_id: str):
+        """Redistribute evaluations from a failed node to other available nodes."""
+        try:
+            # Find active evaluations assigned to the failed node
+            evaluations_to_redistribute = []
+
+            for task_id, task in self.active_evaluations.items():
+                if task.status in [EvaluationStatus.PENDING, EvaluationStatus.RUNNING]:
+                    evaluations_to_redistribute.append(task_id)
+
+            if not evaluations_to_redistribute:
+                return
+
+            logger.info(f"Redistributing {len(evaluations_to_redistribute)} evaluations from failed node {failed_node_id}")
+
+            for task_id in evaluations_to_redistribute:
+                task = self.active_evaluations[task_id]
+
+                # Select new nodes excluding the failed one
+                available_platforms = [p for p in task.target_platforms]
+                new_nodes = await self._select_optimal_nodes(available_platforms, task.evaluation_criteria)
+
+                if new_nodes:
+                    # Restart evaluation with new nodes
+                    asyncio.create_task(self._execute_federated_evaluation(task, new_nodes))
+                    logger.info(f"Redistributed evaluation {task_id} to new nodes: {new_nodes}")
+                else:
+                    # Mark evaluation as failed if no nodes available
+                    task.status = EvaluationStatus.FAILED
+                    task.results["error"] = f"No available nodes after {failed_node_id} failure"
+                    logger.warning(f"Failed to redistribute evaluation {task_id} - no available nodes")
+
+        except Exception as e:
+            logger.error(f"Failed to redistribute evaluations from node {failed_node_id}: {e}")
+
+    async def _update_load_balancing_weights(self):
+        """Update load balancing weights based on current node performance."""
+        try:
+            for node_id, node in self.nodes.items():
+                if node_id not in self.node_load_balancer["weights"]:
+                    self.node_load_balancer["weights"][node_id] = node.health_score
+                else:
+                    # Exponential moving average for weight updates
+                    current_weight = self.node_load_balancer["weights"][node_id]
+                    new_weight = 0.7 * current_weight + 0.3 * node.health_score
+                    self.node_load_balancer["weights"][node_id] = new_weight
+
+        except Exception as e:
+            logger.error(f"Failed to update load balancing weights: {e}")
     
     async def _get_mab_context(self, request: Any) -> Dict[str, Any]:
         """Get MAB-optimized context for evaluation."""

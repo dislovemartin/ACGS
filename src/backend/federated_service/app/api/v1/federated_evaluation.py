@@ -30,18 +30,36 @@ async def submit_federated_evaluation(
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_active_user)
 ):
-    """Submit a new federated evaluation task."""
+    """Submit a new federated evaluation task with enhanced multi-node support."""
     try:
         logger.info(f"Submitting federated evaluation for user: {current_user.get('username', 'unknown')}")
-        
+
+        # Validate request for multi-node requirements
+        if len(request.target_platforms) < 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one target platform must be specified"
+            )
+
+        # Check if sufficient nodes are available
+        available_nodes = await federated_evaluator.get_available_nodes_count(request.target_platforms)
+        if available_nodes < 2:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Insufficient nodes available for evaluation. Required: 2, Available: {available_nodes}"
+            )
+
         # Submit evaluation to federated evaluator
         task_id = await federated_evaluator.submit_evaluation(request)
-        
+
+        # Estimate completion time based on current load and complexity
+        estimated_completion = await _estimate_completion_time(request, available_nodes)
+
         return FederatedEvaluationResponse(
             task_id=task_id,
             status="pending",
-            message=f"Federated evaluation submitted successfully. Task ID: {task_id}",
-            estimated_completion_time=None  # Would calculate based on current load
+            message=f"Federated evaluation submitted successfully with {available_nodes} nodes. Task ID: {task_id}",
+            estimated_completion_time=estimated_completion
         )
         
     except ValueError as e:
@@ -249,13 +267,146 @@ async def get_federated_metrics(
             node_metrics=node_metrics,
             system_health=system_health
         )
-        
+
     except Exception as e:
-        logger.error(f"Failed to get federated metrics: {e}")
+        logger.error(f"Error getting federated metrics: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get metrics: {str(e)}"
+            detail=f"Failed to retrieve federated metrics: {str(e)}"
         )
+
+
+@router.get("/nodes/health", response_model=Dict[str, Any])
+async def get_nodes_health_status(
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get comprehensive health status of all federated nodes."""
+    try:
+        health_status = await federated_evaluator.get_comprehensive_node_health()
+
+        return {
+            "total_nodes": health_status["total_nodes"],
+            "active_nodes": health_status["active_nodes"],
+            "inactive_nodes": health_status["inactive_nodes"],
+            "quarantined_nodes": health_status["quarantined_nodes"],
+            "average_health_score": health_status["average_health_score"],
+            "load_distribution": health_status["load_distribution"],
+            "byzantine_detections": health_status["byzantine_detections"],
+            "node_details": health_status["node_details"]
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting node health status: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve node health status: {str(e)}"
+        )
+
+
+@router.post("/nodes/{node_id}/quarantine")
+async def quarantine_node(
+    node_id: str,
+    reason: str = "manual_quarantine",
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Manually quarantine a node (Admin only)."""
+    try:
+        # Check if user has admin privileges
+        if not current_user.get("roles") or "admin" not in current_user.get("roles", []):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin privileges required to quarantine nodes"
+            )
+
+        success = await federated_evaluator.quarantine_node_manual(node_id, reason)
+
+        if success:
+            return {"message": f"Node {node_id} quarantined successfully", "reason": reason}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Node {node_id} not found"
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error quarantining node {node_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to quarantine node: {str(e)}"
+        )
+
+
+@router.post("/nodes/{node_id}/restore")
+async def restore_quarantined_node(
+    node_id: str,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Restore a quarantined node (Admin only)."""
+    try:
+        # Check if user has admin privileges
+        if not current_user.get("roles") or "admin" not in current_user.get("roles", []):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin privileges required to restore nodes"
+            )
+
+        success = await federated_evaluator.restore_quarantined_node(node_id)
+
+        if success:
+            return {"message": f"Node {node_id} restored successfully"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Node {node_id} not found or not quarantined"
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error restoring node {node_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to restore node: {str(e)}"
+        )
+
+
+async def _estimate_completion_time(request: FederatedEvaluationRequest, available_nodes: int) -> Optional[str]:
+    """Estimate completion time for federated evaluation."""
+    try:
+        # Base time estimates (in seconds)
+        base_time = 60  # 1 minute base
+
+        # Adjust based on complexity
+        complexity_factor = request.evaluation_criteria.get("complexity", "medium")
+        if complexity_factor == "high":
+            base_time *= 3
+        elif complexity_factor == "low":
+            base_time *= 0.5
+
+        # Adjust based on number of platforms
+        platform_factor = len(request.target_platforms) * 0.3
+
+        # Adjust based on available nodes (more nodes = faster)
+        node_factor = max(0.5, 1.0 - (available_nodes - 2) * 0.1)
+
+        estimated_seconds = int(base_time * (1 + platform_factor) * node_factor)
+
+        # Convert to human-readable format
+        if estimated_seconds < 60:
+            return f"{estimated_seconds} seconds"
+        elif estimated_seconds < 3600:
+            minutes = estimated_seconds // 60
+            return f"{minutes} minutes"
+        else:
+            hours = estimated_seconds // 3600
+            minutes = (estimated_seconds % 3600) // 60
+            return f"{hours}h {minutes}m"
+
+    except Exception as e:
+        logger.error(f"Error estimating completion time: {e}")
+        return None
 
 
 @router.get("/platforms")

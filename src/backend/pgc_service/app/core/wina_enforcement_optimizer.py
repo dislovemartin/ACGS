@@ -31,7 +31,7 @@ from enum import Enum
 try:
     import sys
     import os
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'shared'))
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'shared'))
     from wina.config import WINAConfig, load_wina_config_from_env
     from wina.metrics import WINAMetrics
     from wina.constitutional_integration import ConstitutionalWINAIntegration

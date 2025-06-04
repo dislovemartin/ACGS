@@ -11,7 +11,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, timezone
 import uuid
 
-from shared.database import Base
+# Fix the import to use the full package path
+from src.backend.shared.database import Base
 
 
 class PromptTemplateModel(Base):

@@ -1,15 +1,15 @@
 {
   "models": {
     "main": {
-      "provider": "requesty",
-      "modelId": "openai/O4 Mini:high",
+      "provider": "google",
+      "modelId": "google/gemini-2.5-flash-preview-05-20",
       "maxTokens": 64000,
       "temperature": 0.2
     },
     "research": {
       "provider": "google",
       "modelId": "google/gemini-2.5-flash-preview-05-20",
-      "maxTokens": 8700,
+      "maxTokens": 64000,
       "temperature": 0.1
     },
     "fallback": {

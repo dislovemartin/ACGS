@@ -4,7 +4,7 @@ Handles digital signatures, key management, Merkle trees, and timestamping
 """
 
 import base64
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession

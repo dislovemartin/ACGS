@@ -1,12 +1,13 @@
-# ACGS/shared/models.py
+# ACGS Federated Service Models
 from .database import Base
 from sqlalchemy import (
-    Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func, JSON, Float, Index
+    Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func, JSON, Float, Index, Enum
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID, ARRAY # For PostgreSQL specific JSONB, UUID, and ARRAY types
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import uuid # For generating UUIDs
+import enum
 
 class User(Base):
     __tablename__ = "users"
@@ -423,3 +424,328 @@ Index('ix_dispute_initiated_status', DisputeResolution.initiated_at, DisputeReso
 # policy_group_id = Column(Integer, ForeignKey("policies.id"))
 # policy_group = relationship("Policy", back_populates="rules")
 # The current setup with policy_id in PolicyRule and rules in Policy achieves this.
+
+
+# ===== FEDERATED EVALUATION FRAMEWORK MODELS =====
+
+class PlatformTypeEnum(enum.Enum):
+    """Supported platform types for federated evaluation."""
+    CLOUD_OPENAI = "cloud_openai"
+    CLOUD_ANTHROPIC = "cloud_anthropic"
+    CLOUD_COHERE = "cloud_cohere"
+    CLOUD_GROQ = "cloud_groq"
+    LOCAL_OLLAMA = "local_ollama"
+    ACGS_INTERNAL = "acgs_internal"
+
+
+class EvaluationStatusEnum(enum.Enum):
+    """Status of federated evaluation tasks."""
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class NodeStatusEnum(enum.Enum):
+    """Status of federated nodes."""
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    MAINTENANCE = "maintenance"
+    ERROR = "error"
+
+
+class AggregationMethodEnum(enum.Enum):
+    """Aggregation methods for federated results."""
+    FEDERATED_AVERAGING = "federated_averaging"
+    SECURE_SUM = "secure_sum"
+    DIFFERENTIAL_PRIVATE = "differential_private"
+    BYZANTINE_ROBUST = "byzantine_robust"
+
+
+class FederatedNode(Base):
+    """Federated evaluation node registration and management."""
+    __tablename__ = "federated_nodes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    node_id = Column(String(100), unique=True, nullable=False, index=True)
+    platform_type = Column(Enum(PlatformTypeEnum), nullable=False, index=True)
+
+    # Connection details
+    endpoint_url = Column(String(500), nullable=False)
+    api_key_hash = Column(String(255), nullable=True)  # Hashed API key for security
+
+    # Node capabilities and metadata
+    capabilities = Column(JSONB, nullable=True)  # {"models": ["gpt-4"], "max_tokens": 4096}
+    configuration = Column(JSONB, nullable=True)  # Node-specific configuration
+
+    # Status and health
+    status = Column(Enum(NodeStatusEnum), default=NodeStatusEnum.ACTIVE, nullable=False, index=True)
+    last_heartbeat = Column(DateTime(timezone=True), nullable=True)
+    health_score = Column(Float, default=1.0, nullable=False)  # 0.0 to 1.0
+
+    # Performance metrics
+    total_evaluations = Column(Integer, default=0, nullable=False)
+    successful_evaluations = Column(Integer, default=0, nullable=False)
+    failed_evaluations = Column(Integer, default=0, nullable=False)
+    average_response_time_ms = Column(Float, default=0.0, nullable=False)
+
+    # MAB integration
+    mab_template_preferences = Column(JSONB, nullable=True)  # Template performance history
+    prompt_optimization_history = Column(JSONB, nullable=True)  # MAB optimization data
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    evaluations = relationship("FederatedEvaluation", back_populates="nodes", secondary="evaluation_node_assignments")
+
+
+class FederatedEvaluation(Base):
+    """Federated evaluation task tracking."""
+    __tablename__ = "federated_evaluations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(String(100), unique=True, nullable=False, index=True)
+
+    # Evaluation content
+    policy_content = Column(Text, nullable=False)
+    evaluation_criteria = Column(JSONB, nullable=False)
+    target_platforms = Column(ARRAY(String), nullable=False)
+
+    # Privacy and security
+    privacy_requirements = Column(JSONB, nullable=True)  # {"epsilon": 1.0, "mechanism": "laplace"}
+    privacy_budget_used = Column(Float, default=0.0, nullable=False)
+
+    # MAB integration
+    mab_context = Column(JSONB, nullable=True)  # MAB optimization context
+    selected_template_id = Column(String(100), nullable=True)  # MAB-selected template
+
+    # Status and timing
+    status = Column(Enum(EvaluationStatusEnum), default=EvaluationStatusEnum.PENDING, nullable=False, index=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    estimated_completion_time = Column(DateTime(timezone=True), nullable=True)
+
+    # Results and metrics
+    aggregated_results = Column(JSONB, nullable=True)  # Final aggregated results
+    aggregation_method = Column(Enum(AggregationMethodEnum), nullable=True)
+    participant_count = Column(Integer, default=0, nullable=False)
+    byzantine_nodes_detected = Column(Integer, default=0, nullable=False)
+
+    # Performance metrics
+    total_execution_time_ms = Column(Float, nullable=True)
+    cross_platform_consistency_score = Column(Float, nullable=True)  # 0.0 to 1.0
+
+    # Error handling
+    error_message = Column(Text, nullable=True)
+    retry_count = Column(Integer, default=0, nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # User tracking
+    submitted_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    submitted_by_user = relationship("User")
+
+    # Relationships
+    nodes = relationship("FederatedNode", back_populates="evaluations", secondary="evaluation_node_assignments")
+    node_results = relationship("EvaluationNodeResult", back_populates="evaluation", cascade="all, delete-orphan")
+
+
+class EvaluationNodeAssignment(Base):
+    """Many-to-many relationship between evaluations and nodes."""
+    __tablename__ = "evaluation_node_assignments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    evaluation_id = Column(Integer, ForeignKey("federated_evaluations.id"), nullable=False)
+    node_id = Column(Integer, ForeignKey("federated_nodes.id"), nullable=False)
+
+    # Assignment details
+    assigned_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    priority = Column(Integer, default=1, nullable=False)  # 1=high, 2=medium, 3=low
+
+    # Status tracking
+    status = Column(String(50), default="assigned", nullable=False, index=True)  # assigned, running, completed, failed
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class EvaluationNodeResult(Base):
+    """Individual node results for federated evaluations."""
+    __tablename__ = "evaluation_node_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    evaluation_id = Column(Integer, ForeignKey("federated_evaluations.id"), nullable=False)
+    node_id = Column(Integer, ForeignKey("federated_nodes.id"), nullable=False)
+
+    # Result data
+    raw_response = Column(JSONB, nullable=True)  # Raw response from the node
+    processed_metrics = Column(JSONB, nullable=True)  # Processed evaluation metrics
+
+    # Performance metrics
+    policy_compliance_score = Column(Float, nullable=True)  # 0.0 to 1.0
+    execution_time_ms = Column(Float, nullable=True)
+    success_rate = Column(Float, nullable=True)  # 0.0 to 1.0
+    consistency_score = Column(Float, nullable=True)  # 0.0 to 1.0
+    privacy_score = Column(Float, nullable=True)  # 0.0 to 1.0
+
+    # Quality indicators
+    is_byzantine = Column(Boolean, default=False, nullable=False)  # Detected as Byzantine
+    confidence_score = Column(Float, nullable=True)  # 0.0 to 1.0
+    validation_passed = Column(Boolean, nullable=True)
+
+    # Error handling
+    error_message = Column(Text, nullable=True)
+    retry_count = Column(Integer, default=0, nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    evaluation = relationship("FederatedEvaluation", back_populates="node_results")
+    node = relationship("FederatedNode")
+
+
+class SecureAggregationSession(Base):
+    """Secure aggregation session tracking."""
+    __tablename__ = "secure_aggregation_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String(100), unique=True, nullable=False, index=True)
+    evaluation_id = Column(Integer, ForeignKey("federated_evaluations.id"), nullable=False)
+
+    # Aggregation configuration
+    aggregation_method = Column(Enum(AggregationMethodEnum), nullable=False)
+    participant_nodes = Column(ARRAY(String), nullable=False)
+    minimum_participants = Column(Integer, default=2, nullable=False)
+
+    # Cryptographic details
+    encryption_scheme = Column(String(100), nullable=True)  # e.g., "homomorphic", "secret_sharing"
+    key_exchange_completed = Column(Boolean, default=False, nullable=False)
+    verification_hashes = Column(JSONB, nullable=True)
+
+    # Privacy parameters
+    privacy_epsilon = Column(Float, nullable=True)  # Differential privacy parameter
+    privacy_delta = Column(Float, nullable=True)  # Differential privacy parameter
+    noise_mechanism = Column(String(50), nullable=True)  # "laplace", "gaussian"
+
+    # Session status
+    status = Column(String(50), default="initializing", nullable=False, index=True)  # initializing, collecting, aggregating, completed, failed
+    started_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Results
+    aggregated_data = Column(JSONB, nullable=True)  # Final aggregated results
+    privacy_budget_consumed = Column(Float, default=0.0, nullable=False)
+    byzantine_nodes_detected = Column(Integer, default=0, nullable=False)
+
+    # Error handling
+    error_message = Column(Text, nullable=True)
+
+    # Relationships
+    evaluation = relationship("FederatedEvaluation")
+    shares = relationship("SecureShare", back_populates="session", cascade="all, delete-orphan")
+
+
+class SecureShare(Base):
+    """Secure shares for cryptographic aggregation."""
+    __tablename__ = "secure_shares"
+
+    id = Column(Integer, primary_key=True, index=True)
+    share_id = Column(String(100), unique=True, nullable=False, index=True)
+    session_id = Column(Integer, ForeignKey("secure_aggregation_sessions.id"), nullable=False)
+    node_id = Column(Integer, ForeignKey("federated_nodes.id"), nullable=False)
+
+    # Share data
+    encrypted_value = Column(Text, nullable=False)  # Encrypted share value
+    verification_hash = Column(String(255), nullable=False)  # Hash for verification
+    share_index = Column(Integer, nullable=False)  # Index in secret sharing scheme
+
+    # Metadata
+    encryption_metadata = Column(JSONB, nullable=True)  # Encryption parameters
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    session = relationship("SecureAggregationSession", back_populates="shares")
+    node = relationship("FederatedNode")
+
+
+class PrivacyMetric(Base):
+    """Privacy metrics tracking for federated evaluations."""
+    __tablename__ = "privacy_metrics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    evaluation_id = Column(Integer, ForeignKey("federated_evaluations.id"), nullable=False)
+    node_id = Column(Integer, ForeignKey("federated_nodes.id"), nullable=True)  # Null for aggregated metrics
+
+    # Privacy measurements
+    epsilon_consumed = Column(Float, nullable=True)  # Differential privacy budget consumed
+    delta_consumed = Column(Float, nullable=True)  # Differential privacy delta consumed
+    privacy_score = Column(Float, nullable=True)  # Overall privacy score (0.0 to 1.0)
+
+    # Specific privacy metrics
+    data_minimization_score = Column(Float, nullable=True)  # How well data is minimized
+    anonymization_level = Column(Float, nullable=True)  # Level of anonymization achieved
+    inference_resistance = Column(Float, nullable=True)  # Resistance to inference attacks
+
+    # Privacy mechanisms applied
+    mechanisms_applied = Column(JSONB, nullable=True)  # List of privacy mechanisms used
+    noise_parameters = Column(JSONB, nullable=True)  # Parameters for noise addition
+
+    # Compliance tracking
+    gdpr_compliant = Column(Boolean, nullable=True)
+    ccpa_compliant = Column(Boolean, nullable=True)
+    hipaa_compliant = Column(Boolean, nullable=True)
+
+    # Timestamps
+    measured_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    evaluation = relationship("FederatedEvaluation")
+    node = relationship("FederatedNode")
+
+
+class ConstitutionalValidation(Base):
+    """Constitutional compliance validation for federated evaluations."""
+    __tablename__ = "constitutional_validations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    evaluation_id = Column(Integer, ForeignKey("federated_evaluations.id"), nullable=False)
+
+    # Constitutional compliance
+    principle_ids_validated = Column(ARRAY(Integer), nullable=True)  # AC principle IDs checked
+    compliance_score = Column(Float, nullable=True)  # Overall compliance score (0.0 to 1.0)
+    constitutional_violations = Column(JSONB, nullable=True)  # Detected violations
+
+    # Validation details
+    validation_method = Column(String(100), nullable=True)  # "automated", "human_review", "hybrid"
+    validator_confidence = Column(Float, nullable=True)  # Confidence in validation (0.0 to 1.0)
+
+    # Cross-platform consistency
+    consistency_across_platforms = Column(Float, nullable=True)  # Consistency score across platforms
+    platform_specific_issues = Column(JSONB, nullable=True)  # Platform-specific compliance issues
+
+    # Integration with Constitutional Council
+    council_review_required = Column(Boolean, default=False, nullable=False)
+    council_decision = Column(String(100), nullable=True)  # "approved", "rejected", "conditional"
+    council_feedback = Column(Text, nullable=True)
+
+    # Timestamps
+    validated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    council_reviewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    evaluation = relationship("FederatedEvaluation")
+
+
+# Indexes for performance optimization
+Index('ix_federated_node_platform_status', FederatedNode.platform_type, FederatedNode.status)
+Index('ix_federated_evaluation_status_created', FederatedEvaluation.status, FederatedEvaluation.created_at)
+Index('ix_evaluation_node_result_evaluation_node', EvaluationNodeResult.evaluation_id, EvaluationNodeResult.node_id)
+Index('ix_secure_aggregation_session_status', SecureAggregationSession.status, SecureAggregationSession.started_at)
+Index('ix_privacy_metric_evaluation_measured', PrivacyMetric.evaluation_id, PrivacyMetric.measured_at)
+Index('ix_constitutional_validation_evaluation', ConstitutionalValidation.evaluation_id, ConstitutionalValidation.validated_at)

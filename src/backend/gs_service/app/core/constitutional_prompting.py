@@ -13,14 +13,16 @@ from ..services.ac_client import ac_service_client
 
 # Import WINA constitutional integration
 try:
-    from shared.wina.constitutional_integration import (
+    import logging
+    from src.backend.shared.wina.constitutional_integration import (
         WINAConstitutionalPrincipleAnalyzer,
         WINAConstitutionalUpdateService
     )
     WINA_AVAILABLE = True
 except ImportError:
     WINA_AVAILABLE = False
-    logger.warning("WINA constitutional integration not available")
+    _logger = logging.getLogger(__name__)
+    _logger.warning("WINA constitutional integration not available")
 
 logger = logging.getLogger(__name__)
 

@@ -5,13 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any, Optional
 import uuid
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from shared.database import get_async_db
-from ... import schemas as gs_schemas
-from ...services.ac_client import ac_service_client as ac_client
-from ...core.constitutional_prompting import constitutional_prompt_builder
-from ...core.llm_integration import get_llm_client
+from src.backend.shared.database import get_async_db
+from src.backend.gs_service.app import schemas as gs_schemas
+from src.backend.gs_service.app.services.ac_client import ac_service_client as ac_client
+from src.backend.gs_service.app.core.constitutional_prompting import constitutional_prompt_builder
+from src.backend.gs_service.app.core.llm_integration import get_llm_client
 
 import logging
 
@@ -66,7 +66,7 @@ async def ec_constitutional_prompting(
         
         llm_client = get_llm_client()
         # Use the available method for constitutional synthesis
-        from ...schemas import ConstitutionalSynthesisInput
+        from src.backend.gs_service.app import schemas as gs_schemas
         synthesis_input = ConstitutionalSynthesisInput(
             context="evolutionary_computation_governance",
             synthesis_request=guidance_prompt,

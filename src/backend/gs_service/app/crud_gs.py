@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func as sql_func
 from typing import List, Optional, Dict, Any
-from shared.models import PolicyTemplate, Policy # Assuming these are in shared.models
-from datetime import datetime, timezone # For setting timestamps
+from src.backend.shared.models import PolicyTemplate, Policy
+from datetime import datetime, timezone, timedelta # For setting timestamps
 
 # Placeholder for actual schema types if needed for validation or data shaping here,
 # though typically Pydantic schemas are handled at the API layer.
