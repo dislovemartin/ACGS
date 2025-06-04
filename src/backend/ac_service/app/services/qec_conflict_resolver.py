@@ -10,7 +10,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 from dataclasses import dataclass
 
-from ..models import ACPrinciple, ACConflictResolution
+from ..models import Principle, ACConflictResolution
 from ..schemas import ACConflictResolutionCreate, ACConflictResolutionUpdate
 
 # Import QEC enhancement components
@@ -27,6 +27,9 @@ try:
     QEC_AVAILABLE = True
 except ImportError:
     QEC_AVAILABLE = False
+    # Create a dummy ConstitutionalPrinciple for type hints when QEC is not available
+    class ConstitutionalPrinciple:
+        pass
 
 logger = logging.getLogger(__name__)
 
@@ -76,9 +79,9 @@ class QECConflictResolver:
             logger.warning("QEC components not available - using fallback implementations")
     
     async def analyze_conflict(
-        self, 
-        conflict: ACConflictResolution, 
-        principles: List[ACPrinciple]
+        self,
+        conflict: ACConflictResolution,
+        principles: List[Principle]
     ) -> ConflictAnalysis:
         """
         Perform comprehensive QEC-enhanced conflict analysis.
@@ -187,9 +190,9 @@ class QECConflictResolver:
             return self._fallback_analysis(conflict, principles)
     
     async def generate_patch(
-        self, 
-        conflict: ACConflictResolution, 
-        principles: List[ACPrinciple],
+        self,
+        conflict: ACConflictResolution,
+        principles: List[Principle],
         analysis: ConflictAnalysis
     ) -> PatchResult:
         """
@@ -288,8 +291,8 @@ class QECConflictResolver:
             return conflicts
     
     def _convert_to_constitutional_principles(
-        self, 
-        ac_principles: List[ACPrinciple]
+        self,
+        ac_principles: List[Principle]
     ) -> List[ConstitutionalPrinciple]:
         """Convert AC principles to Constitutional principles for QEC processing."""
         constitutional_principles = []
@@ -364,9 +367,9 @@ class QECConflictResolver:
         return min(confidence, 1.0)
     
     def _fallback_analysis(
-        self, 
-        conflict: ACConflictResolution, 
-        principles: List[ACPrinciple]
+        self,
+        conflict: ACConflictResolution,
+        principles: List[Principle]
     ) -> ConflictAnalysis:
         """Fallback analysis when QEC components are not available."""
         return ConflictAnalysis(
@@ -381,9 +384,9 @@ class QECConflictResolver:
         )
     
     def _fallback_patch_generation(
-        self, 
-        conflict: ACConflictResolution, 
-        principles: List[ACPrinciple]
+        self,
+        conflict: ACConflictResolution,
+        principles: List[Principle]
     ) -> PatchResult:
         """Fallback patch generation when QEC components are not available."""
         return PatchResult(

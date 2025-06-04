@@ -9,15 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 from datetime import datetime
 
-from ...database import get_db
+from shared.database import get_async_db as get_db
 from ...schemas import (
     ACConflictResolution,
     ACConflictResolutionCreate,
     ACConflictResolutionUpdate
 )
 from ... import crud
-from ....shared.auth import get_current_user, require_roles
-from ....shared.models import User
+from shared.auth import get_current_active_user, require_admin, require_policy_manager, require_auditor
+from shared.models import User
 
 # Import QEC enhancement components and service
 from ...services.qec_conflict_resolver import QECConflictResolver
@@ -35,7 +35,7 @@ orchestrator = ConflictResolutionOrchestrator()
 async def create_conflict_resolution(
     conflict: ACConflictResolutionCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Create a new conflict resolution entry with QEC enhancement."""
     # Create the conflict resolution
@@ -76,7 +76,7 @@ async def create_conflict_resolution(
 async def get_conflict_resolution(
     conflict_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get a specific conflict resolution by ID."""
     conflict = await crud.get_ac_conflict_resolution(db, conflict_id)
@@ -96,7 +96,7 @@ async def list_conflict_resolutions(
     severity: Optional[str] = Query(None, description="Filter by severity"),
     priority_order: Optional[str] = Query(None, description="Ordering: 'qec' for QEC-based prioritization"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """List all conflict resolutions with pagination and QEC-based prioritization."""
     conflicts = await crud.get_ac_conflict_resolutions(
@@ -123,7 +123,7 @@ async def update_conflict_resolution(
     conflict_id: int,
     conflict_update: ACConflictResolutionUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Update a conflict resolution with QEC re-evaluation."""
     conflict = await crud.get_ac_conflict_resolution(db, conflict_id)
@@ -193,7 +193,7 @@ async def delete_conflict_resolution(
 async def generate_conflict_patch(
     conflict_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Generate automated patch for conflict resolution using QEC components."""
     conflict = await crud.get_ac_conflict_resolution(db, conflict_id)
@@ -291,7 +291,7 @@ async def get_conflict_qec_insights(
 async def detect_conflicts(
     principle_ids: Optional[List[int]] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Run intelligent conflict detection scan."""
     try:
@@ -329,7 +329,7 @@ async def detect_conflicts(
 async def resolve_conflict_automatically(
     conflict_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Attempt automatic resolution of a conflict."""
     try:
@@ -377,7 +377,7 @@ async def handle_human_intervention(
     conflict_id: int,
     intervention_data: Dict[str, Any],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "policy_manager", "constitutional_council"]))
+    current_user: User = Depends(require_policy_manager)
 ):
     """Handle human intervention in conflict resolution."""
     try:
@@ -404,7 +404,7 @@ async def handle_human_intervention(
 @router.get("/performance-report")
 async def get_performance_report(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "auditor"]))
+    current_user: User = Depends(require_auditor)
 ):
     """Get comprehensive system performance report."""
     try:
@@ -423,7 +423,7 @@ async def get_performance_report(
 async def get_conflict_audit_trace(
     conflict_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(["admin", "auditor"]))
+    current_user: User = Depends(require_auditor)
 ):
     """Get complete audit trace for a conflict resolution process."""
     try:

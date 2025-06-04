@@ -25,7 +25,7 @@ services:
     image: redis:7-alpine
     container_name: acgs_redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
@@ -33,6 +33,22 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # LangGraph Redis for workflow state management
+  langgraph_redis:
+    image: redis:6
+    container_name: acgs_langgraph_redis
+    ports:
+      - "6381:6379"  # LangGraph Redis on port 6381
+    volumes:
+      - langgraph_redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 1s
       retries: 5
     restart: unless-stopped
 
@@ -45,20 +61,18 @@ services:
     volumes:
       - opa_policies:/policies
       - opa_data:/data
+      - ./opa-config.yaml:/config/opa-config.yaml:ro
     command: >
       run --server
       --addr=0.0.0.0:8181
       --diagnostic-addr=0.0.0.0:8282
-      --set=plugins.health.service=authz
       --set=decision_logs.console=true
       --set=status.console=true
-      --set=bundles.authz.resource=/policies
-      --config-file=/config/opa-config.yaml
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8181/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8181/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
   alembic-runner:
@@ -89,11 +103,12 @@ services:
   auth_service:
     build: ../../src/backend/auth_service
     container_name: acgs_auth_service
-    expose:
-      - "8000" # Internal port only, Nginx will proxy
+    ports:
+      - "8000:8000" # External port mapping for direct access
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
-      - SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-your_strong_jwt_secret_key_for_auth_service}
+      - SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - ALGORITHM=${AUTH_SERVICE_ALGORITHM:-HS256}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${AUTH_SERVICE_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - REFRESH_TOKEN_EXPIRE_DAYS=${AUTH_SERVICE_REFRESH_TOKEN_EXPIRE_DAYS:-7}
@@ -123,14 +138,24 @@ services:
       - "8001:8001" # Internal port
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
+      # LangGraph configuration
+      - LANGGRAPH_REDIS_URL=${LANGGRAPH_REDIS_URL:-redis://langgraph_redis:6379}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - CONSTITUTIONAL_FIDELITY_THRESHOLD=${CONSTITUTIONAL_FIDELITY_THRESHOLD:-0.85}
+      - MAX_REFINEMENT_ITERATIONS=${MAX_REFINEMENT_ITERATIONS:-5}
     depends_on:
       postgres_db:
         condition: service_healthy
       alembic-runner:
         condition: service_completed_successfully
+      langgraph_redis:
+        condition: service_healthy
     volumes:
       - ../../src/backend/ac_service:/app
       - ../../src/backend/shared:/app/shared
@@ -143,6 +168,7 @@ services:
       - "8002:8002" # Internal port
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
@@ -165,6 +191,7 @@ services:
       - VERIFICATION_TOOL_ENDPOINT=${VERIFICATION_TOOL_ENDPOINT:-http://mock_verification_tool:80/verify}
       - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001/api/v1}
       - INTEGRITY_SERVICE_URL=${INTEGRITY_SERVICE_URL:-http://integrity_service:8002/api/v1}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
@@ -197,9 +224,17 @@ services:
       - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001/api/v1}
       - INTEGRITY_SERVICE_URL=${INTEGRITY_SERVICE_URL:-http://integrity_service:8002/api/v1}
       - FV_SERVICE_URL=${FV_SERVICE_URL:-http://fv_service:8003/api/v1}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
+      # LangGraph configuration
+      - LANGGRAPH_REDIS_URL=${LANGGRAPH_REDIS_URL:-redis://langgraph_redis:6379}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - POLICY_QUALITY_THRESHOLD=${POLICY_QUALITY_THRESHOLD:-0.80}
+      - MAX_SYNTHESIS_LOOPS=${MAX_SYNTHESIS_LOOPS:-3}
     depends_on:
       ac_service:
         condition: service_started
@@ -207,6 +242,8 @@ services:
         condition: service_started
       fv_service:
         condition: service_started
+      langgraph_redis:
+        condition: service_healthy
     volumes:
       - ../../src/backend/gs_service:/app
       - ../../src/backend/shared:/app/shared
@@ -219,6 +256,7 @@ services:
       - "8005:8005" # Internal port
     environment:
       - INTEGRITY_SERVICE_URL=${INTEGRITY_SERVICE_URL:-http://integrity_service:8002/api/v1}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
@@ -231,8 +269,6 @@ services:
     depends_on:
       integrity_service:
         condition: service_started
-      opa:
-        condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
@@ -240,16 +276,62 @@ services:
       - ../../src/backend/shared:/app/shared
     restart: unless-stopped
 
+  # Research Infrastructure Service
+  research_service:
+    build: ../../src/backend/research_service
+    container_name: acgs_research_service
+    ports:
+      - "8007:8007" # Internal port
+    environment:
+      - RESEARCH_DATABASE_URL=${RESEARCH_DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_research}
+      - RESEARCH_REDIS_URL=${RESEARCH_REDIS_URL:-redis://redis:6379/2}
+      - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001}
+      - GS_SERVICE_URL=${GS_SERVICE_URL:-http://gs_service:8004}
+      - FV_SERVICE_URL=${FV_SERVICE_URL:-http://fv_service:8003}
+      - INTEGRITY_SERVICE_URL=${INTEGRITY_SERVICE_URL:-http://integrity_service:8002}
+      - PGC_SERVICE_URL=${PGC_SERVICE_URL:-http://pgc_service:8005}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - PYTHONPATH=/app:/app/shared
+      # Research configuration
+      - EXPERIMENT_TRACKING_ENABLED=${EXPERIMENT_TRACKING_ENABLED:-true}
+      - AUTO_ANALYSIS_ENABLED=${AUTO_ANALYSIS_ENABLED:-true}
+      - REPRODUCIBILITY_CHECKS_ENABLED=${REPRODUCIBILITY_CHECKS_ENABLED:-true}
+      - MAX_EXPERIMENT_DURATION_HOURS=${MAX_EXPERIMENT_DURATION_HOURS:-24}
+      - DATA_RETENTION_DAYS=${DATA_RETENTION_DAYS:-365}
+      - STATISTICAL_SIGNIFICANCE_THRESHOLD=${STATISTICAL_SIGNIFICANCE_THRESHOLD:-0.05}
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      alembic-runner:
+        condition: service_completed_successfully
+    volumes:
+      - ../../src/backend/research_service:/app
+      - ../../src/backend/shared:/app/shared
+      - research_data:/app/research_data
+      - experiment_artifacts:/app/experiment_artifacts
+      - analysis_results:/app/analysis_results
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # EC Service (Evolutionary Computation) - WINA Optimization and Constitutional Oversight
   ec_service:
     build: ../../src/backend/ec_service
     container_name: acgs_ec_service
     ports:
-      - "8006:8006" # Internal port
+      - "8006:8007" # Internal port (service runs on 8007 inside container)
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
       - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001/api/v1}
       - GS_SERVICE_URL=${GS_SERVICE_URL:-http://gs_service:8004/api/v1}
+      - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - PYTHONPATH=/app:/app/shared
@@ -291,7 +373,7 @@ services:
       - ../../src/backend/shared:/app/shared
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -376,7 +458,11 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  langgraph_redis_data:
   opa_policies:
   opa_data:
   prometheus_data:
   grafana_data:
+  research_data:
+  experiment_artifacts:
+  analysis_results:

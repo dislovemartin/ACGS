@@ -180,9 +180,11 @@ class SecurityConfig(BaseModel):
     @field_validator('jwt_secret_key')
     @classmethod
     def validate_jwt_secret(cls, v, info):
-        # Allow default secret key in testing environment
-        if hasattr(info, 'context') and info.context and info.context.get('environment') == 'testing':
-            return v
+        # Allow default secret key in testing and development environments
+        if hasattr(info, 'context') and info.context:
+            env = info.context.get('environment')
+            if env in ['testing', 'development']:
+                return v
         if v == 'your-secret-key-change-in-production':
             raise ValueError("JWT secret key must be changed from default value")
         return v

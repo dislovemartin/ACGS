@@ -90,7 +90,7 @@ def upgrade() -> None:
         sa.Column('adaptation_speed', sa.Float(), nullable=True),
         sa.Column('stakeholder_satisfaction', sa.Float(), nullable=True),
         sa.Column('appeal_frequency', sa.Float(), nullable=True),
-        sa.Column('metadata', postgresql.JSONB(), nullable=True),
+        sa.Column('fidelity_metadata', postgresql.JSONB(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
@@ -130,7 +130,7 @@ def upgrade() -> None:
                     postgresql_using='gin')
     op.create_index('idx_patch_metadata_gin', 'qec_patch_generation_logs', ['patch_metadata'], 
                     postgresql_using='gin')
-    op.create_index('idx_fidelity_metadata_gin', 'constitutional_fidelity_history', ['metadata'], 
+    op.create_index('idx_fidelity_metadata_gin', 'constitutional_fidelity_history', ['fidelity_metadata'],
                     postgresql_using='gin')
 
 

@@ -4,6 +4,7 @@ from app.api.v1.democratic_governance import router as democratic_governance_rou
 from app.api.v1.fidelity_monitor import router as fidelity_monitor_router
 from app.api.v1.principles import router as principles_router
 from app.api.v1.voting import router as voting_router
+from app.api.v1.workflows import router as workflows_router
 from app.api.hitl_sampling import router as hitl_sampling_router
 from app.api.public_consultation import router as public_consultation_router
 from fastapi import FastAPI
@@ -40,6 +41,7 @@ app.include_router(
     fidelity_monitor_router, prefix="/api/v1/fidelity", tags=["Constitutional Fidelity"]
 )
 app.include_router(voting_router, prefix="/api/v1", tags=["Voting Mechanism"])
+app.include_router(workflows_router, prefix="/api/v1", tags=["LangGraph Workflows"])
 app.include_router(democratic_governance_router, prefix="/api/v1")
 app.include_router(hitl_sampling_router, prefix="/api/v1")
 app.include_router(public_consultation_router, prefix="/api/v1")

@@ -62,23 +62,61 @@ scrape_configs:
         target_label: 'component'
         replacement: 'parallel_validation'
 
-  # ACGS-PGP GS Service
+  # ACGS-PGP GS Service with Constitutional AI Metrics
   - job_name: 'acgs-gs-service'
     static_configs:
       - targets: ['gs_service:8004']
     metrics_path: '/metrics'
-    scrape_interval: 15s
+    scrape_interval: 10s
     scrape_timeout: 10s
     scheme: http
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'acgs_constitutional_.*'
+        target_label: 'component'
+        replacement: 'constitutional_governance'
 
-  # ACGS-PGP PGC Service
+  # ACGS-PGP PGC Service with Policy Enforcement Metrics
   - job_name: 'acgs-pgc-service'
     static_configs:
       - targets: ['pgc_service:8005']
     metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 10s
+    scheme: http
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'acgs_policy_.*'
+        target_label: 'component'
+        replacement: 'policy_enforcement'
+
+  # ACGS-PGP EC Service (Evolutionary Computation & WINA)
+  - job_name: 'acgs-ec-service'
+    static_configs:
+      - targets: ['ec_service:8006']
+    metrics_path: '/metrics'
     scrape_interval: 15s
     scrape_timeout: 10s
     scheme: http
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'acgs_wina_.*'
+        target_label: 'component'
+        replacement: 'wina_optimization'
+
+  # ACGS-PGP Research Service
+  - job_name: 'acgs-research-service'
+    static_configs:
+      - targets: ['research_service:8007']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    scheme: http
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'acgs_research_.*'
+        target_label: 'component'
+        replacement: 'research_infrastructure'
 
   # Task 7: Redis for Parallel Processing
   - job_name: 'acgs-redis'

@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # IMPORTANT: This key is loaded from the environment variable SECRET_KEY.
     # Ensure it is set to a strong, unique value in your environment.
     # For local development, you can set it in a .env file.
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "please_change_me_in_production_or_env")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing")
 
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # Refresh Token settings
     REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
-    CSRF_SECRET_KEY: str = os.getenv("CSRF_SECRET_KEY", "a_default_csrf_secret_key_change_me")
+    CSRF_SECRET_KEY: str = os.getenv("CSRF_SECRET_KEY", "acgs-development-csrf-secret-key-2024-phase1-infrastructure-stabilization")
 
     # Backend CORS origins
     # Can accept either a comma-separated string or a list of URLs

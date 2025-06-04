@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from app.api.v1.enforcement import router as enforcement_router
 from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement_router # Added Phase 2
@@ -42,14 +43,95 @@ async def on_shutdown():
 async def root():
     return {"message": "Protective Governance Controls (PGC) Service is running. Use /api/v1/enforcement/docs for API documentation."}
 
-# Placeholder for future health check endpoint
 @app.get("/health")
 async def health_check():
-    # A more comprehensive health check might check policy loading status.
-    if policy_manager._last_refresh_time:
-        return {"status": "ok", "message": "PGC Service is operational.", "policies_loaded_at": policy_manager._last_refresh_time}
-    else:
-        return {"status": "degraded", "message": "PGC Service is operational, but policies have not been loaded yet."}
+    """
+    Comprehensive health check for PGC Service.
+    Validates policy loading status, OPA connectivity, and service dependencies.
+    """
+    health_status = {
+        "status": "healthy",
+        "service": "pgc_service",
+        "version": "1.0.0",
+        "timestamp": "2024-01-20T00:00:00Z",
+        "dependencies": {},
+        "components": {}
+    }
+
+    try:
+        # Check policy manager status
+        if hasattr(policy_manager, '_last_refresh_time') and policy_manager._last_refresh_time:
+            health_status["components"]["policy_manager"] = {
+                "status": "healthy",
+                "last_refresh": str(policy_manager._last_refresh_time),
+                "policies_loaded": True
+            }
+        else:
+            health_status["components"]["policy_manager"] = {
+                "status": "degraded",
+                "policies_loaded": False,
+                "message": "Policies have not been loaded yet"
+            }
+
+        # Check OPA connectivity
+        try:
+            import httpx
+            opa_url = os.getenv('OPA_SERVER_URL', 'http://opa:8181')
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                opa_response = await client.get(f"{opa_url}/health")
+                health_status["dependencies"]["opa"] = {
+                    "status": "healthy" if opa_response.status_code == 200 else "unhealthy",
+                    "response_time_ms": opa_response.elapsed.total_seconds() * 1000 if hasattr(opa_response, 'elapsed') else 0
+                }
+        except Exception as e:
+            health_status["dependencies"]["opa"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+
+        # Check Integrity Service connectivity
+        try:
+            integrity_url = os.getenv('INTEGRITY_SERVICE_URL', 'http://integrity_service:8002')
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                integrity_response = await client.get(f"{integrity_url}/health")
+                health_status["dependencies"]["integrity_service"] = {
+                    "status": "healthy" if integrity_response.status_code == 200 else "unhealthy",
+                    "response_time_ms": integrity_response.elapsed.total_seconds() * 1000 if hasattr(integrity_response, 'elapsed') else 0
+                }
+        except Exception as e:
+            health_status["dependencies"]["integrity_service"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+
+        # Determine overall health status
+        critical_deps = ["opa"]
+        unhealthy_critical = [dep for dep in critical_deps
+                            if health_status["dependencies"].get(dep, {}).get("status") == "unhealthy"]
+
+        if unhealthy_critical:
+            health_status["status"] = "degraded"
+            health_status["message"] = f"Critical dependencies unhealthy: {', '.join(unhealthy_critical)}"
+        elif not health_status["components"]["policy_manager"]["policies_loaded"]:
+            health_status["status"] = "degraded"
+            health_status["message"] = "PGC Service operational but policies not loaded"
+        else:
+            health_status["message"] = "PGC Service is fully operational"
+
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["message"] = f"Health check failed: {str(e)}"
+        health_status["error"] = str(e)
+
+    return health_status
 
 # Add Prometheus metrics endpoint
-# app.get("/metrics")(create_metrics_endpoint())
+from shared.metrics import get_metrics, create_metrics_endpoint
+
+# Initialize metrics for PGC service
+metrics = get_metrics("pgc_service")
+
+@app.get("/metrics")
+async def metrics_endpoint():
+    """Prometheus metrics endpoint for PGC Service."""
+    return create_metrics_endpoint()

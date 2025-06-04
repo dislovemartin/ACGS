@@ -347,9 +347,9 @@ async def delete_ac_conflict_resolution(db: AsyncSession, conflict_id: int) -> b
         return True
     return False
 
-async def get_ac_principles_by_ids(db: AsyncSession, principle_ids: List[int]) -> List[models.ACPrinciple]:
+async def get_ac_principles_by_ids(db: AsyncSession, principle_ids: List[int]) -> List[models.Principle]:
     """Get multiple AC principles by their IDs."""
     result = await db.execute(
-        select(models.ACPrinciple).filter(models.ACPrinciple.id.in_(principle_ids))
+        select(models.Principle).filter(models.Principle.id.in_(principle_ids))
     )
     return result.scalars().all()

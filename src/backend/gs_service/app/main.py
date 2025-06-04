@@ -1,20 +1,17 @@
-import sys
 import os
-
-# Add the project root to the Python path to enable absolute imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")))
+import httpx
 from fastapi import FastAPI
-from src.backend.gs_service.app.api.v1.synthesize import router as synthesize_router
-from src.backend.gs_service.app.api.v1.policy_management import router as policy_management_router # Added
-from src.backend.gs_service.app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router # Added Phase 1
-from src.backend.gs_service.app.api.v1.alphaevolve_integration import router as alphaevolve_router # Added Phase 2
-from src.backend.gs_service.app.api.v1.mab_optimization import router as mab_router # Added Task 5 MAB
-from src.backend.gs_service.app.api.v1.wina_rego_synthesis import router as wina_rego_router # Added Task 17.5 WINA Rego
-from src.backend.gs_service.app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance # Added for LLM Reliability Dashboard
-from src.backend.gs_service.app.services.ac_client import ac_service_client
-from src.backend.gs_service.app.services.integrity_client import integrity_service_client
-from src.backend.gs_service.app.services.fv_client import fv_service_client # Added FV client for shutdown
-from src.backend.shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
+from app.api.v1.synthesize import router as synthesize_router
+from app.api.v1.policy_management import router as policy_management_router # Added
+from app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router # Added Phase 1
+from app.api.v1.alphaevolve_integration import router as alphaevolve_router # Added Phase 2
+from app.api.v1.mab_optimization import router as mab_router # Added Task 5 MAB
+from app.api.v1.wina_rego_synthesis import router as wina_rego_router # Added Task 17.5 WINA Rego
+from app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance # Added for LLM Reliability Dashboard
+from app.services.ac_client import ac_service_client
+from app.services.integrity_client import integrity_service_client
+from app.services.fv_client import fv_service_client # Added FV client for shutdown
+from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(title="Governance Synthesis (GS) Service")
@@ -61,8 +58,80 @@ async def root():
 # Placeholder for future health check endpoint
 @app.get("/health")
 async def health_check():
-    # A more comprehensive health check might try to connect to dependent services.
-    return {"status": "ok", "message": "GS Service is operational."}
+    """
+    Comprehensive health check for GS Service.
+    Validates service dependencies and operational status.
+    """
+    health_status = {
+        "status": "healthy",
+        "service": "gs_service",
+        "version": "1.0.0",
+        "timestamp": "2024-01-20T00:00:00Z",
+        "dependencies": {},
+        "components": {}
+    }
+
+    try:
+        # Check LLM Reliability Framework
+        if hasattr(llm_reliability_framework_instance, 'get_health_status'):
+            health_status["components"]["llm_reliability"] = await llm_reliability_framework_instance.get_health_status()
+        else:
+            health_status["components"]["llm_reliability"] = {"status": "initialized"}
+
+        # Check service clients connectivity
+        try:
+            # Test AC Service connectivity
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                ac_response = await client.get(f"{os.getenv('AC_SERVICE_URL', 'http://ac_service:8001')}/health")
+                health_status["dependencies"]["ac_service"] = {
+                    "status": "healthy" if ac_response.status_code == 200 else "unhealthy",
+                    "response_time_ms": ac_response.elapsed.total_seconds() * 1000 if hasattr(ac_response, 'elapsed') else 0
+                }
+        except Exception as e:
+            health_status["dependencies"]["ac_service"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+
+        try:
+            # Test Integrity Service connectivity
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                integrity_response = await client.get(f"{os.getenv('INTEGRITY_SERVICE_URL', 'http://integrity_service:8002')}/health")
+                health_status["dependencies"]["integrity_service"] = {
+                    "status": "healthy" if integrity_response.status_code == 200 else "unhealthy",
+                    "response_time_ms": integrity_response.elapsed.total_seconds() * 1000 if hasattr(integrity_response, 'elapsed') else 0
+                }
+        except Exception as e:
+            health_status["dependencies"]["integrity_service"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+
+        # Check if any critical dependencies are unhealthy
+        critical_deps = ["ac_service"]
+        unhealthy_critical = [dep for dep in critical_deps
+                            if health_status["dependencies"].get(dep, {}).get("status") == "unhealthy"]
+
+        if unhealthy_critical:
+            health_status["status"] = "degraded"
+            health_status["message"] = f"Critical dependencies unhealthy: {', '.join(unhealthy_critical)}"
+        else:
+            health_status["message"] = "GS Service is operational with all dependencies healthy."
+
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["message"] = f"Health check failed: {str(e)}"
+        health_status["error"] = str(e)
+
+    return health_status
 
 # Add Prometheus metrics endpoint
-# app.get("/metrics")(create_metrics_endpoint())
+from shared.metrics import get_metrics, create_metrics_endpoint
+
+# Initialize metrics for GS service
+metrics = get_metrics("gs_service")
+
+@app.get("/metrics")
+async def metrics_endpoint():
+    """Prometheus metrics endpoint for GS Service."""
+    return create_metrics_endpoint()

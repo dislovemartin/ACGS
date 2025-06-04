@@ -10,3 +10,8 @@ tenacity==8.2.3
 openai==1.82.0
 prometheus_client==0.21.1
 numpy==1.26.4
+# LangGraph dependencies for workflow management
+langgraph>=0.2.6
+langchain>=0.3.19
+langchain-google-genai>=2.0.0
+redis>=5.0.0

@@ -39,9 +39,13 @@
 
 \bibitem[Almulla et~al\mbox{.}(2024a)]%
         {ResearchGate2025AutoPAC}
-\bibfield{author}{\bibinfo{person}{Mohammed Almulla}, \bibinfo{person}{Rejwana Majumdar}, \bibinfo{person}{Brian Erikson}, \bibinfo{person}{Lanjing Wang}, {and} \bibinfo{person}{Munindar~P. Singh}.} \bibinfo{year}{2024}\natexlab{a}.
-\newblock \showarticletitle{{AutoPAC}: Exploring {LLMs} for Automating Policy to Code Conversion in Business Organizations}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2402.10067}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{Mohammed Almulla}, \bibinfo{person}{Rejwana
+  Majumdar}, \bibinfo{person}{Brian Erikson}, \bibinfo{person}{Lanjing Wang},
+  {and} \bibinfo{person}{Munindar~P. Singh}.} \bibinfo{year}{2024}\natexlab{a}.
+\newblock \showarticletitle{{AutoPAC}: Exploring {LLMs} for Automating Policy
+  to Code Conversion in Business Organizations}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2402.10067}}
+  (\bibinfo{year}{2024}).
 \newblock
 \showeprint[arxiv]{2402.10067}~[cs.AI]
 \urldef\tempurl%
@@ -52,9 +56,13 @@
 
 \bibitem[Almulla et~al\mbox{.}(2024b)]%
         {Almulla2024EmergenceLLMPolicy}
-\bibfield{author}{\bibinfo{person}{Mohammed Almulla}, \bibinfo{person}{Rejwana Majumdar}, \bibinfo{person}{Brian Erikson}, \bibinfo{person}{Lanjing Wang}, {and} \bibinfo{person}{Munindar~P. Singh}.} \bibinfo{year}{2024}\natexlab{b}.
-\newblock \showarticletitle{Emergence: {LLM}-Based Policy Generation for Intent-Based Management of Applications}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2402.10067}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{Mohammed Almulla}, \bibinfo{person}{Rejwana
+  Majumdar}, \bibinfo{person}{Brian Erikson}, \bibinfo{person}{Lanjing Wang},
+  {and} \bibinfo{person}{Munindar~P. Singh}.} \bibinfo{year}{2024}\natexlab{b}.
+\newblock \showarticletitle{Emergence: {LLM}-Based Policy Generation for
+  Intent-Based Management of Applications}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2402.10067}}
+  (\bibinfo{year}{2024}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2402.10067}
@@ -64,7 +72,8 @@
 
 \bibitem[{Analytics Vidhya Content Team}(2024)]%
         {AnalyticsVidhya2024PromptingTechniques}
-\bibfield{author}{\bibinfo{person}{{Analytics Vidhya Content Team}}.} \bibinfo{year}{2024}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{{Analytics Vidhya Content Team}}.}
+  \bibinfo{year}{2024}\natexlab{}.
 \newblock \bibinfo{title}{17 Prompting Techniques to Supercharge Your {LLMs}}.
 \newblock \bibinfo{howpublished}{Analytics Vidhya Blog}.
 \newblock
@@ -76,9 +85,27 @@
 
 \bibitem[Bai et~al\mbox{.}(2022)]%
         {Bai2025ConstitutionalAI}
-\bibfield{author}{\bibinfo{person}{Yuntao Bai}, \bibinfo{person}{Amanda Chen}, \bibinfo{person}{Showell Katt}, \bibinfo{person}{Andy Jones}, \bibinfo{person}{Kamal Ndousse}, \bibinfo{person}{Catherine Olsson}, \bibinfo{person}{Nicholas Joseph}, \bibinfo{person}{Amanda Askell}, \bibinfo{person}{Ben Mann}, \bibinfo{person}{Zhaobo Bai}, \bibinfo{person}{Xinyuan Chen}, \bibinfo{person}{Dawn Drain}, \bibinfo{person}{Deep Ganguli}, \bibinfo{person}{Zac Hatfield-Dodds}, \bibinfo{person}{Tom Henighan}, \bibinfo{person}{Danny Johnston}, \bibinfo{person}{Sasha Kravec}, \bibinfo{person}{Liane Lovitt}, \bibinfo{person}{Neel Nanda}, \bibinfo{person}{Chris Olah}, \bibinfo{person}{Jared Powell}, \bibinfo{person}{Nelson Elhage}, \bibinfo{person}{Tristan Hume}, \bibinfo{person}{Robert Lasenby}, \bibinfo{person}{Scott Larson}, \bibinfo{person}{Sam Ringer}, \bibinfo{person}{Jackson Showk}, \bibinfo{person}{Jack Clark}, \bibinfo{person}{Tom~B. Brown}, \bibinfo{person}{Jared Kaplan}, \bibinfo{person}{Sam McCandlish}, \bibinfo{person}{Amodei Dario}, {and} \bibinfo{person}{Jared Kernion}.} \bibinfo{year}{2022}\natexlab{}.
-\newblock \showarticletitle{Constitutional {AI}: An Expanded Overview of {Anthropic's} Alignment Approach}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2212.08073}} (\bibinfo{year}{2022}).
+\bibfield{author}{\bibinfo{person}{Yuntao Bai}, \bibinfo{person}{Amanda Chen},
+  \bibinfo{person}{Showell Katt}, \bibinfo{person}{Andy Jones},
+  \bibinfo{person}{Kamal Ndousse}, \bibinfo{person}{Catherine Olsson},
+  \bibinfo{person}{Nicholas Joseph}, \bibinfo{person}{Amanda Askell},
+  \bibinfo{person}{Ben Mann}, \bibinfo{person}{Zhaobo Bai},
+  \bibinfo{person}{Xinyuan Chen}, \bibinfo{person}{Dawn Drain},
+  \bibinfo{person}{Deep Ganguli}, \bibinfo{person}{Zac Hatfield-Dodds},
+  \bibinfo{person}{Tom Henighan}, \bibinfo{person}{Danny Johnston},
+  \bibinfo{person}{Sasha Kravec}, \bibinfo{person}{Liane Lovitt},
+  \bibinfo{person}{Neel Nanda}, \bibinfo{person}{Chris Olah},
+  \bibinfo{person}{Jared Powell}, \bibinfo{person}{Nelson Elhage},
+  \bibinfo{person}{Tristan Hume}, \bibinfo{person}{Robert Lasenby},
+  \bibinfo{person}{Scott Larson}, \bibinfo{person}{Sam Ringer},
+  \bibinfo{person}{Jackson Showk}, \bibinfo{person}{Jack Clark},
+  \bibinfo{person}{Tom~B. Brown}, \bibinfo{person}{Jared Kaplan},
+  \bibinfo{person}{Sam McCandlish}, \bibinfo{person}{Amodei Dario}, {and}
+  \bibinfo{person}{Jared Kernion}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Constitutional {AI}: An Expanded Overview of
+  {Anthropic's} Alignment Approach}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2212.08073}}
+  (\bibinfo{year}{2022}).
 \newblock
 \showeprint[arxiv]{2212.08073}~[cs.CL]
 \urldef\tempurl%
@@ -89,8 +116,11 @@
 
 \bibitem[Barocas et~al\mbox{.}(2023)]%
         {Barocas2023FairnessML}
-\bibfield{author}{\bibinfo{person}{Solon Barocas}, \bibinfo{person}{Moritz Hardt}, {and} \bibinfo{person}{Arvind Narayanan}.} \bibinfo{year}{2023}\natexlab{}.
-\newblock \bibinfo{booktitle}{\emph{Fairness and Machine Learning: Limitations and Opportunities}}.
+\bibfield{author}{\bibinfo{person}{Solon Barocas}, \bibinfo{person}{Moritz
+  Hardt}, {and} \bibinfo{person}{Arvind Narayanan}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Fairness and Machine Learning: Limitations
+  and Opportunities}}.
 \newblock \bibinfo{publisher}{{MIT} Press}.
 \newblock
 \urldef\tempurl%
@@ -101,9 +131,12 @@
 
 \bibitem[Barocas and Selbst(2016)]%
         {Barocas2016BigDataDisparate}
-\bibfield{author}{\bibinfo{person}{Solon Barocas} {and} \bibinfo{person}{Andrew~D. Selbst}.} \bibinfo{year}{2016}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{Solon Barocas} {and}
+  \bibinfo{person}{Andrew~D. Selbst}.} \bibinfo{year}{2016}\natexlab{}.
 \newblock \showarticletitle{Big Data's Disparate Impact}.
-\newblock \bibinfo{journal}{\emph{California Law Review}} \bibinfo{volume}{104}, \bibinfo{number}{3} (\bibinfo{year}{2016}), \bibinfo{pages}{671--732}.
+\newblock \bibinfo{journal}{\emph{California Law Review}}
+  \bibinfo{volume}{104}, \bibinfo{number}{3} (\bibinfo{year}{2016}),
+  \bibinfo{pages}{671--732}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.15779/Z38BG31}
@@ -112,7 +145,9 @@
 
 \bibitem[Barrett et~al\mbox{.}(2018)]%
         {Barrett2018SMTSolving}
-\bibfield{author}{\bibinfo{person}{Clark Barrett}, \bibinfo{person}{Roberto Sebastiani}, \bibinfo{person}{Sanjit~A. Seshia}, {and} \bibinfo{person}{Cesare Tinelli}.} \bibinfo{year}{2018}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{Clark Barrett}, \bibinfo{person}{Roberto
+  Sebastiani}, \bibinfo{person}{Sanjit~A. Seshia}, {and}
+  \bibinfo{person}{Cesare Tinelli}.} \bibinfo{year}{2018}\natexlab{}.
 \newblock \bibinfo{booktitle}{\emph{Satisfiability Modulo Theories}}.
 \newblock \bibinfo{publisher}{IOS Press}. 825--885 pages.
 \newblock
@@ -123,19 +158,26 @@
 
 \bibitem[{Caching Systems Research Group}(2024)]%
         {IntelligentCaching2024}
-\bibfield{author}{\bibinfo{person}{{Caching Systems Research Group}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Intelligent Caching Strategies for Constitutional AI Policy Enforcement}.
-\newblock \bibinfo{journal}{\emph{High-Performance Computing and AI}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{{Caching Systems Research Group}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Intelligent Caching Strategies for Constitutional
+  AI Policy Enforcement}.
+\newblock \bibinfo{journal}{\emph{High-Performance Computing and AI}}
+  (\bibinfo{year}{2024}).
 \newblock
 \newblock
-\shownote{Placeholder citation for intelligent caching. Assumed to be citable work by authors or collaborators for a real submission.}.
+\shownote{Placeholder citation for intelligent caching. Assumed to be citable
+  work by authors or collaborators for a real submission.}.
 
 
 \bibitem[Chac{\'o}n~Menke and Tan(2025)]%
         {ChaconMenke2025CAISmallLLMs}
-\bibfield{author}{\bibinfo{person}{Ana-Gabriela Chac{\'o}n~Menke} {and} \bibinfo{person}{Poh~X. Tan}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{How Effective Is Constitutional {AI} in Small {LLMs}? A Study on {DeepSeek-R1} and Its Peers}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2503.17365}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Ana-Gabriela Chac{\'o}n~Menke} {and}
+  \bibinfo{person}{Poh~X. Tan}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{How Effective Is Constitutional {AI} in Small
+  {LLMs}? A Study on {DeepSeek-R1} and Its Peers}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2503.17365}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2503.17365}
@@ -145,9 +187,14 @@
 
 \bibitem[Chauhan et~al\mbox{.}(2025)]%
         {Chauhan2025ECLLMSurvey}
-\bibfield{author}{\bibinfo{person}{Divyashikha Chauhan}, \bibinfo{person}{Bingsha Dutta}, \bibinfo{person}{Ireena Bala}, \bibinfo{person}{Nadine van Stein}, \bibinfo{person}{Thomas B{\"a}ck}, {and} \bibinfo{person}{Akshara Yadav}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{Evolutionary Computation and {Large Language Models}: A Survey of Methods, Synergies, and Applications}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2505.15741}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Divyashikha Chauhan},
+  \bibinfo{person}{Bingsha Dutta}, \bibinfo{person}{Ireena Bala},
+  \bibinfo{person}{Nadine van Stein}, \bibinfo{person}{Thomas B{\"a}ck}, {and}
+  \bibinfo{person}{Akshara Yadav}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Evolutionary Computation and {Large Language
+  Models}: A Survey of Methods, Synergies, and Applications}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2505.15741}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2505.15741}
@@ -157,9 +204,12 @@
 
 \bibitem[Chouldechova(2017)]%
         {Chouldechova2017FairPrediction}
-\bibfield{author}{\bibinfo{person}{Alexandra Chouldechova}.} \bibinfo{year}{2017}\natexlab{}.
-\newblock \showarticletitle{Fair Prediction with Disparate Impact: A Study of Bias in Recidivism Prediction Instruments}.
-\newblock \bibinfo{journal}{\emph{Big Data}} \bibinfo{volume}{5}, \bibinfo{number}{2} (\bibinfo{year}{2017}), \bibinfo{pages}{153--163}.
+\bibfield{author}{\bibinfo{person}{Alexandra Chouldechova}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Fair Prediction with Disparate Impact: A Study of
+  Bias in Recidivism Prediction Instruments}.
+\newblock \bibinfo{journal}{\emph{Big Data}} \bibinfo{volume}{5},
+  \bibinfo{number}{2} (\bibinfo{year}{2017}), \bibinfo{pages}{153--163}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1089/big.2016.0047}
@@ -168,18 +218,27 @@
 
 \bibitem[{Constitutional AI Research Team}(2024)]%
         {ConstitutionalCompliance2024}
-\bibfield{author}{\bibinfo{person}{{Constitutional AI Research Team}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Constitutional Compliance Verification in AI Systems: Methods and Benchmarks}.
-\newblock \bibinfo{journal}{\emph{AI Ethics and Governance Review}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{{Constitutional AI Research Team}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Constitutional Compliance Verification in AI
+  Systems: Methods and Benchmarks}.
+\newblock \bibinfo{journal}{\emph{AI Ethics and Governance Review}}
+  (\bibinfo{year}{2024}).
 \newblock
 \newblock
-\shownote{Placeholder citation for constitutional compliance. Assumed to be citable work by authors or collaborators for a real submission.}.
+\shownote{Placeholder citation for constitutional compliance. Assumed to be
+  citable work by authors or collaborators for a real submission.}.
 
 
 \bibitem[De~Moura and Bj{\o}rner(2008)]%
         {DeMouraZ3}
-\bibfield{author}{\bibinfo{person}{Leonardo De~Moura} {and} \bibinfo{person}{Nikolaj Bj{\o}rner}.} \bibinfo{year}{2008}\natexlab{}.
-\newblock \showarticletitle{{Z3}: An Efficient {SMT} Solver}. In \bibinfo{booktitle}{\emph{Tools and Algorithms for the Construction and Analysis of Systems ({TACAS})}} \emph{(\bibinfo{series}{Lecture Notes in Computer Science}, Vol.~\bibinfo{volume}{4963})}. \bibinfo{publisher}{Springer Berlin Heidelberg}, \bibinfo{pages}{337--340}.
+\bibfield{author}{\bibinfo{person}{Leonardo De~Moura} {and}
+  \bibinfo{person}{Nikolaj Bj{\o}rner}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{{Z3}: An Efficient {SMT} Solver}. In
+  \bibinfo{booktitle}{\emph{Tools and Algorithms for the Construction and
+  Analysis of Systems ({TACAS})}} \emph{(\bibinfo{series}{Lecture Notes in
+  Computer Science}, Vol.~\bibinfo{volume}{4963})}.
+  \bibinfo{publisher}{Springer Berlin Heidelberg}, \bibinfo{pages}{337--340}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1007/978-3-540-78800-3_24}
@@ -188,9 +247,12 @@
 
 \bibitem[{Digi-Con}(2025)]%
         {DigiCon2025ConstitutionalAIThin}
-\bibfield{author}{\bibinfo{person}{{Digi-Con}}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{On Constitutional {AI}: Why {Anthropic's} Proposal is Normatively Too Thin}.
-\newblock \bibinfo{journal}{\emph{The Digital Constitutionalist}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{{Digi-Con}}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{On Constitutional {AI}: Why {Anthropic's} Proposal
+  is Normatively Too Thin}.
+\newblock \bibinfo{journal}{\emph{The Digital Constitutionalist}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://digi-con.org/on-constitutional-ai/}
@@ -200,9 +262,13 @@
 
 \bibitem[Dwork and Roth(2012)]%
         {Dwork2012DifferentialPrivacy}
-\bibfield{author}{\bibinfo{person}{Cynthia Dwork} {and} \bibinfo{person}{Aaron Roth}.} \bibinfo{year}{2012}\natexlab{}.
-\newblock \showarticletitle{The Algorithmic Foundations of Differential Privacy}.
-\newblock \bibinfo{journal}{\emph{Foundations and Trends in Theoretical Computer Science}} \bibinfo{volume}{9}, \bibinfo{number}{3-4} (\bibinfo{year}{2012}), \bibinfo{pages}{211--407}.
+\bibfield{author}{\bibinfo{person}{Cynthia Dwork} {and} \bibinfo{person}{Aaron
+  Roth}.} \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{The Algorithmic Foundations of Differential
+  Privacy}.
+\newblock \bibinfo{journal}{\emph{Foundations and Trends in Theoretical
+  Computer Science}} \bibinfo{volume}{9}, \bibinfo{number}{3-4}
+  (\bibinfo{year}{2012}), \bibinfo{pages}{211--407}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1561/0400000042}
@@ -211,9 +277,12 @@
 
 \bibitem[Engin(2025)]%
         {Engin2025AdaptiveAIGovernance}
-\bibfield{author}{\bibinfo{person}{Zeynep Engin}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{Adaptive {AI} Governance: Bridging Regional Divides for Global Regulatory Coherence}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2504.00652}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Zeynep Engin}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Adaptive {AI} Governance: Bridging Regional Divides
+  for Global Regulatory Coherence}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2504.00652}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2504.00652}
@@ -223,9 +292,13 @@
 
 \bibitem[Gautam et~al\mbox{.}(2025)]%
         {arXiv2025FutureWorkRAG}
-\bibfield{author}{\bibinfo{person}{Rohit Gautam}, \bibinfo{person}{Diganta Singh}, {and} \bibinfo{person}{Sachin Kumar}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{Automated Extraction and Generation of Future Work Sections using {LLMs}}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2503.16561}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Rohit Gautam}, \bibinfo{person}{Diganta
+  Singh}, {and} \bibinfo{person}{Sachin Kumar}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Automated Extraction and Generation of Future Work
+  Sections using {LLMs}}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2503.16561}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2503.16561}
@@ -235,9 +308,14 @@
 
 \bibitem[Gebru et~al\mbox{.}(2021)]%
         {Gebru2021DatasheetDatasets}
-\bibfield{author}{\bibinfo{person}{Timnit Gebru}, \bibinfo{person}{Jamie Morgenstern}, \bibinfo{person}{Briana Vecchione}, \bibinfo{person}{Jennifer~Wortman Vaughan}, \bibinfo{person}{Hanna Wallach}, \bibinfo{person}{Hal Daum\'{e}~III}, {and} \bibinfo{person}{Kate Crawford}.} \bibinfo{year}{2021}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{Timnit Gebru}, \bibinfo{person}{Jamie
+  Morgenstern}, \bibinfo{person}{Briana Vecchione},
+  \bibinfo{person}{Jennifer~Wortman Vaughan}, \bibinfo{person}{Hanna Wallach},
+  \bibinfo{person}{Hal Daum\'{e}~III}, {and} \bibinfo{person}{Kate Crawford}.}
+  \bibinfo{year}{2021}\natexlab{}.
 \newblock \showarticletitle{Datasheets for Datasets}.
-\newblock \bibinfo{journal}{\emph{Commun. ACM}} \bibinfo{volume}{64}, \bibinfo{number}{12} (\bibinfo{year}{2021}), \bibinfo{pages}{86--92}.
+\newblock \bibinfo{journal}{\emph{Commun. ACM}} \bibinfo{volume}{64},
+  \bibinfo{number}{12} (\bibinfo{year}{2021}), \bibinfo{pages}{86--92}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1145/3458723}
@@ -246,16 +324,22 @@
 
 \bibitem[Hardt et~al\mbox{.}(2016)]%
         {Hardt2016EqualityOpportunity}
-\bibfield{author}{\bibinfo{person}{Moritz Hardt}, \bibinfo{person}{Eric Price}, {and} \bibinfo{person}{Nathan Srebro}.} \bibinfo{year}{2016}\natexlab{}.
-\newblock \showarticletitle{Equality of Opportunity in Supervised Learning}. In \bibinfo{booktitle}{\emph{Advances in Neural Information Processing Systems}}. \bibinfo{pages}{3315--3323}.
+\bibfield{author}{\bibinfo{person}{Moritz Hardt}, \bibinfo{person}{Eric Price},
+  {and} \bibinfo{person}{Nathan Srebro}.} \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Equality of Opportunity in Supervised Learning}. In
+  \bibinfo{booktitle}{\emph{Advances in Neural Information Processing
+  Systems}}. \bibinfo{pages}{3315--3323}.
 \newblock
 
 
 \bibitem[Hwang(2025)]%
         {Hwang2025PublicCAI}
-\bibfield{author}{\bibinfo{person}{Tim Hwang}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{Public Constitutional {AI}: A Roadmap for {AI} Governance in the Algorithmic Age}.
-\newblock \bibinfo{journal}{\emph{Georgia Law Review}}  \bibinfo{volume}{59} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Tim Hwang}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Public Constitutional {AI}: A Roadmap for {AI}
+  Governance in the Algorithmic Age}.
+\newblock \bibinfo{journal}{\emph{Georgia Law Review}}  \bibinfo{volume}{59}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://digitalcommons.law.uga.edu/cgi/viewcontent.cgi?article=1819&context=glr}
@@ -265,9 +349,15 @@
 
 \bibitem[Li et~al\mbox{.}(2025)]%
         {Li2025VeriCoder}
-\bibfield{author}{\bibinfo{person}{Zhaoyang Li}, \bibinfo{person}{Yijiang Huang}, \bibinfo{person}{Shiji Zhang}, \bibinfo{person}{Mobai Chen}, \bibinfo{person}{Zike Wang}, \bibinfo{person}{Zhen Li}, \bibinfo{person}{Min Zhang}, \bibinfo{person}{Lizhong Sun}, \bibinfo{person}{Lifeng Wang}, {and} \bibinfo{person}{Jian Zhao}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{{VeriCoder}: Enhancing {LLM}-Based {RTL} Code Generation through Functional Correctness Validation}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2504.15659}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Zhaoyang Li}, \bibinfo{person}{Yijiang
+  Huang}, \bibinfo{person}{Shiji Zhang}, \bibinfo{person}{Mobai Chen},
+  \bibinfo{person}{Zike Wang}, \bibinfo{person}{Zhen Li}, \bibinfo{person}{Min
+  Zhang}, \bibinfo{person}{Lizhong Sun}, \bibinfo{person}{Lifeng Wang}, {and}
+  \bibinfo{person}{Jian Zhao}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{VeriCoder}: Enhancing {LLM}-Based {RTL} Code
+  Generation through Functional Correctness Validation}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2504.15659}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2504.15659}
@@ -277,9 +367,16 @@
 
 \bibitem[Lin et~al\mbox{.}(2025)]%
         {AAAI2025CodeHalu}
-\bibfield{author}{\bibinfo{person}{Bailin Lin}, \bibinfo{person}{Yuntian Zhang}, \bibinfo{person}{Sirui Zhang}, \bibinfo{person}{Yifan Hu}, \bibinfo{person}{Han Liu}, \bibinfo{person}{Zhaowei Chen}, \bibinfo{person}{Ming Yan}, \bibinfo{person}{Dongxiang Zhang}, \bibinfo{person}{Yefei Liu}, \bibinfo{person}{Chenglin Wu}, {and} \bibinfo{person}{Hong Wang}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{{CodeHalu}: Investigating Code Hallucinations in {LLMs} via Execution-based Verification}.
-\newblock \bibinfo{journal}{\emph{Proceedings of the {AAAI} Conference on Artificial Intelligence}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Bailin Lin}, \bibinfo{person}{Yuntian
+  Zhang}, \bibinfo{person}{Sirui Zhang}, \bibinfo{person}{Yifan Hu},
+  \bibinfo{person}{Han Liu}, \bibinfo{person}{Zhaowei Chen},
+  \bibinfo{person}{Ming Yan}, \bibinfo{person}{Dongxiang Zhang},
+  \bibinfo{person}{Yefei Liu}, \bibinfo{person}{Chenglin Wu}, {and}
+  \bibinfo{person}{Hong Wang}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{CodeHalu}: Investigating Code Hallucinations in
+  {LLMs} via Execution-based Verification}.
+\newblock \bibinfo{journal}{\emph{Proceedings of the {AAAI} Conference on
+  Artificial Intelligence}} (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://ojs.aaai.org/index.php/AAAI/article/download/34717/36872}
@@ -289,8 +386,10 @@
 
 \bibitem[Lin and Hsiao(2024)]%
         {CambridgeUP2024CorporateGovernance}
-\bibfield{editor}{\bibinfo{person}{Lin Lin} {and} \bibinfo{person}{Iris~H. Hsiao}} (Eds.). \bibinfo{year}{2024}\natexlab{}.
-\newblock \bibinfo{booktitle}{\emph{Corporate Governance in the Age of Artificial Intelligence}}.
+\bibfield{editor}{\bibinfo{person}{Lin Lin} {and} \bibinfo{person}{Iris~H.
+  Hsiao}} (Eds.). \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Corporate Governance in the Age of
+  Artificial Intelligence}}.
 \newblock \bibinfo{publisher}{Cambridge University Press}.
 \newblock
 \urldef\tempurl%
@@ -300,9 +399,13 @@
 
 \bibitem[Nobles et~al\mbox{.}(2024)]%
         {StanfordJBLP2024AIGovernanceWeb3}
-\bibfield{author}{\bibinfo{person}{William Nobles}, \bibinfo{person}{Gabriel Cordova}, {and} \bibinfo{person}{W.~K. Orr}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{{AI} Governance Via {Web3}: A Framework for Dynamic, Anticipatory, and Participatory Oversight}.
-\newblock \bibinfo{journal}{\emph{Stanford Journal of Blockchain Law \& Policy}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{William Nobles}, \bibinfo{person}{Gabriel
+  Cordova}, {and} \bibinfo{person}{W.~K. Orr}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{{AI} Governance Via {Web3}: A Framework for
+  Dynamic, Anticipatory, and Participatory Oversight}.
+\newblock \bibinfo{journal}{\emph{Stanford Journal of Blockchain Law \&
+  Policy}} (\bibinfo{year}{2024}).
 \newblock
 \urldef\tempurl%
 \url{https://stanford-jblp.pubpub.org/pub/aigov-via-web3}
@@ -312,9 +415,13 @@
 
 \bibitem[Nordin et~al\mbox{.}(2024)]%
         {Nordin2024LLMGP}
-\bibfield{author}{\bibinfo{person}{Peter Nordin}, \bibinfo{person}{Bj{\"o}rn Toresson}, \bibinfo{person}{Anton L{\"o}vstr{\"o}m}, \bibinfo{person}{Viktor Nyman}, {and} \bibinfo{person}{Johan From}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{{LLM\_GP}: A Formalized {LLM}-Based Evolutionary Algorithm for Code Evolution}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2401.07102}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{Peter Nordin}, \bibinfo{person}{Bj{\"o}rn
+  Toresson}, \bibinfo{person}{Anton L{\"o}vstr{\"o}m}, \bibinfo{person}{Viktor
+  Nyman}, {and} \bibinfo{person}{Johan From}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{{LLM\_GP}: A Formalized {LLM}-Based Evolutionary
+  Algorithm for Code Evolution}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2401.07102}}
+  (\bibinfo{year}{2024}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2401.07102}
@@ -324,28 +431,38 @@
 
 \bibitem[{Performance Systems Research Group}(2024)]%
         {PerformanceMonitoring2024}
-\bibfield{author}{\bibinfo{person}{{Performance Systems Research Group}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Real-time Performance Monitoring and Optimization for AI Constitutional Governance}.
-\newblock \bibinfo{journal}{\emph{Journal of AI System Performance}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{{Performance Systems Research Group}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Real-time Performance Monitoring and Optimization
+  for AI Constitutional Governance}.
+\newblock \bibinfo{journal}{\emph{Journal of AI System Performance}}
+  (\bibinfo{year}{2024}).
 \newblock
 \newblock
-\shownote{Placeholder citation for performance monitoring. Assumed to be citable work by authors or collaborators for a real submission.}.
+\shownote{Placeholder citation for performance monitoring. Assumed to be
+  citable work by authors or collaborators for a real submission.}.
 
 
 \bibitem[{Policy Systems Research Team}(2024)]%
         {PolicyEnforcementOptimization2024}
-\bibfield{author}{\bibinfo{person}{{Policy Systems Research Team}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Optimization Strategies for Real-time Policy Enforcement in AI Systems}.
-\newblock \bibinfo{journal}{\emph{AI Policy and Governance}} (\bibinfo{year}{2024}).
+\bibfield{author}{\bibinfo{person}{{Policy Systems Research Team}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Optimization Strategies for Real-time Policy
+  Enforcement in AI Systems}.
+\newblock \bibinfo{journal}{\emph{AI Policy and Governance}}
+  (\bibinfo{year}{2024}).
 \newblock
 \newblock
-\shownote{Placeholder citation for policy enforcement optimization. Assumed to be citable work by authors or collaborators for a real submission.}.
+\shownote{Placeholder citation for policy enforcement optimization. Assumed to
+  be citable work by authors or collaborators for a real submission.}.
 
 
 \bibitem[Sandall and {Open Policy Agent Community}(2021)]%
         {Sandall2021OPAReference}
-\bibfield{author}{\bibinfo{person}{Torin Sandall} {and} \bibinfo{person}{{Open Policy Agent Community}}.} \bibinfo{year}{2021}\natexlab{}.
-\newblock \bibinfo{title}{Open Policy Agent: Policy-as-Code Reference Implementation}.
+\bibfield{author}{\bibinfo{person}{Torin Sandall} {and} \bibinfo{person}{{Open
+  Policy Agent Community}}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \bibinfo{title}{Open Policy Agent: Policy-as-Code Reference
+  Implementation}.
 \newblock \bibinfo{howpublished}{Open Policy Agent Documentation}.
 \newblock
 \urldef\tempurl%
@@ -356,9 +473,15 @@
 
 \bibitem[Selbst et~al\mbox{.}(2019)]%
         {Selbst2019FairnessAccountability}
-\bibfield{author}{\bibinfo{person}{Andrew~D. Selbst}, \bibinfo{person}{Danah Boyd}, \bibinfo{person}{Sorelle~A. Friedler}, \bibinfo{person}{Suresh Venkatasubramanian}, {and} \bibinfo{person}{Janet Vertesi}.} \bibinfo{year}{2019}\natexlab{}.
-\newblock \showarticletitle{Fairness and Abstraction in Sociotechnical Systems}.
-\newblock \bibinfo{journal}{\emph{Proceedings of the Conference on Fairness, Accountability, and Transparency}} (\bibinfo{year}{2019}), \bibinfo{pages}{59--68}.
+\bibfield{author}{\bibinfo{person}{Andrew~D. Selbst}, \bibinfo{person}{Danah
+  Boyd}, \bibinfo{person}{Sorelle~A. Friedler}, \bibinfo{person}{Suresh
+  Venkatasubramanian}, {and} \bibinfo{person}{Janet Vertesi}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Fairness and Abstraction in Sociotechnical
+  Systems}.
+\newblock \bibinfo{journal}{\emph{Proceedings of the Conference on Fairness,
+  Accountability, and Transparency}} (\bibinfo{year}{2019}),
+  \bibinfo{pages}{59--68}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1145/3287560.3287598}
@@ -367,9 +490,11 @@
 
 \bibitem[{Stanford Law School CodeX}(2025)]%
         {StanfordLaw2025BulletProof}
-\bibfield{author}{\bibinfo{person}{{Stanford Law School CodeX}}.} \bibinfo{year}{2025}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{{Stanford Law School CodeX}}.}
+  \bibinfo{year}{2025}\natexlab{}.
 \newblock \showarticletitle{Towards Bullet-Proof {AI} Governance}.
-\newblock \bibinfo{journal}{\emph{CodeX Blog}} (\bibinfo{date}{May} \bibinfo{year}{2025}).
+\newblock \bibinfo{journal}{\emph{CodeX Blog}} (\bibinfo{date}{May}
+  \bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://law.stanford.edu/2025/05/05/towards-bullet-proof-ai-governance/}
@@ -379,9 +504,13 @@
 
 \bibitem[Taeihagh et~al\mbox{.}(2025)]%
         {Taeihagh2025Governing}
-\bibfield{author}{\bibinfo{person}{Araz Taeihagh}, \bibinfo{person}{Advait Deshpande}, \bibinfo{person}{Vidushi Marda}, {and} \bibinfo{person}{Sreenidhi Gunashekar}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{Governing generative {AI}: Key risks, governance challenges, and policy responses}.
-\newblock \bibinfo{journal}{\emph{Policy and Society}} \bibinfo{volume}{44}, \bibinfo{number}{1} (\bibinfo{year}{2025}), \bibinfo{pages}{psae001}.
+\bibfield{author}{\bibinfo{person}{Araz Taeihagh}, \bibinfo{person}{Advait
+  Deshpande}, \bibinfo{person}{Vidushi Marda}, {and} \bibinfo{person}{Sreenidhi
+  Gunashekar}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Governing generative {AI}: Key risks, governance
+  challenges, and policy responses}.
+\newblock \bibinfo{journal}{\emph{Policy and Society}} \bibinfo{volume}{44},
+  \bibinfo{number}{1} (\bibinfo{year}{2025}), \bibinfo{pages}{psae001}.
 \newblock
 \urldef\tempurl%
 \url{https://doi.org/10.1093/polsoc/psae001}
@@ -390,29 +519,39 @@
 
 \bibitem[{Technical Research Group}(2024)]%
         {SVDOptimization2024}
-\bibfield{author}{\bibinfo{person}{{Technical Research Group}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \bibinfo{booktitle}{\emph{Singular Value Decomposition Optimization for Large Language Model Weight Matrices}}.
-\newblock \bibinfo{type}{{T}echnical {R}eport}. \bibinfo{institution}{Technical Research Institute}.
+\bibfield{author}{\bibinfo{person}{{Technical Research Group}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Singular Value Decomposition Optimization
+  for Large Language Model Weight Matrices}}.
+\newblock \bibinfo{type}{{T}echnical {R}eport}. \bibinfo{institution}{Technical
+  Research Institute}.
 \newblock
 \newblock
-\shownote{Placeholder citation for SVD optimization. Assumed to be citable work by authors or collaborators for a real submission.}.
+\shownote{Placeholder citation for SVD optimization. Assumed to be citable work
+  by authors or collaborators for a real submission.}.
 
 
 \bibitem[{WINA Research Consortium}(2024)]%
         {WINA2024NeuronActivation}
-\bibfield{author}{\bibinfo{person}{{WINA Research Consortium}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Weight Informed Neuron Activation: Optimizing Neural Network Efficiency through Selective Neuron Gating}.
+\bibfield{author}{\bibinfo{person}{{WINA Research Consortium}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Weight Informed Neuron Activation: Optimizing
+  Neural Network Efficiency through Selective Neuron Gating}.
 \newblock \bibinfo{journal}{\emph{Technical Report}} (\bibinfo{year}{2024}).
 \newblock
 \newblock
-\shownote{Placeholder citation for WINA optimization. Assumed to be citable work by authors or collaborators for a real submission.}.
+\shownote{Placeholder citation for WINA optimization. Assumed to be citable
+  work by authors or collaborators for a real submission.}.
 
 
 \bibitem[{World Bank}(2024)]%
         {WorldBank2024AIGovernance}
-\bibfield{author}{\bibinfo{person}{{World Bank}}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \bibinfo{booktitle}{\emph{Artificial Intelligence ({AI}) Governance: Emerging Landscape and Key Considerations}}.
-\newblock \bibinfo{type}{{T}echnical {R}eport} P178616. \bibinfo{institution}{World Bank}.
+\bibfield{author}{\bibinfo{person}{{World Bank}}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Artificial Intelligence ({AI}) Governance:
+  Emerging Landscape and Key Considerations}}.
+\newblock \bibinfo{type}{{T}echnical {R}eport} P178616.
+  \bibinfo{institution}{World Bank}.
 \newblock
 \urldef\tempurl%
 \url{https://documents1.worldbank.org/curated/en/099120224205026271/pdf/P1786161ad76ca0ae1ba3b1558ca4ff88ba.pdf}
@@ -422,8 +561,11 @@
 
 \bibitem[Wynants and {other authors to be listed here}(2025)]%
         {Wynants2025ETHICAL}
-\bibfield{author}{\bibinfo{person}{Shelli Wynants} {and} \bibinfo{person}{{other authors to be listed here}}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \bibinfo{title}{{ETHICAL} Principles {AI} Framework for Higher Education}.
+\bibfield{author}{\bibinfo{person}{Shelli Wynants} {and}
+  \bibinfo{person}{{other authors to be listed here}}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \bibinfo{title}{{ETHICAL} Principles {AI} Framework for Higher
+  Education}.
 \newblock
 \newblock
 \urldef\tempurl%
@@ -434,9 +576,17 @@
 
 \bibitem[Zhao et~al\mbox{.}(2025)]%
         {Zhao2025AbsoluteZero}
-\bibfield{author}{\bibinfo{person}{Andrew Zhao}, \bibinfo{person}{Yuxi Liu}, \bibinfo{person}{Ruisu Shu}, \bibinfo{person}{Kevin Zhou}, \bibinfo{person}{Zirui Li}, \bibinfo{person}{Jerry Lee}, \bibinfo{person}{Zihan Yao}, \bibinfo{person}{Yuanzhi Li}, \bibinfo{person}{Lei Li}, \bibinfo{person}{Anima Anandkumar}, \bibinfo{person}{Yuke Yao}, {and} \bibinfo{person}{Song Liu}.} \bibinfo{year}{2025}\natexlab{}.
-\newblock \showarticletitle{Absolute Zero: Reinforced Self-play Reasoning with Zero Data}.
-\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2505.03335}} (\bibinfo{year}{2025}).
+\bibfield{author}{\bibinfo{person}{Andrew Zhao}, \bibinfo{person}{Yuxi Liu},
+  \bibinfo{person}{Ruisu Shu}, \bibinfo{person}{Kevin Zhou},
+  \bibinfo{person}{Zirui Li}, \bibinfo{person}{Jerry Lee},
+  \bibinfo{person}{Zihan Yao}, \bibinfo{person}{Yuanzhi Li},
+  \bibinfo{person}{Lei Li}, \bibinfo{person}{Anima Anandkumar},
+  \bibinfo{person}{Yuke Yao}, {and} \bibinfo{person}{Song Liu}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Absolute Zero: Reinforced Self-play Reasoning with
+  Zero Data}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2505.03335}}
+  (\bibinfo{year}{2025}).
 \newblock
 \urldef\tempurl%
 \url{https://arxiv.org/abs/2505.03335}

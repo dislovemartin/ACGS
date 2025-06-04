@@ -26,7 +26,7 @@ from app.api.v1.alphaevolve import router as alphaevolve_router
 from app.api.v1.reporting import router as reporting_router
 from app.api.v1.monitoring import router as monitoring_router
 from app.api.v1.wina_oversight import router as wina_oversight_router
-from ...shared.wina.performance_api import router as wina_performance_router, set_collector_getter
+from shared.wina.performance_api import router as wina_performance_router, set_collector_getter
 from app.core.wina_oversight_coordinator import WINAECOversightCoordinator
 from app.services.gs_client import gs_service_client
 from app.services.ac_client import ac_service_client
@@ -155,7 +155,7 @@ app.include_router(monitoring_router, prefix="/api/v1/monitoring", tags=["Perfor
 app.include_router(wina_performance_router, prefix="/api/v1/wina/performance", tags=["WINA Performance Monitoring"])
 
 # Add metrics endpoint
-create_metrics_endpoint(app)
+app.get("/metrics")(create_metrics_endpoint())
 
 
 @app.get("/health")
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8007,  # EC service port
+        port=8006,  # EC service port (matches docker-compose)
         reload=True,
         log_level="info"
     )
