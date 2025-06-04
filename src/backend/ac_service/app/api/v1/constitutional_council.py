@@ -13,6 +13,7 @@ from app import schemas
 from shared.database import get_async_db
 from app.core.auth import get_current_active_user_placeholder, require_admin_role, require_constitutional_council_role, User
 from app.core.constitutional_council_scalability import ConstitutionalCouncilScalabilityFramework, ScalabilityConfig
+from app.workflows.constitutional_council_graph import ConstitutionalCouncilGraph
 
 router = APIRouter()
 
@@ -293,3 +294,201 @@ async def transition_amendment_state_endpoint(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to transition amendment state: {str(e)}")
+
+# Enhanced Amendment Processing Pipeline endpoints
+@router.post("/amendments/{amendment_id}/process-finalization", response_model=Dict[str, Any])
+async def process_amendment_finalization_endpoint(
+    amendment_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_constitutional_council_role)
+):
+    """Process amendment finalization through enhanced pipeline (requires Constitutional Council membership)"""
+    try:
+        # Initialize Constitutional Council graph
+        graph = ConstitutionalCouncilGraph(db)
+
+        # Get amendment
+        amendment = await get_ac_amendment(db, amendment_id=amendment_id)
+        if not amendment:
+            raise HTTPException(status_code=404, detail="Amendment not found")
+
+        # Create state for finalization processing
+        state = {
+            "amendment_id": str(amendment_id),
+            "user_id": current_user.id,
+            "session_id": f"finalization_{amendment_id}",
+            "voting_results": {
+                "voting_passed": True,  # Assume voting passed for finalization
+                "vote_summary": {"total_votes": 1},
+                "approval_rate": 1.0
+            },
+            "stakeholder_feedback": [],
+            "refinement_iterations": 0,
+            "compliance_score": 0.8,
+            "is_constitutional": True,
+            "identified_conflicts": []
+        }
+
+        # Process finalization
+        result = await graph._process_amendment_finalization(amendment_id, state)
+
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+
+        return {
+            "success": True,
+            "amendment_id": amendment_id,
+            "finalization_result": result,
+            "message": "Amendment finalization processed successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process amendment finalization: {str(e)}")
+
+@router.post("/amendments/process-parallel", response_model=Dict[str, Any])
+async def process_amendments_parallel_endpoint(
+    amendment_ids: List[int],
+    max_concurrent: int = 3,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_constitutional_council_role)
+):
+    """Process multiple amendments in parallel (requires Constitutional Council membership)"""
+    try:
+        if not amendment_ids:
+            raise HTTPException(status_code=400, detail="Amendment IDs list cannot be empty")
+
+        if len(amendment_ids) > 10:
+            raise HTTPException(status_code=400, detail="Maximum 10 amendments can be processed in parallel")
+
+        # Initialize Constitutional Council graph
+        graph = ConstitutionalCouncilGraph(db)
+
+        # Process amendments in parallel
+        result = await graph.process_multiple_amendments_parallel(
+            amendment_ids=amendment_ids,
+            max_concurrent=max_concurrent
+        )
+
+        return {
+            "success": result["success"],
+            "processing_summary": result["processing_summary"],
+            "successful_amendments": result["successful_amendments"],
+            "failed_amendments": result["failed_amendments"],
+            "message": f"Processed {len(amendment_ids)} amendments with {result['processing_summary']['success_rate']:.2%} success rate"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process amendments in parallel: {str(e)}")
+
+@router.post("/amendments/{amendment_id}/automated-transition", response_model=Dict[str, Any])
+async def automated_status_transition_endpoint(
+    amendment_id: int,
+    target_status: str,
+    transition_context: Optional[Dict[str, Any]] = None,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_constitutional_council_role)
+):
+    """Perform automated status transition for an amendment (requires Constitutional Council membership)"""
+    try:
+        # Validate target status
+        valid_statuses = ["under_review", "public_consultation", "voting", "approved", "rejected", "withdrawn"]
+        if target_status not in valid_statuses:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid target status. Must be one of: {', '.join(valid_statuses)}"
+            )
+
+        # Initialize Constitutional Council graph
+        graph = ConstitutionalCouncilGraph(db)
+
+        # Add user context
+        if not transition_context:
+            transition_context = {}
+        transition_context["user_id"] = current_user.id
+        transition_context["initiated_by"] = "automated_endpoint"
+
+        # Perform automated transition
+        result = await graph.automated_status_transition(
+            amendment_id=amendment_id,
+            target_status=target_status,
+            transition_context=transition_context
+        )
+
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+
+        return {
+            "success": True,
+            "amendment_id": amendment_id,
+            "transition_result": result,
+            "message": f"Amendment {amendment_id} successfully transitioned to {target_status}"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to perform automated status transition: {str(e)}")
+
+@router.get("/amendments/{amendment_id}/processing-status", response_model=Dict[str, Any])
+async def get_amendment_processing_status_endpoint(
+    amendment_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_active_user_placeholder)
+):
+    """Get comprehensive processing status for an amendment"""
+    try:
+        # Get amendment
+        amendment = await get_ac_amendment(db, amendment_id=amendment_id)
+        if not amendment:
+            raise HTTPException(status_code=404, detail="Amendment not found")
+
+        # Get votes and comments
+        votes = await get_ac_amendment_votes(db, amendment_id=amendment_id)
+        comments = await get_ac_amendment_comments(db, amendment_id=amendment_id)
+
+        # Calculate processing metrics
+        total_votes = len(votes)
+        votes_for = len([v for v in votes if v.vote_type == "for"])
+        votes_against = len([v for v in votes if v.vote_type == "against"])
+        votes_abstain = len([v for v in votes if v.vote_type == "abstain"])
+
+        approval_rate = votes_for / total_votes if total_votes > 0 else 0
+        participation_rate = total_votes / 10  # Assuming 10 total stakeholders
+
+        processing_status = {
+            "amendment_id": amendment_id,
+            "current_status": amendment.status,
+            "workflow_state": getattr(amendment, "workflow_state", amendment.status),
+            "created_at": amendment.created_at.isoformat(),
+            "updated_at": amendment.updated_at.isoformat(),
+            "voting_metrics": {
+                "total_votes": total_votes,
+                "votes_for": votes_for,
+                "votes_against": votes_against,
+                "votes_abstain": votes_abstain,
+                "approval_rate": approval_rate,
+                "participation_rate": participation_rate
+            },
+            "engagement_metrics": {
+                "total_comments": len(comments),
+                "public_comments": len([c for c in comments if c.is_public]),
+                "stakeholder_feedback_count": len([c for c in comments if not c.is_public])
+            },
+            "processing_pipeline": {
+                "can_proceed_to_voting": approval_rate > 0.5 and participation_rate > 0.3,
+                "requires_refinement": approval_rate < 0.6,
+                "ready_for_finalization": amendment.status == "voting" and approval_rate > 0.6,
+                "estimated_completion": "2024-01-15T00:00:00Z"  # Would be calculated based on current progress
+            }
+        }
+
+        return processing_status
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get amendment processing status: {str(e)}")

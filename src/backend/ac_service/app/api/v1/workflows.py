@@ -11,9 +11,15 @@ from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
 import logging
 
-from app.core.auth import get_current_user
+from shared.auth import get_current_active_user as get_current_user
+from shared.database import get_async_db
 from app.workflows.workflow_manager import get_workflow_manager
-from app.schemas import User
+from app.workflows.constitutional_council_graph import (
+    execute_constitutional_council_workflow,
+    AmendmentProposalInput
+)
+from shared.models import User
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -295,10 +301,163 @@ async def cleanup_completed_workflows(
         logger.info(f"Admin {current_user.id} cleaned up {cleaned_count} workflows")
         
         return {"cleaned_workflows": cleaned_count}
-        
+
     except Exception as e:
         logger.error(f"Failed to cleanup workflows: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to cleanup workflows"
+        )
+
+
+# Constitutional Council specific endpoints
+class ConstitutionalCouncilWorkflowRequest(BaseModel):
+    """Request model for Constitutional Council workflow execution."""
+    principle_id: int = Field(..., description="ID of the principle to amend")
+    amendment_type: str = Field(..., description="Type of amendment")
+    proposed_changes: str = Field(..., description="Description of proposed changes")
+    justification: str = Field(..., description="Rationale for the amendment")
+    proposed_content: Optional[str] = Field(None, description="New content if modifying/adding")
+    urgency_level: str = Field("normal", description="Urgency level for processing")
+    stakeholder_groups: Optional[List[str]] = Field(None, description="Specific stakeholder groups to involve")
+
+
+class ConstitutionalCouncilWorkflowResponse(BaseModel):
+    """Response model for Constitutional Council workflow execution."""
+    workflow_id: str
+    amendment_id: Optional[str] = None
+    status: str
+    current_phase: str
+    constitutional_analysis: Optional[Dict[str, Any]] = None
+    voting_results: Optional[Dict[str, Any]] = None
+    finalization_summary: Optional[Dict[str, Any]] = None
+    messages: List[Dict[str, Any]] = []
+
+
+@router.post("/constitutional-council/execute", response_model=ConstitutionalCouncilWorkflowResponse)
+async def execute_constitutional_council_workflow_endpoint(
+    request: ConstitutionalCouncilWorkflowRequest,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Execute a Constitutional Council amendment workflow.
+
+    This endpoint creates and executes a complete Constitutional Council workflow
+    for processing constitutional amendments through the democratic governance process.
+
+    Args:
+        request: Constitutional Council workflow request
+        db: Database session
+        current_user: Current authenticated user
+
+    Returns:
+        Workflow execution results
+    """
+    try:
+        # Validate amendment proposal input
+        try:
+            amendment_proposal = AmendmentProposalInput(
+                principle_id=request.principle_id,
+                amendment_type=request.amendment_type,
+                proposed_changes=request.proposed_changes,
+                justification=request.justification,
+                proposed_content=request.proposed_content,
+                urgency_level=request.urgency_level,
+                stakeholder_groups=request.stakeholder_groups
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid amendment proposal: {e}"
+            )
+
+        # Execute the Constitutional Council workflow
+        logger.info(f"User {current_user.id} executing Constitutional Council workflow for principle {request.principle_id}")
+
+        final_state = await execute_constitutional_council_workflow(
+            db_session=db,
+            amendment_proposal=amendment_proposal.dict(),
+            user_id=str(current_user.id),
+            workflow_config={
+                "user_role": getattr(current_user, 'role', 'user'),
+                "user_permissions": getattr(current_user, 'permissions', [])
+            }
+        )
+
+        # Extract key information for response
+        response_data = {
+            "workflow_id": final_state.get("workflow_id", ""),
+            "amendment_id": final_state.get("amendment_id"),
+            "status": final_state.get("status", "unknown"),
+            "current_phase": final_state.get("current_phase", "unknown"),
+            "constitutional_analysis": final_state.get("constitutional_analysis"),
+            "voting_results": final_state.get("voting_results"),
+            "finalization_summary": final_state.get("finalization_summary"),
+            "messages": final_state.get("messages", [])
+        }
+
+        logger.info(f"Constitutional Council workflow completed for user {current_user.id} with status: {final_state.get('status')}")
+
+        return ConstitutionalCouncilWorkflowResponse(**response_data)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to execute Constitutional Council workflow: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to execute Constitutional Council workflow: {str(e)}"
+        )
+
+
+@router.get("/constitutional-council/{workflow_id}/state")
+async def get_constitutional_council_workflow_state(
+    workflow_id: str,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get the current state of a Constitutional Council workflow.
+
+    Args:
+        workflow_id: Workflow identifier
+        db: Database session
+        current_user: Current authenticated user
+
+    Returns:
+        Current workflow state
+    """
+    try:
+        from app.workflows.constitutional_council_graph import create_constitutional_council_graph
+
+        # Create graph instance
+        graph = await create_constitutional_council_graph(db)
+
+        # Get workflow state
+        workflow_state = await graph.get_workflow_state(workflow_id)
+
+        if not workflow_state:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow not found"
+            )
+
+        # Check access permissions
+        if workflow_state.get("user_id") != str(current_user.id):
+            if not getattr(current_user, 'is_admin', False):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access denied to this workflow"
+                )
+
+        return workflow_state
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get Constitutional Council workflow state: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve workflow state"
         )

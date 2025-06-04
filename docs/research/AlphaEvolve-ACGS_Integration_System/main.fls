@@ -216,9 +216,11 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/libertine/T1LinuxLibertineT-TLF.fd
 INPUT /usr/share/texlive/texmf-dist/tex/latex/libertine/T1LinuxLibertineT-TLF.fd
 INPUT /usr/share/texlive/texmf-dist/tex/latex/libertine/T1LinuxLibertineT-TLF.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/libertine/LinLibertineT-tlf-t1.tfm
-INPUT /usr/share/texlive/texmf-dist/tex/latex/noto/noto.sty
-INPUT /usr/share/texlive/texmf-dist/tex/latex/noto/noto.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty
+INPUT /usr/share/texmf/tex/latex/lm/lmodern.sty
+INPUT /usr/share/texmf/tex/latex/lm/lmodern.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/base/latexsym.sty
@@ -247,8 +249,6 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/xurl/xurl.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/xurl/xurl.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/enumitem/enumitem.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/enumitem/enumitem.sty
-INPUT /usr/share/texmf/tex/latex/lm/lmodern.sty
-INPUT /usr/share/texmf/tex/latex/lm/lmodern.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cleveref/cleveref.sty
 INPUT /usr/share/texlive/texmf-dist/tex/latex/cleveref/cleveref.sty
 INPUT /usr/share/texlive/texmf-dist/tex/generic/stringenc/se-pdfdoc.def
@@ -376,6 +376,7 @@ INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr7.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr8.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmri8.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmb10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr8.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmr8.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmr6.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/lmmi8.tfm
@@ -402,7 +403,11 @@ INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxexa.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxexa.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/latex-fonts/lasy8.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/latex-fonts/lasy6.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr8.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr6.tfm
+INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
+INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc
+INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc
+INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmb10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmr9.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/lmmi9.tfm
@@ -414,81 +419,68 @@ INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxsym.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxsyc.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxexa.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/latex-fonts/lasy9.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr6.tfm
-INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
-INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc
-INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc
-INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc
-INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-ts1.enc
-INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-mathsy.enc
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmb10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmri9.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmb10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmb10.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmss9.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmsso9.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr7.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr6.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/public/newtx/nxlmia.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/LibertineMathRM.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/txmiaSTbb.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/txmiaX.tfm
+INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-mathit.enc
+INPUT /usr/share/texmf/fonts/enc/dvips/lm/lm-rm.enc
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmcsc10.tfm
 INPUT /usr/share/texmf/tex/latex/lm/t1lmtt.fd
 INPUT /usr/share/texmf/tex/latex/lm/t1lmtt.fd
 INPUT /usr/share/texmf/tex/latex/lm/t1lmtt.fd
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmtt9.tfm
-INPUT ./Figure 1_ Appeal and Dispute Resolution Workflow.png
-INPUT ./Figure 1_ Appeal and Dispute Resolution Workflow.png
-INPUT ./Figure 1_ Appeal and Dispute Resolution Workflow.png
-INPUT ./Figure 1_ Appeal and Dispute Resolution Workflow.png
-INPUT ./Figure 1_ Appeal and Dispute Resolution Workflow.png
+INPUT ./figs/Figure_1_Appeal_and_Dispute_Resolution_Workflow.png
+INPUT ./figs/Figure_1_Appeal_and_Dispute_Resolution_Workflow.png
+INPUT ./figs/Figure_1_Appeal_and_Dispute_Resolution_Workflow.png
+INPUT ./figs/Figure_1_Appeal_and_Dispute_Resolution_Workflow.png
+INPUT ./figs/Figure_1_Appeal_and_Dispute_Resolution_Workflow.png
+INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmss9.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmss8.tfm
-INPUT ./Figure 2_ Enhanced Explainability Dashboard Mockup.png
-INPUT ./Figure 2_ Enhanced Explainability Dashboard Mockup.png
-INPUT ./Figure 2_ Enhanced Explainability Dashboard Mockup.png
-INPUT ./Figure 2_ Enhanced Explainability Dashboard Mockup.png
-INPUT ./Figure 2_ Enhanced Explainability Dashboard Mockup.png
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr9.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr5.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmb10.tfm
+INPUT ./figs/Figure_2_Enhanced_Explainability_Dashboard_Mockup.png
+INPUT ./figs/Figure_2_Enhanced_Explainability_Dashboard_Mockup.png
+INPUT ./figs/Figure_2_Enhanced_Explainability_Dashboard_Mockup.png
+INPUT ./figs/Figure_2_Enhanced_Explainability_Dashboard_Mockup.png
+INPUT ./figs/Figure_2_Enhanced_Explainability_Dashboard_Mockup.png
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmri7.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmbo10.tfm
+INPUT ./figs/Figure_3_Rule_Synthesis_Success_Rate_per_Principle.png
+INPUT ./figs/Figure_3_Rule_Synthesis_Success_Rate_per_Principle.png
+INPUT ./figs/Figure_3_Rule_Synthesis_Success_Rate_per_Principle.png
+INPUT ./figs/Figure_3_Rule_Synthesis_Success_Rate_per_Principle.png
+INPUT ./figs/Figure_3_Rule_Synthesis_Success_Rate_per_Principle.png
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmsso8.tfm
-INPUT ./Figure 3_ Rule Synthesis Success Rate per Principle.png
-INPUT ./Figure 3_ Rule Synthesis Success Rate per Principle.png
-INPUT ./Figure 3_ Rule Synthesis Success Rate per Principle.png
-INPUT ./Figure 3_ Rule Synthesis Success Rate per Principle.png
-INPUT ./Figure 3_ Rule Synthesis Success Rate per Principle.png
-INPUT ./Figure 4_ Constitutional Compliance Over Generations.png
-INPUT ./Figure 4_ Constitutional Compliance Over Generations.png
-INPUT ./Figure 4_ Constitutional Compliance Over Generations.png
-INPUT ./Figure 4_ Constitutional Compliance Over Generations.png
-INPUT ./Figure 4_ Constitutional Compliance Over Generations.png
+INPUT ./figs/Figure_4_Constitutional_Compliance_Over_Generations.png
+INPUT ./figs/Figure_4_Constitutional_Compliance_Over_Generations.png
+INPUT ./figs/Figure_4_Constitutional_Compliance_Over_Generations.png
+INPUT ./figs/Figure_4_Constitutional_Compliance_Over_Generations.png
+INPUT ./figs/Figure_4_Constitutional_Compliance_Over_Generations.png
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr6.tfm
-INPUT ./Figure_5_compliance_generations.png
-INPUT ./Figure_5_compliance_generations.png
-INPUT ./Figure_5_compliance_generations.png
-INPUT ./Figure_5_compliance_generations.png
-INPUT ./Figure_5_compliance_generations.png
-INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmri7.tfm
+INPUT ./figs/Figure_5_compliance_generations.png
+INPUT ./figs/Figure_5_compliance_generations.png
+INPUT ./figs/Figure_5_compliance_generations.png
+INPUT ./figs/Figure_5_compliance_generations.png
+INPUT ./figs/Figure_5_compliance_generations.png
+INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmr9.tfm
+INPUT ./main.bbl
+INPUT ./main.bbl
+INPUT main.bbl
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmtt8.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmr7.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/lmmi7.tfm
-INPUT /usr/share/texmf/fonts/tfm/public/lm/lmsy7.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/nxlmia.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxsym.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxsyc.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/newtx/ntxexa.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmr5.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmtk10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmtti10.tfm
 INPUT /usr/share/texmf/tex/latex/lm/ts1lmtt.fd
 INPUT /usr/share/texmf/tex/latex/lm/ts1lmtt.fd
 INPUT /usr/share/texmf/tex/latex/lm/ts1lmtt.fd
 INPUT /usr/share/texmf/fonts/tfm/public/lm/ts1-lmtti10.tfm
+INPUT /usr/share/texmf/fonts/tfm/public/lm/ec-lmtt8.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/rm-lmr10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/lmmi10.tfm
 INPUT /usr/share/texmf/fonts/tfm/public/lm/lmsy10.tfm
@@ -531,8 +523,6 @@ INPUT /usr/share/texmf/fonts/type1/public/lm/lmss10.pfb
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmss8.pfb
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmssbx10.pfb
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmsso8.pfb
-INPUT /usr/share/texmf/fonts/type1/public/lm/lmsso9.pfb
-INPUT /usr/share/texmf/fonts/type1/public/lm/lmsy6.pfb
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmsy7.pfb
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmsy8.pfb
 INPUT /usr/share/texmf/fonts/type1/public/lm/lmsy9.pfb

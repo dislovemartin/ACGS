@@ -25,6 +25,7 @@ const Layout = ({ children }) => {
                                 <li><Link to="/ac-management">AC Mgmt</Link></li>
                                 <li><Link to="/policy-synthesis">Synthesize</Link></li>
                                 <li><Link to="/policies">View Policies</Link></li>
+                                <li><Link to="/constitutional-council-dashboard">Dashboard</Link></li>
                                 <li><button onClick={handleLogout} className="logout-button">Logout ({currentUser.profile?.username || 'User'})</button></li>
                             </>
                         ) : (

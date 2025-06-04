@@ -6,20 +6,23 @@ Provides standardized metrics collection across all services.
 import time
 from typing import Dict, Any, Optional
 from functools import wraps
-from prometheus_client import Counter, Histogram, Gauge, Info, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, Gauge, Info, generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, REGISTRY
 from fastapi import Request, Response
 from fastapi.responses import PlainTextResponse
 import logging
 
 logger = logging.getLogger(__name__)
 
+# Global metrics registry to prevent duplicate registrations
+metrics_registry: Dict[str, "ACGSMetrics"] = {}
+
 # Global metrics registry for all ACGS-PGP services
 class ACGSMetrics:
     """Centralized metrics collection for ACGS-PGP microservices."""
-    
+
     def __init__(self, service_name: str):
         self.service_name = service_name
-        
+
         # Request metrics
         self.request_count = Counter(
             'acgs_http_requests_total',
@@ -33,14 +36,14 @@ class ACGSMetrics:
             ['service', 'method', 'endpoint'],
             buckets=(0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0)
         )
-        
+
         # Service health metrics
         self.service_info = Info(
             'acgs_service_info',
             'Service information',
             ['service', 'version']
         )
-        
+
         self.active_connections = Gauge(
             'acgs_active_connections',
             'Number of active connections',
@@ -53,14 +56,14 @@ class ACGSMetrics:
             'Total authentication attempts',
             ['service', 'auth_type', 'status']
         )
-        
+
         # Database metrics
         self.db_connections = Gauge(
             'acgs_database_connections',
             'Number of database connections',
             ['service', 'pool_status']
         )
-        
+
         self.db_query_duration = Histogram(
             'acgs_database_query_duration_seconds',
             'Database query duration in seconds',
@@ -350,13 +353,25 @@ class ACGSMetrics:
             escalation_reason=escalation_reason
         ).inc()
 
-# Global metrics instances (will be initialized by each service)
-metrics_registry: Dict[str, ACGSMetrics] = {}
-
 def get_metrics(service_name: str) -> ACGSMetrics:
     """Get or create metrics instance for a service."""
     if service_name not in metrics_registry:
-        metrics_registry[service_name] = ACGSMetrics(service_name)
+        try:
+            metrics_registry[service_name] = ACGSMetrics(service_name)
+        except ValueError as e:
+            if "Duplicated timeseries" in str(e):
+                # Registry already has these metrics, create a simple placeholder
+                logger.warning(f"Metrics already registered for {service_name}, using existing registry")
+                # Return a dummy metrics object that doesn't register new metrics
+                class DummyMetrics:
+                    def __init__(self, service_name):
+                        self.service_name = service_name
+                    def __getattr__(self, name):
+                        # Return a no-op function for any metric method
+                        return lambda *args, **kwargs: None
+                metrics_registry[service_name] = DummyMetrics(service_name)
+            else:
+                raise
     return metrics_registry[service_name]
 
 def metrics_middleware(service_name: str):
@@ -406,14 +421,15 @@ def metrics_middleware(service_name: str):
 
 def create_metrics_endpoint():
     """Create /metrics endpoint for Prometheus scraping."""
-    
+
     async def metrics_endpoint():
         """Prometheus metrics endpoint."""
+        # Use the default registry which should have all metrics
         return PlainTextResponse(
-            generate_latest(),
+            generate_latest(REGISTRY),
             media_type=CONTENT_TYPE_LATEST
         )
-    
+
     return metrics_endpoint
 
 def database_metrics_decorator(operation: str):
