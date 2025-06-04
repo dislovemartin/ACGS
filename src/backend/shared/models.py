@@ -791,6 +791,134 @@ class ConstitutionalValidation(Base):
     evaluation = relationship("FederatedEvaluation")
 
 
+# --- Task 13: Cross-Domain Principle Testing Framework Models ---
+
+class DomainContext(Base):
+    """Domain-specific context metadata for cross-domain principle testing"""
+    __tablename__ = "domain_contexts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    domain_name = Column(String(100), unique=True, nullable=False, index=True)  # e.g., "healthcare", "finance", "education"
+    domain_description = Column(Text, nullable=True)
+
+    # Regulatory framework information
+    regulatory_frameworks = Column(JSONB, nullable=True)  # List of applicable regulations
+    compliance_requirements = Column(JSONB, nullable=True)  # Specific compliance requirements
+    cultural_contexts = Column(JSONB, nullable=True)  # Cultural and social context factors
+
+    # Domain-specific constraints
+    domain_constraints = Column(JSONB, nullable=True)  # Technical and operational constraints
+    risk_factors = Column(JSONB, nullable=True)  # Domain-specific risk factors
+    stakeholder_groups = Column(JSONB, nullable=True)  # Relevant stakeholder groups
+
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False, index=True)
+
+
+class CrossDomainTestScenario(Base):
+    """Test scenarios for cross-domain principle validation"""
+    __tablename__ = "cross_domain_test_scenarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    scenario_name = Column(String(255), nullable=False, index=True)
+    scenario_description = Column(Text, nullable=True)
+
+    # Domain associations
+    primary_domain_id = Column(Integer, ForeignKey("domain_contexts.id"), nullable=False, index=True)
+    secondary_domains = Column(JSONB, nullable=True)  # List of secondary domain IDs
+
+    # Test configuration
+    test_type = Column(String(50), nullable=False, index=True)  # e.g., "consistency", "adaptation", "conflict_detection"
+    test_parameters = Column(JSONB, nullable=True)  # Configurable test parameters
+    expected_outcomes = Column(JSONB, nullable=True)  # Expected test results
+
+    # Principle associations
+    principle_ids = Column(JSONB, nullable=False)  # List of principle IDs to test
+    principle_adaptations = Column(JSONB, nullable=True)  # Domain-specific principle adaptations
+
+    # Status and results
+    status = Column(String(50), default="pending", nullable=False, index=True)  # "pending", "running", "completed", "failed"
+    last_run_at = Column(DateTime(timezone=True), nullable=True)
+    accuracy_score = Column(Float, nullable=True)  # Test accuracy (0.0 to 1.0)
+    consistency_score = Column(Float, nullable=True)  # Cross-domain consistency score
+
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+
+class CrossDomainTestResult(Base):
+    """Results from cross-domain principle testing"""
+    __tablename__ = "cross_domain_test_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    scenario_id = Column(Integer, ForeignKey("cross_domain_test_scenarios.id"), nullable=False, index=True)
+    test_run_id = Column(String(100), nullable=False, index=True)  # Unique identifier for test run
+
+    # Test execution details
+    domain_id = Column(Integer, ForeignKey("domain_contexts.id"), nullable=False, index=True)
+    principle_id = Column(Integer, ForeignKey("principles.id"), nullable=False, index=True)
+    test_type = Column(String(50), nullable=False, index=True)
+
+    # Results
+    is_consistent = Column(Boolean, nullable=False)
+    consistency_score = Column(Float, nullable=False)  # 0.0 to 1.0
+    adaptation_required = Column(Boolean, nullable=False)
+    adaptation_suggestions = Column(JSONB, nullable=True)  # Suggested adaptations
+
+    # Detailed analysis
+    validation_details = Column(JSONB, nullable=True)  # Detailed validation results
+    conflict_detected = Column(Boolean, default=False, nullable=False)
+    conflict_details = Column(JSONB, nullable=True)  # Details of any conflicts found
+
+    # Performance metrics
+    execution_time_ms = Column(Integer, nullable=True)
+    memory_usage_mb = Column(Float, nullable=True)
+
+    # Metadata
+    executed_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    executed_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+
+class ResearchDataExport(Base):
+    """Anonymized research data exports for external validation"""
+    __tablename__ = "research_data_exports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    export_name = Column(String(255), nullable=False, index=True)
+    export_description = Column(Text, nullable=True)
+
+    # Data scope
+    domain_ids = Column(JSONB, nullable=False)  # List of domain IDs included
+    principle_ids = Column(JSONB, nullable=False)  # List of principle IDs included
+    date_range_start = Column(DateTime(timezone=True), nullable=False)
+    date_range_end = Column(DateTime(timezone=True), nullable=False)
+
+    # Anonymization details
+    anonymization_method = Column(String(100), nullable=False)  # e.g., "k_anonymity", "differential_privacy"
+    anonymization_parameters = Column(JSONB, nullable=True)  # Anonymization parameters
+    privacy_budget_used = Column(Float, nullable=True)  # Privacy budget consumed
+
+    # Export data
+    export_data = Column(JSONB, nullable=False)  # Anonymized research data
+    statistical_summary = Column(JSONB, nullable=True)  # Statistical summary of data
+
+    # Cryptographic integrity
+    data_hash = Column(String(64), nullable=False, index=True)  # SHA3-256 hash of export data
+    pgp_signature = Column(Text, nullable=True)  # PGP signature for integrity
+    signed_by_key_id = Column(String(100), nullable=True)  # Key ID used for signing
+
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    export_format = Column(String(50), default="json", nullable=False)  # "json", "csv", "parquet"
+    file_size_bytes = Column(Integer, nullable=True)
+
+
 # Indexes for performance optimization
 Index('ix_federated_node_platform_status', FederatedNode.platform_type, FederatedNode.status)
 Index('ix_federated_evaluation_status_created', FederatedEvaluation.status, FederatedEvaluation.created_at)
@@ -798,3 +926,10 @@ Index('ix_evaluation_node_result_evaluation_node', EvaluationNodeResult.evaluati
 Index('ix_secure_aggregation_session_status', SecureAggregationSession.status, SecureAggregationSession.started_at)
 Index('ix_privacy_metric_evaluation_measured', PrivacyMetric.evaluation_id, PrivacyMetric.measured_at)
 Index('ix_constitutional_validation_evaluation', ConstitutionalValidation.evaluation_id, ConstitutionalValidation.validated_at)
+
+# Task 13: Cross-Domain Testing Framework Indexes
+Index('ix_domain_context_name_active', DomainContext.domain_name, DomainContext.is_active)
+Index('ix_cross_domain_scenario_domain_status', CrossDomainTestScenario.primary_domain_id, CrossDomainTestScenario.status)
+Index('ix_cross_domain_result_scenario_domain', CrossDomainTestResult.scenario_id, CrossDomainTestResult.domain_id)
+Index('ix_cross_domain_result_principle_executed', CrossDomainTestResult.principle_id, CrossDomainTestResult.executed_at)
+Index('ix_research_export_created_domains', ResearchDataExport.created_at, ResearchDataExport.domain_ids)

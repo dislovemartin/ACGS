@@ -2,7 +2,19 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
 
-app = FastAPI()
+# Import API routers
+from app.api.v1 import verify as verify_router
+from app.api.v1 import cross_domain_testing as cross_domain_router
+
+app = FastAPI(
+    title="Formal Verification Service",
+    description="ACGS-PGP Formal Verification Service with Cross-Domain Principle Testing",
+    version="3.0.0"
+)
+
+# Include API routers
+app.include_router(verify_router.router, prefix="/api/v1", tags=["Verification"])
+app.include_router(cross_domain_router.router, prefix="/api/v1/cross-domain", tags=["Cross-Domain Testing"])
 
 class PolicyVerificationRequest(BaseModel):
     policy_id: str

@@ -5,6 +5,7 @@ from app.api.v1 import appeals as appeals_router  # Phase 3: Appeals and Explain
 from app.api.v1 import crypto as crypto_router  # Phase 3: Cryptographic Operations
 from app.api.v1 import integrity as integrity_router  # Phase 3: Integrity Verification
 from app.api.v1 import pgp_assurance as pgp_router  # Phase 3: PGP Assurance
+from app.api.v1 import research_data as research_data_router  # Task 13: Research Data Pipeline
 from shared.database import create_db_and_tables
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
@@ -31,6 +32,7 @@ app.include_router(appeals_router.router, prefix="/api/v1", tags=["Appeals & Exp
 app.include_router(crypto_router.router, prefix="/api/v1/crypto", tags=["Cryptographic Operations"])  # Phase 3
 app.include_router(integrity_router.router, prefix="/api/v1/integrity", tags=["Integrity Verification"])  # Phase 3
 app.include_router(pgp_router.router, prefix="/api/v1/pgp-assurance", tags=["PGP Assurance"])  # Phase 3
+app.include_router(research_data_router.router, prefix="/api/v1/research", tags=["Research Data Pipeline"])  # Task 13
 
 @app.on_event("startup")
 async def on_startup():

@@ -19,6 +19,7 @@ const Layout = ({ children }) => {
                     <Link to="/" className="nav-logo">GovFrame</Link>
                     <ul className="nav-links">
                         <li><Link to="/">Home</Link></li>
+                        <li><Link to="/public-consultation">Public Consultation</Link></li>
                         {currentUser ? (
                             <>
                                 <li><Link to="/ac-management">AC Mgmt</Link></li>

@@ -302,3 +302,125 @@ class ConflictCheckResult(BaseModel):
     severity: str = Field(..., pattern="^(low|medium|high|critical)$")
     resolution_suggestions: List[str]
     affected_principles: List[int]
+
+
+# --- Task 13: Cross-Domain Principle Testing Framework Schemas ---
+
+class DomainContextBase(BaseModel):
+    """Base schema for domain context."""
+    domain_name: str = Field(..., max_length=100, description="Domain name (e.g., healthcare, finance)")
+    domain_description: Optional[str] = Field(None, description="Description of the domain")
+    regulatory_frameworks: Optional[List[str]] = Field(None, description="Applicable regulatory frameworks")
+    compliance_requirements: Optional[Dict[str, Any]] = Field(None, description="Specific compliance requirements")
+    cultural_contexts: Optional[Dict[str, Any]] = Field(None, description="Cultural and social context factors")
+    domain_constraints: Optional[Dict[str, Any]] = Field(None, description="Technical and operational constraints")
+    risk_factors: Optional[List[str]] = Field(None, description="Domain-specific risk factors")
+    stakeholder_groups: Optional[List[str]] = Field(None, description="Relevant stakeholder groups")
+
+class DomainContextCreate(DomainContextBase):
+    """Schema for creating domain context."""
+    pass
+
+class DomainContextUpdate(BaseModel):
+    """Schema for updating domain context."""
+    domain_description: Optional[str] = None
+    regulatory_frameworks: Optional[List[str]] = None
+    compliance_requirements: Optional[Dict[str, Any]] = None
+    cultural_contexts: Optional[Dict[str, Any]] = None
+    domain_constraints: Optional[Dict[str, Any]] = None
+    risk_factors: Optional[List[str]] = None
+    stakeholder_groups: Optional[List[str]] = None
+    is_active: Optional[bool] = None
+
+class DomainContext(DomainContextBase):
+    """Schema for domain context response."""
+    id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    created_by_user_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+class CrossDomainTestScenarioBase(BaseModel):
+    """Base schema for cross-domain test scenario."""
+    scenario_name: str = Field(..., max_length=255, description="Name of the test scenario")
+    scenario_description: Optional[str] = Field(None, description="Description of the test scenario")
+    primary_domain_id: int = Field(..., description="Primary domain ID for testing")
+    secondary_domains: Optional[List[int]] = Field(None, description="Secondary domain IDs")
+    test_type: str = Field(..., description="Type of test (consistency, adaptation, conflict_detection)")
+    test_parameters: Optional[Dict[str, Any]] = Field(None, description="Configurable test parameters")
+    expected_outcomes: Optional[Dict[str, Any]] = Field(None, description="Expected test results")
+    principle_ids: List[int] = Field(..., description="List of principle IDs to test")
+    principle_adaptations: Optional[Dict[str, Any]] = Field(None, description="Domain-specific adaptations")
+
+class CrossDomainTestScenarioCreate(CrossDomainTestScenarioBase):
+    """Schema for creating cross-domain test scenario."""
+    pass
+
+class CrossDomainTestScenarioUpdate(BaseModel):
+    """Schema for updating cross-domain test scenario."""
+    scenario_description: Optional[str] = None
+    secondary_domains: Optional[List[int]] = None
+    test_parameters: Optional[Dict[str, Any]] = None
+    expected_outcomes: Optional[Dict[str, Any]] = None
+    principle_adaptations: Optional[Dict[str, Any]] = None
+    status: Optional[str] = None
+
+class CrossDomainTestScenario(CrossDomainTestScenarioBase):
+    """Schema for cross-domain test scenario response."""
+    id: int
+    status: str
+    last_run_at: Optional[datetime] = None
+    accuracy_score: Optional[float] = None
+    consistency_score: Optional[float] = None
+    created_at: datetime
+    updated_at: datetime
+    created_by_user_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+class CrossDomainTestResultBase(BaseModel):
+    """Base schema for cross-domain test result."""
+    scenario_id: int = Field(..., description="Test scenario ID")
+    test_run_id: str = Field(..., description="Unique test run identifier")
+    domain_id: int = Field(..., description="Domain ID being tested")
+    principle_id: int = Field(..., description="Principle ID being tested")
+    test_type: str = Field(..., description="Type of test performed")
+    is_consistent: bool = Field(..., description="Whether the principle is consistent across domains")
+    consistency_score: float = Field(..., ge=0.0, le=1.0, description="Consistency score (0.0 to 1.0)")
+    adaptation_required: bool = Field(..., description="Whether adaptation is required")
+    adaptation_suggestions: Optional[List[str]] = Field(None, description="Suggested adaptations")
+    validation_details: Optional[Dict[str, Any]] = Field(None, description="Detailed validation results")
+    conflict_detected: bool = Field(False, description="Whether conflicts were detected")
+    conflict_details: Optional[Dict[str, Any]] = Field(None, description="Details of conflicts found")
+    execution_time_ms: Optional[int] = Field(None, description="Execution time in milliseconds")
+    memory_usage_mb: Optional[float] = Field(None, description="Memory usage in MB")
+
+class CrossDomainTestResult(CrossDomainTestResultBase):
+    """Schema for cross-domain test result response."""
+    id: int
+    executed_at: datetime
+    executed_by_user_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+class CrossDomainTestRequest(BaseModel):
+    """Schema for requesting cross-domain testing."""
+    scenario_ids: List[int] = Field(..., description="List of scenario IDs to execute")
+    target_accuracy: float = Field(0.9, ge=0.0, le=1.0, description="Target accuracy threshold")
+    enable_parallel: bool = Field(True, description="Enable parallel execution")
+    max_execution_time_seconds: int = Field(300, description="Maximum execution time per scenario")
+
+class CrossDomainTestResponse(BaseModel):
+    """Schema for cross-domain testing response."""
+    test_run_id: str = Field(..., description="Unique test run identifier")
+    scenarios_executed: int = Field(..., description="Number of scenarios executed")
+    overall_accuracy: float = Field(..., description="Overall accuracy across all tests")
+    overall_consistency: float = Field(..., description="Overall consistency score")
+    results: List[CrossDomainTestResult] = Field(..., description="Detailed test results")
+    execution_summary: Dict[str, Any] = Field(..., description="Execution summary and metrics")
+    recommendations: List[str] = Field(..., description="Recommendations based on results")
