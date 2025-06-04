@@ -180,3 +180,26 @@ tasks/
 # Large archive files
 *.zip
 ACGS.zip
+
+# Security - Credential files and MCP configurations
+.kilocode/mcp.json
+.roo/mcp.json
+.cursor/mcp.json
+**/mcp.json
+**/*credentials*
+**/*secrets*
+**/*tokens*
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Allow template and setup files
+!.kilocode/mcp.json.template
+!scripts/setup_secure_credentials.sh
+
+# API Keys and sensitive configuration
+**/config/**/secrets/
+**/config/**/credentials/
+**/.secrets/
+**/.credentials/
