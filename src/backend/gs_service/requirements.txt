@@ -24,6 +24,6 @@ passlib[bcrypt]==1.7.4
 email-validator==2.1.0
 # WINA (Weight Informed Neuron Activation) Dependencies
 scipy==1.11.4
-torch==2.7.0
+torch==2.7.1
 scikit-learn==1.5.1
 aiohttp>=3.8.0
