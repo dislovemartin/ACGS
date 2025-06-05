@@ -74,3 +74,4 @@ sqlalchemy==2.0.41
 alembic==1.16.1
 python-dotenv==1.1.0
 numpy==2.2.6
+tenacity==8.2.3                           # Retry logic for LLM integration

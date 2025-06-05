@@ -33,21 +33,31 @@ else:
     DB_ECHO = os.getenv("DB_ECHO_LOG", "False").lower() == "true"
 
 # Create async engine with optimized connection pooling
-async_engine = create_async_engine(
-    DATABASE_URL,
-    echo=DB_ECHO,
-    pool_pre_ping=True,
-    pool_size=20,  # Increased from default 5
-    max_overflow=30,  # Increased from default 10
-    pool_timeout=30,  # Connection timeout in seconds
-    pool_recycle=3600,  # Recycle connections every hour
-    connect_args={
-        "server_settings": {
-            "application_name": "acgs_pgp",
-            "jit": "off",  # Disable JIT for consistent performance
+# Handle different database types (PostgreSQL vs SQLite)
+if DATABASE_URL.startswith('sqlite'):
+    # SQLite configuration (for testing)
+    async_engine = create_async_engine(
+        DATABASE_URL,
+        echo=DB_ECHO,
+        # SQLite doesn't support connection pooling parameters
+    )
+else:
+    # PostgreSQL configuration (for production/development)
+    async_engine = create_async_engine(
+        DATABASE_URL,
+        echo=DB_ECHO,
+        pool_pre_ping=True,
+        pool_size=20,  # Increased from default 5
+        max_overflow=30,  # Increased from default 10
+        pool_timeout=30,  # Connection timeout in seconds
+        pool_recycle=3600,  # Recycle connections every hour
+        connect_args={
+            "server_settings": {
+                "application_name": "acgs_pgp",
+                "jit": "off",  # Disable JIT for consistent performance
+            }
         }
-    }
-)
+    )
 
 # Create async session factory
 AsyncSessionLocal = sessionmaker(

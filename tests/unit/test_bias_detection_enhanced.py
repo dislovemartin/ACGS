@@ -83,15 +83,19 @@ class TestEnhancedBiasDetection:
         
         # Create policy rule from test fixture
         policy_rule = PolicyRule(
-            id=scenario["policy_rule"]["id"],
+            id=1,  # Use integer ID
             rule_content=scenario["policy_rule"]["rule_content"],
-            rule_type=scenario["policy_rule"]["rule_type"]
+            source_principle_ids=[],
+            version=1,
+            verification_status="pending"
         )
         
         # Create bias metric
         bias_metric = BiasMetric(
             metric_id="demographic_parity",
             metric_type="statistical",
+            metric_name="Demographic Parity",
+            description="Measures difference in positive outcome rates between groups",
             threshold=0.1
         )
         
@@ -99,6 +103,7 @@ class TestEnhancedBiasDetection:
         request = BiasDetectionRequest(
             policy_rule_ids=[policy_rule.id],
             bias_metrics=[bias_metric],
+            fairness_properties=[],  # Add required field
             protected_attributes=scenario["protected_attributes"],
             dataset=scenario["dataset"]
         )
@@ -131,20 +136,25 @@ class TestEnhancedBiasDetection:
         )
         
         policy_rule = PolicyRule(
-            id=scenario["policy_rule"]["id"],
+            id=2,  # Use integer ID
             rule_content=scenario["policy_rule"]["rule_content"],
-            rule_type=scenario["policy_rule"]["rule_type"]
+            source_principle_ids=[],
+            version=1,
+            verification_status="pending"
         )
         
         bias_metric = BiasMetric(
             metric_id="demographic_parity",
             metric_type="statistical",
+            metric_name="Demographic Parity",
+            description="Measures difference in positive outcome rates between groups",
             threshold=0.1
         )
         
         request = BiasDetectionRequest(
             policy_rule_ids=[policy_rule.id],
             bias_metrics=[bias_metric],
+            fairness_properties=[],  # Add required field
             protected_attributes=scenario["protected_attributes"],
             dataset=scenario["dataset"]
         )
@@ -161,14 +171,18 @@ class TestEnhancedBiasDetection:
     async def test_heuristic_fallback(self, bias_detector):
         """Test heuristic bias detection when fairlearn is not available or dataset is small."""
         policy_rule = PolicyRule(
-            id="heuristic_test",
+            id=3,  # Use integer ID
             rule_content="deny { input.user.race == \"minority\"; input.action == \"hire\" }",
-            rule_type="discriminatory_rule"
+            source_principle_ids=[],
+            version=1,
+            verification_status="pending"
         )
         
         bias_metric = BiasMetric(
             metric_id="heuristic_bias",
             metric_type="statistical",
+            metric_name="Heuristic Bias Detection",
+            description="Heuristic-based bias detection for small datasets",
             threshold=0.1
         )
         
@@ -181,6 +195,7 @@ class TestEnhancedBiasDetection:
         request = BiasDetectionRequest(
             policy_rule_ids=[policy_rule.id],
             bias_metrics=[bias_metric],
+            fairness_properties=[],  # Add required field
             protected_attributes=["race"],
             dataset=small_dataset
         )
@@ -199,15 +214,17 @@ class TestEnhancedBiasDetection:
     async def test_multiple_metrics(self, bias_detector):
         """Test bias detection with multiple metrics."""
         policy_rule = PolicyRule(
-            id="multi_metric_test",
+            id=4,  # Use integer ID
             rule_content="exclude { input.user.gender == \"female\"; input.user.age > 40 }",
-            rule_type="multi_bias_rule"
+            source_principle_ids=[],
+            version=1,
+            verification_status="pending"
         )
         
         metrics = [
-            BiasMetric(metric_id="statistical", metric_type="statistical", threshold=0.1),
-            BiasMetric(metric_id="embedding", metric_type="embedding", threshold=0.15),
-            BiasMetric(metric_id="llm_review", metric_type="llm_review", threshold=0.2)
+            BiasMetric(metric_id="statistical", metric_type="statistical", metric_name="Statistical Bias", description="Statistical bias detection", threshold=0.1),
+            BiasMetric(metric_id="embedding", metric_type="embedding", metric_name="Embedding Bias", description="Embedding-based bias detection", threshold=0.15),
+            BiasMetric(metric_id="llm_review", metric_type="llm_review", metric_name="LLM Review", description="LLM-based bias review", threshold=0.2)
         ]
         
         dataset = [
@@ -218,6 +235,7 @@ class TestEnhancedBiasDetection:
         request = BiasDetectionRequest(
             policy_rule_ids=[policy_rule.id],
             bias_metrics=metrics,
+            fairness_properties=[],  # Add required field
             protected_attributes=["gender", "age"],
             dataset=dataset
         )
@@ -237,14 +255,18 @@ class TestEnhancedBiasDetection:
     async def test_bias_recommendations(self, bias_detector):
         """Test that appropriate recommendations are generated for biased rules."""
         policy_rule = PolicyRule(
-            id="recommendation_test",
+            id=5,  # Use integer ID
             rule_content="prefer { input.applicant.ethnicity == \"majority_group\" }",
-            rule_type="preference_rule"
+            source_principle_ids=[],
+            version=1,
+            verification_status="pending"
         )
         
         bias_metric = BiasMetric(
             metric_id="recommendation_test",
             metric_type="statistical",
+            metric_name="Recommendation Test",
+            description="Test bias detection recommendations",
             threshold=0.1
         )
         
@@ -253,6 +275,7 @@ class TestEnhancedBiasDetection:
         request = BiasDetectionRequest(
             policy_rule_ids=[policy_rule.id],
             bias_metrics=[bias_metric],
+            fairness_properties=[],  # Add required field
             protected_attributes=["ethnicity"],
             dataset=dataset
         )
