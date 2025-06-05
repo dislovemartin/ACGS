@@ -1,0 +1,272 @@
+# ACGS-PGP Fixed Docker Compose Configuration
+# Addresses cgroup v2 compatibility issues and environment variable loading
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: acgs-postgres-staging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-acgs_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-acgs_staging_secure_password_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-acgs_staging}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - acgs-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-acgs_user} -d ${POSTGRES_DB:-acgs_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: acgs-redis-staging
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6382:6379"
+    networks:
+      - acgs-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+
+  # Open Policy Agent
+  opa:
+    image: openpolicyagent/opa:latest-envoy
+    container_name: acgs-opa-staging
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "--log-level", "info"]
+    ports:
+      - "8191:8181"
+    networks:
+      - acgs-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8181/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+
+  # AC Service - Artificial Constitution
+  ac_service:
+    build:
+      context: ./src/backend
+      dockerfile: ac_service/Dockerfile
+    container_name: acgs-ac-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD:-acgs_staging_secure_password_2024}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-acgs_staging_jwt_secret_key_phase3_2024_secure_random_string}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - PYTHONPATH=/app:/app/shared
+    ports:
+      - "8011:8001"
+    networks:
+      - acgs-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src/backend/ac_service:/app
+      - ./src/backend/shared:/app/shared
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Integrity Service
+  integrity_service:
+    build:
+      context: ./src/backend
+      dockerfile: integrity_service/Dockerfile
+    container_name: acgs-integrity-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD:-acgs_staging_secure_password_2024}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-acgs_staging_jwt_secret_key_phase3_2024_secure_random_string}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - PYTHONPATH=/app:/app/shared
+    ports:
+      - "8012:8002"
+    networks:
+      - acgs-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src/backend/integrity_service:/app
+      - ./src/backend/shared:/app/shared
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # FV Service - Formal Verification
+  fv_service:
+    build:
+      context: ./src/backend/fv_service
+      dockerfile: Dockerfile
+    container_name: acgs-fv-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD:-acgs_staging_secure_password_2024}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/2
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-acgs_staging_jwt_secret_key_phase3_2024_secure_random_string}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - AC_SERVICE_URL=http://ac_service:8001
+      - INTEGRITY_SERVICE_URL=http://integrity_service:8002
+      - PYTHONPATH=/app:/app/shared
+    ports:
+      - "8013:8003"
+    networks:
+      - acgs-network
+    depends_on:
+      ac_service:
+        condition: service_healthy
+      integrity_service:
+        condition: service_healthy
+    volumes:
+      - ./src/backend/shared:/app/shared
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # GS Service - Governance Synthesis
+  gs_service:
+    build:
+      context: ./src/backend/gs_service
+      dockerfile: Dockerfile
+    container_name: acgs-gs-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD:-acgs_staging_secure_password_2024}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/3
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-acgs_staging_jwt_secret_key_phase3_2024_secure_random_string}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - AC_SERVICE_URL=http://ac_service:8001
+      - INTEGRITY_SERVICE_URL=http://integrity_service:8002
+      - FV_SERVICE_URL=http://fv_service:8003
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-staging-placeholder-key}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-staging-placeholder-key}
+      - GROQ_API_KEY=${GROQ_API_KEY:-staging-placeholder-key}
+      - PYTHONPATH=/app:/app/shared
+    ports:
+      - "8014:8004"
+    networks:
+      - acgs-network
+    depends_on:
+      ac_service:
+        condition: service_healthy
+      integrity_service:
+        condition: service_healthy
+      fv_service:
+        condition: service_healthy
+    volumes:
+      - ./src/backend/shared:/app/shared
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PGC Service - Prompt Governance Compiler
+  pgc_service:
+    build:
+      context: ./src/backend/pgc_service
+      dockerfile: Dockerfile
+    container_name: acgs-pgc-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD:-acgs_staging_secure_password_2024}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/4
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-acgs_staging_jwt_secret_key_phase3_2024_secure_random_string}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - AC_SERVICE_URL=http://ac_service:8001
+      - GS_SERVICE_URL=http://gs_service:8004
+      - OPA_SERVER_URL=http://opa:8181
+      - PERFORMANCE_MAX_POLICY_DECISION_LATENCY_MS=50
+      - PYTHONPATH=/app:/app/shared
+    ports:
+      - "8015:8005"
+    networks:
+      - acgs-network
+    depends_on:
+      ac_service:
+        condition: service_healthy
+      gs_service:
+        condition: service_healthy
+      opa:
+        condition: service_healthy
+    volumes:
+      - ./src/backend/shared:/app/shared
+    restart: unless-stopped
+    # Fix cgroup issues
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  acgs-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: acgs-br0
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

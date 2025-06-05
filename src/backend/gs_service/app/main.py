@@ -1,36 +1,47 @@
 import os
 import httpx
+import logging
 from fastapi import FastAPI
-from app.api.v1.synthesize import router as synthesize_router
-from app.api.v1.policy_management import router as policy_management_router # Added
-from app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router # Added Phase 1
-from app.api.v1.alphaevolve_integration import router as alphaevolve_router # Added Phase 2
-from app.api.v1.mab_optimization import router as mab_router # Added Task 5 MAB
-from app.api.v1.wina_rego_synthesis import router as wina_rego_router # Added Task 17.5 WINA Rego
-from app.api.v1.enhanced_synthesis import router as enhanced_synthesis_router # Added Phase 2 OPA Integration
-from app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance # Added for LLM Reliability Dashboard
-from app.api.v1.multi_model_synthesis import router as multi_model_synthesis_router # Added Task 18 Multi-Model Enhancement
-from app.api.v1.fidelity_monitoring_websocket import router as fidelity_websocket_router # Added Task 19 Real-time Monitoring
-from app.api.v1.constitutional_reports import router as constitutional_reports_router # Added Task 19.4 Performance Dashboard Integration
-from app.api.v1.performance_monitoring import router as performance_monitoring_router # Added Phase 3 Performance Monitoring
+
+# Import shared modules first
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
+from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+
+# Import service clients
 from app.services.ac_client import ac_service_client
 from app.services.integrity_client import integrity_service_client
-from app.services.fv_client import fv_service_client # Added FV client for shutdown
+from app.services.fv_client import fv_service_client
 
 # Phase 3: Performance Optimization and Security Compliance imports
 from app.services.performance_monitor import get_performance_monitor
 from app.services.security_compliance import get_security_service
-from shared.security_middleware import add_security_middleware
-from shared.security_config import security_config
-# from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+
+# Import API routers
+from app.api.v1.synthesize import router as synthesize_router
+from app.api.v1.policy_management import router as policy_management_router
+from app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router
+from app.api.v1.alphaevolve_integration import router as alphaevolve_router
+from app.api.v1.mab_optimization import router as mab_router
+from app.api.v1.wina_rego_synthesis import router as wina_rego_router
+from app.api.v1.enhanced_synthesis import router as enhanced_synthesis_router
+from app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance
+from app.api.v1.multi_model_synthesis import router as multi_model_synthesis_router
+from app.api.v1.fidelity_monitoring_websocket import router as fidelity_websocket_router
+from app.api.v1.constitutional_reports import router as constitutional_reports_router
+from app.api.v1.performance_monitoring import router as performance_monitoring_router
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Governance Synthesis (GS) Service")
 
 # Initialize metrics for GS service
-# metrics = get_metrics("gs_service")
+metrics = get_metrics("gs_service")
 
 # Add metrics middleware
-# app.middleware("http")(metrics_middleware("gs_service"))
+app.middleware("http")(metrics_middleware("gs_service"))
 
 # Add enhanced security middleware (clean pattern like fv_service)
 add_security_middleware(app)
@@ -161,11 +172,6 @@ async def health_check():
     return health_status
 
 # Add Prometheus metrics endpoint
-from shared.metrics import get_metrics, create_metrics_endpoint
-
-# Initialize metrics for GS service
-metrics = get_metrics("gs_service")
-
 @app.get("/metrics")
 async def metrics_endpoint():
     """Prometheus metrics endpoint for GS Service."""

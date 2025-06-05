@@ -1,31 +1,36 @@
-# Audit & Compliance Service (`ac_service`)
+# Ac Service
 
 ## Overview
+Artificial Constitution (AC) Service
 
-The Audit & Compliance Service (`ac_service`) is responsible for managing AI governance principles and guidelines within the ACGS-PGP system. It allows users to browse and understand the core tenets of AI governance, forming a foundational layer for policy creation and verification.
+## Features
 
-## Core Responsibilities
-
--   Managing and providing access to AI governance principles.
--   Managing and providing access to guidelines associated with these principles.
--   Facilitating audit and compliance workflows by making these documents readily available.
--   Integration with `shared/models.py` for relevant data models.
 
 ## API Endpoints
+- `/api/v1/principles`
+- `/api/v1/constitutional-council`
+- `/api/v1/conflict-resolution`
+- `/api/v1/fidelity`
+- `/api/v1`
+- `/api/v1`
+- `/api/v1`
+- `/api/v1`
+- `/api/v1`
+- `/api/v1`
+- `/api/v1`
 
-Detailed API documentation is available via Swagger UI at `/api/v1/ac/docs` when the service is running.
+## Configuration
+See `.env.example` for configuration options
 
-Key endpoints typically include operations related to:
--   Retrieving and managing governance principles.
--   Retrieving and managing guidelines.
+## Development
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run service: `uvicorn main:app --reload`
 
-## Dependencies
+## Deployment
+Use Docker Compose: `docker-compose up -d`
 
--   FastAPI
--   SQLAlchemy (via `shared` module)
--   Pydantic (via `shared` module)
-Refer to `requirements.txt` for specific package versions. Core shared models are typically in `shared/models.py`.
+## Troubleshooting
+Check logs: `docker-compose logs service_name`
 
-## Local Development
-
-For general setup, refer to the main project `README.md` and `docs/developer_guide.md`. This service can be run using Uvicorn: `uvicorn app.main:app --host 0.0.0.0 --port 8001`.
+## Contributing
+Follow project coding standards and submit pull requests

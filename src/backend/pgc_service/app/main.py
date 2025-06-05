@@ -1,21 +1,32 @@
 import os
+import logging
 from fastapi import FastAPI
-from app.api.v1.enforcement import router as enforcement_router
-from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement_router # Added Phase 2
-from app.api.v1.incremental_compilation import router as incremental_compilation_router # Added Task 8
-from app.core.policy_manager import policy_manager
-from app.services.integrity_client import integrity_service_client
+
+# Import shared modules first
 from shared.security_middleware import add_security_middleware
 from shared.security_config import security_config
-# from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+
+# Import core components
+from app.core.policy_manager import policy_manager
+from app.services.integrity_client import integrity_service_client
+
+# Import API routers
+from app.api.v1.enforcement import router as enforcement_router
+from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement_router
+from app.api.v1.incremental_compilation import router as incremental_compilation_router
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Protective Governance Controls (PGC) Service")
 
 # Initialize metrics for PGC service
-# metrics = get_metrics("pgc_service")
+metrics = get_metrics("pgc_service")
 
 # Add metrics middleware
-# app.middleware("http")(metrics_middleware("pgc_service"))
+app.middleware("http")(metrics_middleware("pgc_service"))
 
 # Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
 add_security_middleware(app)
@@ -127,11 +138,6 @@ async def health_check():
     return health_status
 
 # Add Prometheus metrics endpoint
-from shared.metrics import get_metrics, create_metrics_endpoint
-
-# Initialize metrics for PGC service
-metrics = get_metrics("pgc_service")
-
 @app.get("/metrics")
 async def metrics_endpoint():
     """Prometheus metrics endpoint for PGC Service."""

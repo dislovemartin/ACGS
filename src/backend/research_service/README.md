@@ -1,14 +1,17 @@
-# Auth Service
+# Research Service
 
 ## Overview
-/openapi.json
+ACGS-PGP Research Infrastructure Service
 
 ## Features
 
 
 ## API Endpoints
-- `/auth`
-- `/auth`
+- `/api/v1/experiments`
+- `/api/v1/data`
+- `/api/v1/analysis`
+- `/api/v1/automation`
+- `/api/v1/reproducibility`
 
 ## Configuration
 See `.env.example` for configuration options

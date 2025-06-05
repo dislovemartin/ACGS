@@ -1,14 +1,18 @@
-# Auth Service
+# Ec Service
 
 ## Overview
-/openapi.json
+ACGS-PGP Evolutionary Computation (EC) Service
 
 ## Features
 
 
 ## API Endpoints
-- `/auth`
-- `/auth`
+- `/api/v1/oversight`
+- `/api/v1`
+- `/api/v1/alphaevolve`
+- `/api/v1/reporting`
+- `/api/v1/monitoring`
+- `/api/v1/wina/performance`
 
 ## Configuration
 See `.env.example` for configuration options

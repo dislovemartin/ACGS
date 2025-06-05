@@ -1,19 +1,27 @@
-from app.api.v1.conflict_resolution import router as conflict_resolution_router
-from app.api.v1.constitutional_council import router as constitutional_council_router
-from app.api.v1.democratic_governance import router as democratic_governance_router
-from app.api.v1.fidelity_monitor import router as fidelity_monitor_router
+from fastapi import FastAPI
+import logging
+
+# Import shared modules first
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
+from shared.metrics import create_metrics_endpoint, get_metrics, metrics_middleware
+
+# Import API routers
 from app.api.v1.principles import router as principles_router
+from app.api.v1.constitutional_council import router as constitutional_council_router
+from app.api.v1.conflict_resolution import router as conflict_resolution_router
+from app.api.v1.fidelity_monitor import router as fidelity_monitor_router
 from app.api.v1.stakeholder_engagement import router as stakeholder_engagement_router
 from app.api.v1.voting import router as voting_router
 from app.api.v1.workflows import router as workflows_router
+from app.api.v1.democratic_governance import router as democratic_governance_router
 from app.api.v1.dashboard_websocket import router as dashboard_websocket_router
 from app.api.hitl_sampling import router as hitl_sampling_router
 from app.api.public_consultation import router as public_consultation_router
-from fastapi import FastAPI
 
-from shared.metrics import create_metrics_endpoint, get_metrics, metrics_middleware
-from shared.security_middleware import add_security_middleware
-from shared.security_config import security_config
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Artificial Constitution (AC) Service")
 
@@ -23,8 +31,8 @@ metrics = get_metrics("ac_service")
 # Add enhanced security middleware (clean pattern like fv_service)
 add_security_middleware(app)
 
-# Add metrics middleware - commented out to avoid conflicts
-# app.middleware("http")(metrics_middleware("ac_service"))
+# Add metrics middleware
+app.middleware("http")(metrics_middleware("ac_service"))
 
 # Include the API routers
 app.include_router(principles_router, prefix="/api/v1/principles", tags=["Principles"])

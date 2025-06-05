@@ -1,14 +1,13 @@
-# Auth Service
+# Shared
 
 ## Overview
-/openapi.json
+ACGS-PGP service component
 
 ## Features
 
 
 ## API Endpoints
-- `/auth`
-- `/auth`
+
 
 ## Configuration
 See `.env.example` for configuration options

@@ -1,48 +1,28 @@
-# Policy Governance & Compliance Service (`pgc_service`)
+# Pgc Service
 
 ## Overview
+Protective Governance Controls (PGC) Service
 
-The Policy Governance & Compliance Service (`pgc_service`) is responsible for the enforcement of policies within the ACGS-PGP system. It utilizes a Datalog engine (`pyDatalog`) to evaluate defined policies against given contextual information and facts. Its core role is to act as a Policy Enforcement Engine.
+## Features
 
-Policy *generation*, *synthesis*, and *template management* are primarily handled by the **GS Service (Governance Synthesizer Service)**. This `pgc_service` focuses on the evaluation and enforcement aspect.
-
-## Core Responsibilities
-
-*   Receives policy evaluation requests.
-*   Interprets and loads relevant policy rules (expressed in Datalog or translatable to Datalog).
-*   Queries the Datalog engine with the facts from the request.
-*   Returns the outcome of the policy evaluation (e.g., allow/deny, obligations, explanations).
-*   Integration with `shared/models.py` for relevant data models if applicable for storing evaluation contexts or results.
 
 ## API Endpoints
+- `/api/v1/enforcement`
+- `/api/v1/alphaevolve`
+- `/api/v1/incremental`
 
-Detailed API documentation is available via Swagger UI at `/api/v1/pgc/docs` when the service is running.
+## Configuration
+See `.env.example` for configuration options
 
-Key endpoints typically include:
-*   `/evaluate` (or similar for policy evaluation)
-*   `/check_compliance` (or similar)
+## Development
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run service: `uvicorn main:app --reload`
 
-## Datalog Engine
+## Deployment
+Use Docker Compose: `docker-compose up -d`
 
-The core logic for policy evaluation resides in `app/core/datalog_engine.py`. Ensure that Datalog rules are correctly formulated and loaded for the engine to process. (Note: Specific Datalog rule conventions are being established. Detailed documentation will be added as the service's Datalog capabilities for policy evaluation are further refined.)
+## Troubleshooting
+Check logs: `docker-compose logs service_name`
 
-## Dependencies
-
--   Python 3.9+
--   FastAPI
--   pyDatalog
--   SQLAlchemy (via `shared` module, if used for policy/result storage)
--   Pydantic (via `shared` module)
-Refer to `requirements.txt` for specific package versions.
-
-## Local Development
-
-For general setup, refer to the main project `README.md` and `docs/developer_guide.md`. This service can be run using Uvicorn: `uvicorn app.main:app --host 0.0.0.0 --port 8004`.
-
-To install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
----
-*This README will be expanded with more details on specific Datalog rule conventions, policy evaluation examples, and operational notes as the service evolves.*
+## Contributing
+Follow project coding standards and submit pull requests

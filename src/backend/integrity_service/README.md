@@ -1,31 +1,32 @@
-# Integrity & Verifiability Service (`integrity_service`)
+# Integrity Service
 
 ## Overview
+Integrity and Verifiability Service
 
-The Integrity & Verifiability Service (`integrity_service`) is responsible for ensuring the integrity of critical data within the ACGS-PGP system. This includes policies, audit logs, and verification results. It may involve mechanisms like cryptographic hashing, digital signatures, or blockchain-based logging to maintain a verifiable trail. This service also manages audit logs from all other services. In its current phase, the Data Integrity Service establishes the groundwork for managing audit logs. Advanced mechanisms like cryptographic hashing/signatures for all artifacts or blockchain logging are future enhancements.
+## Features
 
-## Core Responsibilities
-
--   Providing mechanisms for ensuring data integrity for policies, audit logs, and verification results.
--   Managing and storing audit logs from all services in a secure and verifiable manner.
--   Potentially implementing cryptographic hashing or digital signatures for data elements.
--   Integration with `shared/models.py` for relevant data models (e.g., for audit logs).
 
 ## API Endpoints
+- `/api/v1/policies`
+- `/api/v1/audit`
+- `/api/v1`
+- `/api/v1/crypto`
+- `/api/v1/integrity`
+- `/api/v1/pgp-assurance`
+- `/api/v1/research`
 
-Detailed API documentation is available via Swagger UI at `/api/v1/integrity/docs` when the service is running.
+## Configuration
+See `.env.example` for configuration options
 
-Key endpoints typically include operations related to:
--   Storing and retrieving audit logs.
--   Verifying data integrity (if applicable).
+## Development
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run service: `uvicorn main:app --reload`
 
-## Dependencies
+## Deployment
+Use Docker Compose: `docker-compose up -d`
 
--   FastAPI
--   SQLAlchemy (via `shared` module)
--   Pydantic (via `shared` module)
-Refer to `requirements.txt` for specific package versions. Core shared models are typically in `shared/models.py`.
+## Troubleshooting
+Check logs: `docker-compose logs service_name`
 
-## Local Development
-
-For general setup, refer to the main project `README.md` and `docs/developer_guide.md`. This service can be run using Uvicorn: `uvicorn app.main:app --host 0.0.0.0 --port 8005`.
+## Contributing
+Follow project coding standards and submit pull requests

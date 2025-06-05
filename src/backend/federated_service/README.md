@@ -1,14 +1,15 @@
-# Auth Service
+# Federated Service
 
 ## Overview
-/openapi.json
+Federated Evaluation (FE) Service
 
 ## Features
 
 
 ## API Endpoints
-- `/auth`
-- `/auth`
+- `/api/v1/federated`
+- `/api/v1/aggregation`
+- `/api/v1/privacy`
 
 ## Configuration
 See `.env.example` for configuration options

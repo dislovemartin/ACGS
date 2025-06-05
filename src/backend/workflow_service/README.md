@@ -1,14 +1,13 @@
-# Auth Service
+# Workflow Service
 
 ## Overview
-/openapi.json
+ACGS-PGP Workflow Service
 
 ## Features
 
 
 ## API Endpoints
-- `/auth`
-- `/auth`
+- `/api/v1`
 
 ## Configuration
 See `.env.example` for configuration options

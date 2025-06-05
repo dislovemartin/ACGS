@@ -1,35 +1,37 @@
-# Governance Structure Service (`gs_service`)
+# Gs Service
 
 ## Overview
+Governance Synthesis (GS) Service
 
-The Governance Structure Service (`gs_service`) is responsible for managing the organizational governance structure related to AI within the ACGS-PGP system. It defines roles, responsibilities, decision-making processes, and escalation paths. This service helps map policies to accountable parties. In some contexts, this service is also referred to as the Governance Synthesizer Service, as it may be involved in generating policies (e.g., Datalog rules) from principles, potentially using LLMs. Currently, this service defines the framework for governance structures. LLM-driven policy synthesis and advanced generation capabilities are planned for Phase 2.
+## Features
 
-## Core Responsibilities
-
--   Managing and defining organizational roles relevant to AI governance.
--   Mapping responsibilities to these roles.
--   Defining decision-making workflows and escalation paths.
--   Facilitating the assignment of policies to accountable individuals or groups.
--   Potentially, synthesizing governance policies from high-level principles.
--   Integration with `shared/models.py` for relevant data models.
 
 ## API Endpoints
+- `/api/v1/synthesize`
+- `/api/v1/policy-management`
+- `/api/v1/constitutional`
+- `/api/v1/alphaevolve`
+- `/api/v1/mab`
+- `/api/v1`
+- `/api/v1/enhanced`
+- `/api/v1/reliability`
+- `/api/v1/multi-model`
+- `/api/v1`
+- `/api/v1`
+- `/api/v1/performance`
 
-Detailed API documentation is available via Swagger UI at `/api/v1/gs/docs` when the service is running.
+## Configuration
+See `.env.example` for configuration options
 
-Key endpoints typically include operations related to:
--   Managing governance roles and responsibilities.
--   Defining and retrieving organizational structures.
--   Linking policies to governance structures.
--   Policy synthesis (if applicable).
+## Development
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run service: `uvicorn main:app --reload`
 
-## Dependencies
+## Deployment
+Use Docker Compose: `docker-compose up -d`
 
--   FastAPI
--   SQLAlchemy (via `shared` module)
--   Pydantic (via `shared` module)
-Refer to `requirements.txt` for specific package versions. Core shared models are typically in `shared/models.py`.
+## Troubleshooting
+Check logs: `docker-compose logs service_name`
 
-## Local Development
-
-For general setup, refer to the main project `README.md` and `docs/developer_guide.md`. This service can be run using Uvicorn: `uvicorn app.main:app --host 0.0.0.0 --port 8002`.
+## Contributing
+Follow project coding standards and submit pull requests
