@@ -24,25 +24,18 @@ async def determine_gating_decision(
         gating_mask[neuron_id] = weight > gating_config.threshold
         processed_ids.add(neuron_id)
 
-    # Handle any neurons present in wina_weights.metadata or other sources
-    # if they weren't in wina_weights.weights explicitly, applying default state.
-    # This part is a placeholder for more complex scenarios where neuron lists
-    # might come from different parts of the metadata.
-    # For now, we assume all relevant neuron_ids are keys in wina_weights.weights.
-
-    # Example of how one might handle neuron_ids from metadata if they weren't in weights:
-    # all_neuron_ids_from_metadata = wina_weights.metadata.get("all_neuron_ids", [])
-    # for neuron_id in all_neuron_ids_from_metadata:
-    #     if neuron_id not in processed_ids:
-    #         gating_mask[neuron_id] = gating_config.default_gating_state
-    #         processed_ids.add(neuron_id)
-
+    # Consider any neuron IDs provided in metadata that were not in weights.
+    all_neuron_ids_from_metadata = wina_weights.metadata.get("all_neuron_ids", [])
+    for neuron_id in all_neuron_ids_from_metadata:
+        if neuron_id not in processed_ids:
+            gating_mask[neuron_id] = gating_config.default_gating_state
+            processed_ids.add(neuron_id)
 
     decision_metadata: Dict[str, Any] = {
         "gating_threshold_used": gating_config.threshold,
         "default_gating_state_used": gating_config.default_gating_state,
         "wina_calculation_method": wina_weights.metadata.get("calculation_method", "unknown"),
-        "num_components_processed": len(wina_weights.weights),
+        "num_components_processed": len(processed_ids),
         "num_components_activated": sum(1 for active in gating_mask.values() if active)
     }
 

@@ -168,6 +168,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4.1.7
 
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/comprehensive_health_check.sh
+          # Add other scripts here if needed in the future
+
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
@@ -201,30 +206,10 @@ jobs:
           kubectl wait --for=condition=available --timeout=600s deployment --all -n acgs-pgp-blue
 
       - name: Run Health Checks on Blue
+        env:
+          KUBECONFIG: /tmp/kubeconfig # Ensure KUBECONFIG is explicitly passed if script relies on it via env
         run: |
-          export KUBECONFIG=/tmp/kubeconfig
-          
-          # Get blue service endpoints
-          AUTH_ENDPOINT=$(kubectl get service auth-service -n acgs-pgp-blue -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          
-          # Health check script
-          services=("auth-service:8000" "ac-service:8001" "integrity-service:8002" "fv-service:8003" "gs-service:8004" "pgc-service:8005")
-          
-          for service in "${services[@]}"; do
-            service_name=$(echo $service | cut -d':' -f1)
-            service_port=$(echo $service | cut -d':' -f2)
-            
-            echo "Health checking $service_name..."
-            kubectl run health-check-$service_name-$(date +%s) --rm -i --restart=Never --image=curlimages/curl -n acgs-pgp-blue -- \
-              curl -f http://$service_name:$service_port/health --max-time 30
-            
-            if [ $? -ne 0 ]; then
-              echo "❌ Health check failed for $service_name"
-              exit 1
-            fi
-          done
-          
-          echo "✅ All health checks passed"
+          bash scripts/comprehensive_health_check.sh acgs-pgp-blue
 
       - name: Switch Traffic to Blue (Green to Blue)
         run: |
@@ -293,6 +278,11 @@ jobs:
           kubectl scale deployment --all --replicas=0 -n acgs-pgp-blue
           
           echo "✅ Rollback completed"
+
+          # Notify Slack about rollback
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"🔔 ACGS-PGP Production Deployment: ROLLBACK INITIATED\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || \"production\" }}\nTraffic has been reverted to the previous stable version. Failed blue deployment is being scaled down.\"}" \
+            ${{ env.SLACK_WEBHOOK }} || echo "Slack notification for rollback failed, but rollback proceeded."
 
   notify-deployment-result:
     runs-on: ubuntu-latest
