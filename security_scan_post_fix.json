@@ -1,0 +1,2412 @@
+
+
++===========================================================================================================================================================================================+
+
+
+DEPRECATED: this command (`check`) has been DEPRECATED, and will be unsupported beyond 01 June 2024.
+
+
+We highly encourage switching to the new `scan` command which is easier to use, more powerful, and can be set up to mimic the deprecated command if required.
+
+
++===========================================================================================================================================================================================+
+
+
+{
+    "report_meta": {
+        "scan_target": "environment",
+        "scanned": [
+            "/home/augment-agent/venv/bin",
+            "/usr/lib/python3.10/lib-dynload",
+            "/mnt/persist/workspace",
+            "/mnt/persist/workspace/src/backend",
+            "/usr/lib/python3.10",
+            "/usr/lib/python310.zip",
+            "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor",
+            "/home/augment-agent/venv/lib/python3.10/site-packages"
+        ],
+        "scanned_full_path": [
+            "/home/augment-agent/venv/bin",
+            "/mnt/persist/workspace",
+            "/mnt/persist/workspace/src/backend",
+            "/usr/lib/python310.zip",
+            "/usr/lib/python3.10",
+            "/usr/lib/python3.10/lib-dynload",
+            "/home/augment-agent/venv/lib/python3.10/site-packages",
+            "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+        ],
+        "target_languages": [
+            "python"
+        ],
+        "policy_file": null,
+        "policy_file_source": "local",
+        "audit_and_monitor": false,
+        "api_key": false,
+        "account": "",
+        "local_database_path": null,
+        "safety_version": "3.5.2",
+        "timestamp": "2025-06-05 18:54:39",
+        "packages_found": 136,
+        "vulnerabilities_found": 3,
+        "vulnerabilities_ignored": 0,
+        "remediations_recommended": 0,
+        "telemetry": {
+            "safety_options": {
+                "json": {
+                    "--json": 1
+                }
+            },
+            "safety_version": "3.5.2",
+            "safety_source": "cli",
+            "os_type": "Linux",
+            "os_release": "6.12.29-aug1",
+            "os_description": "Linux-6.12.29-aug1-x86_64-with-glibc2.35",
+            "python_version": "3.10.12",
+            "safety_command": "check"
+        },
+        "git": {
+            "branch": "master",
+            "tag": "",
+            "commit": "dbffa7f84368008cbd3b95f47565e69dff724120",
+            "dirty": "False",
+            "origin": "https://github.com/dislovemartin/ACGS"
+        },
+        "project": null,
+        "json_version": "1.1",
+        "remediations_attempted": 0,
+        "remediations_completed": 0,
+        "remediation_mode": "NON_INTERACTIVE"
+    },
+    "scanned_packages": {
+        "faker": {
+            "name": "faker",
+            "version": "20.1.0",
+            "requirements": [
+                {
+                    "raw": "faker==20.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "faker",
+                    "specifier": "==20.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "markupsafe": {
+            "name": "markupsafe",
+            "version": "3.0.2",
+            "requirements": [
+                {
+                    "raw": "markupsafe==3.0.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "markupsafe",
+                    "specifier": "==3.0.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pyjwt": {
+            "name": "pyjwt",
+            "version": "2.8.0",
+            "requirements": [
+                {
+                    "raw": "pyjwt==2.8.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pyjwt",
+                    "specifier": "==2.8.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pyyaml": {
+            "name": "pyyaml",
+            "version": "6.0.2",
+            "requirements": [
+                {
+                    "raw": "pyyaml==6.0.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pyyaml",
+                    "specifier": "==6.0.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "sqlalchemy": {
+            "name": "sqlalchemy",
+            "version": "2.0.36",
+            "requirements": [
+                {
+                    "raw": "sqlalchemy==2.0.36",
+                    "extras": [],
+                    "marker": null,
+                    "name": "sqlalchemy",
+                    "specifier": "==2.0.36",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "aiofiles": {
+            "name": "aiofiles",
+            "version": "24.1.0",
+            "requirements": [
+                {
+                    "raw": "aiofiles==24.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "aiofiles",
+                    "specifier": "==24.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "aiohappyeyeballs": {
+            "name": "aiohappyeyeballs",
+            "version": "2.6.1",
+            "requirements": [
+                {
+                    "raw": "aiohappyeyeballs==2.6.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "aiohappyeyeballs",
+                    "specifier": "==2.6.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "aiohttp": {
+            "name": "aiohttp",
+            "version": "3.12.9",
+            "requirements": [
+                {
+                    "raw": "aiohttp==3.12.9",
+                    "extras": [],
+                    "marker": null,
+                    "name": "aiohttp",
+                    "specifier": "==3.12.9",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "aioresponses": {
+            "name": "aioresponses",
+            "version": "0.7.4",
+            "requirements": [
+                {
+                    "raw": "aioresponses==0.7.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "aioresponses",
+                    "specifier": "==0.7.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "aiosignal": {
+            "name": "aiosignal",
+            "version": "1.3.2",
+            "requirements": [
+                {
+                    "raw": "aiosignal==1.3.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "aiosignal",
+                    "specifier": "==1.3.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "aiosqlite": {
+            "name": "aiosqlite",
+            "version": "0.19.0",
+            "requirements": [
+                {
+                    "raw": "aiosqlite==0.19.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "aiosqlite",
+                    "specifier": "==0.19.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "alembic": {
+            "name": "alembic",
+            "version": "1.16.1",
+            "requirements": [
+                {
+                    "raw": "alembic==1.16.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "alembic",
+                    "specifier": "==1.16.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "annotated-types": {
+            "name": "annotated-types",
+            "version": "0.7.0",
+            "requirements": [
+                {
+                    "raw": "annotated-types==0.7.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "annotated-types",
+                    "specifier": "==0.7.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "anyio": {
+            "name": "anyio",
+            "version": "4.9.0",
+            "requirements": [
+                {
+                    "raw": "anyio==4.9.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "anyio",
+                    "specifier": "==4.9.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "async-timeout": {
+            "name": "async-timeout",
+            "version": "5.0.1",
+            "requirements": [
+                {
+                    "raw": "async-timeout==5.0.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "async-timeout",
+                    "specifier": "==5.0.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "asyncpg": {
+            "name": "asyncpg",
+            "version": "0.30.0",
+            "requirements": [
+                {
+                    "raw": "asyncpg==0.30.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "asyncpg",
+                    "specifier": "==0.30.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "attrs": {
+            "name": "attrs",
+            "version": "25.3.0",
+            "requirements": [
+                {
+                    "raw": "attrs==25.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "attrs",
+                    "specifier": "==25.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "authlib": {
+            "name": "authlib",
+            "version": "1.6.0",
+            "requirements": [
+                {
+                    "raw": "authlib==1.6.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "authlib",
+                    "specifier": "==1.6.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "backports-datetime-fromisoformat": {
+            "name": "backports-datetime-fromisoformat",
+            "version": "2.0.3",
+            "requirements": [
+                {
+                    "raw": "backports-datetime-fromisoformat==2.0.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "backports-datetime-fromisoformat",
+                    "specifier": "==2.0.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "bcrypt": {
+            "name": "bcrypt",
+            "version": "4.3.0",
+            "requirements": [
+                {
+                    "raw": "bcrypt==4.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "bcrypt",
+                    "specifier": "==4.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "boolean-py": {
+            "name": "boolean-py",
+            "version": "5.0",
+            "requirements": [
+                {
+                    "raw": "boolean-py==5.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "boolean-py",
+                    "specifier": "==5.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "cachecontrol": {
+            "name": "cachecontrol",
+            "version": "0.14.3",
+            "requirements": [
+                {
+                    "raw": "cachecontrol==0.14.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "cachecontrol",
+                    "specifier": "==0.14.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "certifi": {
+            "name": "certifi",
+            "version": "2025.4.26",
+            "requirements": [
+                {
+                    "raw": "certifi==2025.4.26",
+                    "extras": [],
+                    "marker": null,
+                    "name": "certifi",
+                    "specifier": "==2025.4.26",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "cffi": {
+            "name": "cffi",
+            "version": "1.17.1",
+            "requirements": [
+                {
+                    "raw": "cffi==1.17.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "cffi",
+                    "specifier": "==1.17.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "charset-normalizer": {
+            "name": "charset-normalizer",
+            "version": "3.4.2",
+            "requirements": [
+                {
+                    "raw": "charset-normalizer==3.4.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "charset-normalizer",
+                    "specifier": "==3.4.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "click": {
+            "name": "click",
+            "version": "8.1.8",
+            "requirements": [
+                {
+                    "raw": "click==8.1.8",
+                    "extras": [],
+                    "marker": null,
+                    "name": "click",
+                    "specifier": "==8.1.8",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "coverage": {
+            "name": "coverage",
+            "version": "7.8.2",
+            "requirements": [
+                {
+                    "raw": "coverage==7.8.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "coverage",
+                    "specifier": "==7.8.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "cryptography": {
+            "name": "cryptography",
+            "version": "44.0.1",
+            "requirements": [
+                {
+                    "raw": "cryptography==44.0.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "cryptography",
+                    "specifier": "==44.0.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "cyclonedx-python-lib": {
+            "name": "cyclonedx-python-lib",
+            "version": "9.1.0",
+            "requirements": [
+                {
+                    "raw": "cyclonedx-python-lib==9.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "cyclonedx-python-lib",
+                    "specifier": "==9.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "defusedxml": {
+            "name": "defusedxml",
+            "version": "0.7.1",
+            "requirements": [
+                {
+                    "raw": "defusedxml==0.7.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "defusedxml",
+                    "specifier": "==0.7.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "dnspython": {
+            "name": "dnspython",
+            "version": "2.7.0",
+            "requirements": [
+                {
+                    "raw": "dnspython==2.7.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "dnspython",
+                    "specifier": "==2.7.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "dparse": {
+            "name": "dparse",
+            "version": "0.6.4",
+            "requirements": [
+                {
+                    "raw": "dparse==0.6.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "dparse",
+                    "specifier": "==0.6.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "ecdsa": {
+            "name": "ecdsa",
+            "version": "0.19.1",
+            "requirements": [
+                {
+                    "raw": "ecdsa==0.19.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "ecdsa",
+                    "specifier": "==0.19.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "email-validator": {
+            "name": "email-validator",
+            "version": "2.2.0",
+            "requirements": [
+                {
+                    "raw": "email-validator==2.2.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "email-validator",
+                    "specifier": "==2.2.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "exceptiongroup": {
+            "name": "exceptiongroup",
+            "version": "1.3.0",
+            "requirements": [
+                {
+                    "raw": "exceptiongroup==1.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "exceptiongroup",
+                    "specifier": "==1.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "factory-boy": {
+            "name": "factory-boy",
+            "version": "3.3.0",
+            "requirements": [
+                {
+                    "raw": "factory-boy==3.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "factory-boy",
+                    "specifier": "==3.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "fastapi": {
+            "name": "fastapi",
+            "version": "0.115.12",
+            "requirements": [
+                {
+                    "raw": "fastapi==0.115.12",
+                    "extras": [],
+                    "marker": null,
+                    "name": "fastapi",
+                    "specifier": "==0.115.12",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "filelock": {
+            "name": "filelock",
+            "version": "3.16.1",
+            "requirements": [
+                {
+                    "raw": "filelock==3.16.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "filelock",
+                    "specifier": "==3.16.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "freezegun": {
+            "name": "freezegun",
+            "version": "1.2.2",
+            "requirements": [
+                {
+                    "raw": "freezegun==1.2.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "freezegun",
+                    "specifier": "==1.2.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "frozenlist": {
+            "name": "frozenlist",
+            "version": "1.6.2",
+            "requirements": [
+                {
+                    "raw": "frozenlist==1.6.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "frozenlist",
+                    "specifier": "==1.6.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "greenlet": {
+            "name": "greenlet",
+            "version": "3.2.3",
+            "requirements": [
+                {
+                    "raw": "greenlet==3.2.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "greenlet",
+                    "specifier": "==3.2.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "h11": {
+            "name": "h11",
+            "version": "0.16.0",
+            "requirements": [
+                {
+                    "raw": "h11==0.16.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "h11",
+                    "specifier": "==0.16.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "httpcore": {
+            "name": "httpcore",
+            "version": "1.0.9",
+            "requirements": [
+                {
+                    "raw": "httpcore==1.0.9",
+                    "extras": [],
+                    "marker": null,
+                    "name": "httpcore",
+                    "specifier": "==1.0.9",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "httptools": {
+            "name": "httptools",
+            "version": "0.6.4",
+            "requirements": [
+                {
+                    "raw": "httptools==0.6.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "httptools",
+                    "specifier": "==0.6.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "httpx": {
+            "name": "httpx",
+            "version": "0.28.1",
+            "requirements": [
+                {
+                    "raw": "httpx==0.28.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "httpx",
+                    "specifier": "==0.28.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "idna": {
+            "name": "idna",
+            "version": "3.10",
+            "requirements": [
+                {
+                    "raw": "idna==3.10",
+                    "extras": [],
+                    "marker": null,
+                    "name": "idna",
+                    "specifier": "==3.10",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "iniconfig": {
+            "name": "iniconfig",
+            "version": "2.1.0",
+            "requirements": [
+                {
+                    "raw": "iniconfig==2.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "iniconfig",
+                    "specifier": "==2.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "jinja2": {
+            "name": "jinja2",
+            "version": "3.1.6",
+            "requirements": [
+                {
+                    "raw": "jinja2==3.1.6",
+                    "extras": [],
+                    "marker": null,
+                    "name": "jinja2",
+                    "specifier": "==3.1.6",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "joblib": {
+            "name": "joblib",
+            "version": "1.5.1",
+            "requirements": [
+                {
+                    "raw": "joblib==1.5.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "joblib",
+                    "specifier": "==1.5.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "license-expression": {
+            "name": "license-expression",
+            "version": "30.4.1",
+            "requirements": [
+                {
+                    "raw": "license-expression==30.4.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "license-expression",
+                    "specifier": "==30.4.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "mako": {
+            "name": "mako",
+            "version": "1.3.10",
+            "requirements": [
+                {
+                    "raw": "mako==1.3.10",
+                    "extras": [],
+                    "marker": null,
+                    "name": "mako",
+                    "specifier": "==1.3.10",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "markdown-it-py": {
+            "name": "markdown-it-py",
+            "version": "3.0.0",
+            "requirements": [
+                {
+                    "raw": "markdown-it-py==3.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "markdown-it-py",
+                    "specifier": "==3.0.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "marshmallow": {
+            "name": "marshmallow",
+            "version": "4.0.0",
+            "requirements": [
+                {
+                    "raw": "marshmallow==4.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "marshmallow",
+                    "specifier": "==4.0.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "mdurl": {
+            "name": "mdurl",
+            "version": "0.1.2",
+            "requirements": [
+                {
+                    "raw": "mdurl==0.1.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "mdurl",
+                    "specifier": "==0.1.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "msgpack": {
+            "name": "msgpack",
+            "version": "1.1.0",
+            "requirements": [
+                {
+                    "raw": "msgpack==1.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "msgpack",
+                    "specifier": "==1.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "multidict": {
+            "name": "multidict",
+            "version": "6.4.4",
+            "requirements": [
+                {
+                    "raw": "multidict==6.4.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "multidict",
+                    "specifier": "==6.4.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "nltk": {
+            "name": "nltk",
+            "version": "3.9.1",
+            "requirements": [
+                {
+                    "raw": "nltk==3.9.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "nltk",
+                    "specifier": "==3.9.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "numpy": {
+            "name": "numpy",
+            "version": "1.26.4",
+            "requirements": [
+                {
+                    "raw": "numpy==1.26.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "numpy",
+                    "specifier": "==1.26.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "packageurl-python": {
+            "name": "packageurl-python",
+            "version": "0.17.0",
+            "requirements": [
+                {
+                    "raw": "packageurl-python==0.17.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "packageurl-python",
+                    "specifier": "==0.17.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "packaging": {
+            "name": "packaging",
+            "version": "25.0",
+            "requirements": [
+                {
+                    "raw": "packaging==25.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "packaging",
+                    "specifier": "==25.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pandas": {
+            "name": "pandas",
+            "version": "2.1.4",
+            "requirements": [
+                {
+                    "raw": "pandas==2.1.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pandas",
+                    "specifier": "==2.1.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "passlib": {
+            "name": "passlib",
+            "version": "1.7.4",
+            "requirements": [
+                {
+                    "raw": "passlib==1.7.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "passlib",
+                    "specifier": "==1.7.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pip": {
+            "name": "pip",
+            "version": "25.1.1",
+            "requirements": [
+                {
+                    "raw": "pip==25.1.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pip",
+                    "specifier": "==25.1.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pip-api": {
+            "name": "pip-api",
+            "version": "0.0.34",
+            "requirements": [
+                {
+                    "raw": "pip-api==0.0.34",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pip-api",
+                    "specifier": "==0.0.34",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pip-audit": {
+            "name": "pip-audit",
+            "version": "2.9.0",
+            "requirements": [
+                {
+                    "raw": "pip-audit==2.9.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pip-audit",
+                    "specifier": "==2.9.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pip-requirements-parser": {
+            "name": "pip-requirements-parser",
+            "version": "32.0.1",
+            "requirements": [
+                {
+                    "raw": "pip-requirements-parser==32.0.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pip-requirements-parser",
+                    "specifier": "==32.0.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "platformdirs": {
+            "name": "platformdirs",
+            "version": "4.3.8",
+            "requirements": [
+                {
+                    "raw": "platformdirs==4.3.8",
+                    "extras": [],
+                    "marker": null,
+                    "name": "platformdirs",
+                    "specifier": "==4.3.8",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pluggy": {
+            "name": "pluggy",
+            "version": "1.6.0",
+            "requirements": [
+                {
+                    "raw": "pluggy==1.6.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pluggy",
+                    "specifier": "==1.6.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "prometheus-client": {
+            "name": "prometheus-client",
+            "version": "0.21.1",
+            "requirements": [
+                {
+                    "raw": "prometheus-client==0.21.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "prometheus-client",
+                    "specifier": "==0.21.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "propcache": {
+            "name": "propcache",
+            "version": "0.3.1",
+            "requirements": [
+                {
+                    "raw": "propcache==0.3.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "propcache",
+                    "specifier": "==0.3.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "psutil": {
+            "name": "psutil",
+            "version": "6.1.1",
+            "requirements": [
+                {
+                    "raw": "psutil==6.1.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "psutil",
+                    "specifier": "==6.1.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "py-serializable": {
+            "name": "py-serializable",
+            "version": "2.0.0",
+            "requirements": [
+                {
+                    "raw": "py-serializable==2.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "py-serializable",
+                    "specifier": "==2.0.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pyasn1": {
+            "name": "pyasn1",
+            "version": "0.4.8",
+            "requirements": [
+                {
+                    "raw": "pyasn1==0.4.8",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pyasn1",
+                    "specifier": "==0.4.8",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pycparser": {
+            "name": "pycparser",
+            "version": "2.22",
+            "requirements": [
+                {
+                    "raw": "pycparser==2.22",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pycparser",
+                    "specifier": "==2.22",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pydantic": {
+            "name": "pydantic",
+            "version": "2.9.2",
+            "requirements": [
+                {
+                    "raw": "pydantic==2.9.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pydantic",
+                    "specifier": "==2.9.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pydantic-core": {
+            "name": "pydantic-core",
+            "version": "2.23.4",
+            "requirements": [
+                {
+                    "raw": "pydantic-core==2.23.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pydantic-core",
+                    "specifier": "==2.23.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pygments": {
+            "name": "pygments",
+            "version": "2.19.1",
+            "requirements": [
+                {
+                    "raw": "pygments==2.19.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pygments",
+                    "specifier": "==2.19.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pyparsing": {
+            "name": "pyparsing",
+            "version": "3.2.3",
+            "requirements": [
+                {
+                    "raw": "pyparsing==3.2.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pyparsing",
+                    "specifier": "==3.2.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pytest": {
+            "name": "pytest",
+            "version": "7.4.3",
+            "requirements": [
+                {
+                    "raw": "pytest==7.4.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest",
+                    "specifier": "==7.4.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pytest-asyncio": {
+            "name": "pytest-asyncio",
+            "version": "0.21.1",
+            "requirements": [
+                {
+                    "raw": "pytest-asyncio==0.21.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest-asyncio",
+                    "specifier": "==0.21.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pytest-cov": {
+            "name": "pytest-cov",
+            "version": "4.1.0",
+            "requirements": [
+                {
+                    "raw": "pytest-cov==4.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest-cov",
+                    "specifier": "==4.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pytest-mock": {
+            "name": "pytest-mock",
+            "version": "3.12.0",
+            "requirements": [
+                {
+                    "raw": "pytest-mock==3.12.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest-mock",
+                    "specifier": "==3.12.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pytest-timeout": {
+            "name": "pytest-timeout",
+            "version": "2.1.0",
+            "requirements": [
+                {
+                    "raw": "pytest-timeout==2.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytest-timeout",
+                    "specifier": "==2.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "python-dateutil": {
+            "name": "python-dateutil",
+            "version": "2.9.0.post0",
+            "requirements": [
+                {
+                    "raw": "python-dateutil==2.9.0.post0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-dateutil",
+                    "specifier": "==2.9.0.post0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "python-dotenv": {
+            "name": "python-dotenv",
+            "version": "1.1.0",
+            "requirements": [
+                {
+                    "raw": "python-dotenv==1.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-dotenv",
+                    "specifier": "==1.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "python-multipart": {
+            "name": "python-multipart",
+            "version": "0.0.20",
+            "requirements": [
+                {
+                    "raw": "python-multipart==0.0.20",
+                    "extras": [],
+                    "marker": null,
+                    "name": "python-multipart",
+                    "specifier": "==0.0.20",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "pytz": {
+            "name": "pytz",
+            "version": "2025.2",
+            "requirements": [
+                {
+                    "raw": "pytz==2025.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pytz",
+                    "specifier": "==2025.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "redis": {
+            "name": "redis",
+            "version": "6.2.0",
+            "requirements": [
+                {
+                    "raw": "redis==6.2.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "redis",
+                    "specifier": "==6.2.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "regex": {
+            "name": "regex",
+            "version": "2024.11.6",
+            "requirements": [
+                {
+                    "raw": "regex==2024.11.6",
+                    "extras": [],
+                    "marker": null,
+                    "name": "regex",
+                    "specifier": "==2024.11.6",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "requests": {
+            "name": "requests",
+            "version": "2.32.3",
+            "requirements": [
+                {
+                    "raw": "requests==2.32.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "requests",
+                    "specifier": "==2.32.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "requests-mock": {
+            "name": "requests-mock",
+            "version": "1.11.0",
+            "requirements": [
+                {
+                    "raw": "requests-mock==1.11.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "requests-mock",
+                    "specifier": "==1.11.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "responses": {
+            "name": "responses",
+            "version": "0.24.1",
+            "requirements": [
+                {
+                    "raw": "responses==0.24.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "responses",
+                    "specifier": "==0.24.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "rich": {
+            "name": "rich",
+            "version": "14.0.0",
+            "requirements": [
+                {
+                    "raw": "rich==14.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "rich",
+                    "specifier": "==14.0.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "rsa": {
+            "name": "rsa",
+            "version": "4.9.1",
+            "requirements": [
+                {
+                    "raw": "rsa==4.9.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "rsa",
+                    "specifier": "==4.9.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "ruamel.yaml": {
+            "name": "ruamel.yaml",
+            "version": "0.18.12",
+            "requirements": [
+                {
+                    "raw": "ruamel.yaml==0.18.12",
+                    "extras": [],
+                    "marker": null,
+                    "name": "ruamel.yaml",
+                    "specifier": "==0.18.12",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "ruamel.yaml.clib": {
+            "name": "ruamel.yaml.clib",
+            "version": "0.2.12",
+            "requirements": [
+                {
+                    "raw": "ruamel.yaml.clib==0.2.12",
+                    "extras": [],
+                    "marker": null,
+                    "name": "ruamel.yaml.clib",
+                    "specifier": "==0.2.12",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "safety": {
+            "name": "safety",
+            "version": "3.5.2",
+            "requirements": [
+                {
+                    "raw": "safety==3.5.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "safety",
+                    "specifier": "==3.5.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "safety-schemas": {
+            "name": "safety-schemas",
+            "version": "0.0.14",
+            "requirements": [
+                {
+                    "raw": "safety-schemas==0.0.14",
+                    "extras": [],
+                    "marker": null,
+                    "name": "safety-schemas",
+                    "specifier": "==0.0.14",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "scikit-learn": {
+            "name": "scikit-learn",
+            "version": "1.5.1",
+            "requirements": [
+                {
+                    "raw": "scikit-learn==1.5.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "scikit-learn",
+                    "specifier": "==1.5.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "scipy": {
+            "name": "scipy",
+            "version": "1.11.4",
+            "requirements": [
+                {
+                    "raw": "scipy==1.11.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "scipy",
+                    "specifier": "==1.11.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "setuptools": {
+            "name": "setuptools",
+            "version": "80.9.0",
+            "requirements": [
+                {
+                    "raw": "setuptools==80.9.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "setuptools",
+                    "specifier": "==80.9.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "shellingham": {
+            "name": "shellingham",
+            "version": "1.5.4",
+            "requirements": [
+                {
+                    "raw": "shellingham==1.5.4",
+                    "extras": [],
+                    "marker": null,
+                    "name": "shellingham",
+                    "specifier": "==1.5.4",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "six": {
+            "name": "six",
+            "version": "1.17.0",
+            "requirements": [
+                {
+                    "raw": "six==1.17.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "six",
+                    "specifier": "==1.17.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "sniffio": {
+            "name": "sniffio",
+            "version": "1.3.1",
+            "requirements": [
+                {
+                    "raw": "sniffio==1.3.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "sniffio",
+                    "specifier": "==1.3.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "sortedcontainers": {
+            "name": "sortedcontainers",
+            "version": "2.4.0",
+            "requirements": [
+                {
+                    "raw": "sortedcontainers==2.4.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "sortedcontainers",
+                    "specifier": "==2.4.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "starlette": {
+            "name": "starlette",
+            "version": "0.46.2",
+            "requirements": [
+                {
+                    "raw": "starlette==0.46.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "starlette",
+                    "specifier": "==0.46.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "structlog": {
+            "name": "structlog",
+            "version": "23.2.0",
+            "requirements": [
+                {
+                    "raw": "structlog==23.2.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "structlog",
+                    "specifier": "==23.2.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "tenacity": {
+            "name": "tenacity",
+            "version": "9.1.2",
+            "requirements": [
+                {
+                    "raw": "tenacity==9.1.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "tenacity",
+                    "specifier": "==9.1.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "threadpoolctl": {
+            "name": "threadpoolctl",
+            "version": "3.6.0",
+            "requirements": [
+                {
+                    "raw": "threadpoolctl==3.6.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "threadpoolctl",
+                    "specifier": "==3.6.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "toml": {
+            "name": "toml",
+            "version": "0.10.2",
+            "requirements": [
+                {
+                    "raw": "toml==0.10.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "toml",
+                    "specifier": "==0.10.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "tomli": {
+            "name": "tomli",
+            "version": "2.2.1",
+            "requirements": [
+                {
+                    "raw": "tomli==2.2.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "tomli",
+                    "specifier": "==2.2.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "tomlkit": {
+            "name": "tomlkit",
+            "version": "0.13.3",
+            "requirements": [
+                {
+                    "raw": "tomlkit==0.13.3",
+                    "extras": [],
+                    "marker": null,
+                    "name": "tomlkit",
+                    "specifier": "==0.13.3",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "tqdm": {
+            "name": "tqdm",
+            "version": "4.67.1",
+            "requirements": [
+                {
+                    "raw": "tqdm==4.67.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "tqdm",
+                    "specifier": "==4.67.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "typer": {
+            "name": "typer",
+            "version": "0.16.0",
+            "requirements": [
+                {
+                    "raw": "typer==0.16.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "typer",
+                    "specifier": "==0.16.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "typing-extensions": {
+            "name": "typing-extensions",
+            "version": "4.14.0",
+            "requirements": [
+                {
+                    "raw": "typing-extensions==4.14.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "typing-extensions",
+                    "specifier": "==4.14.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "typing-inspection": {
+            "name": "typing-inspection",
+            "version": "0.4.1",
+            "requirements": [
+                {
+                    "raw": "typing-inspection==0.4.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "typing-inspection",
+                    "specifier": "==0.4.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "tzdata": {
+            "name": "tzdata",
+            "version": "2025.2",
+            "requirements": [
+                {
+                    "raw": "tzdata==2025.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "tzdata",
+                    "specifier": "==2025.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "urllib3": {
+            "name": "urllib3",
+            "version": "2.4.0",
+            "requirements": [
+                {
+                    "raw": "urllib3==2.4.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "urllib3",
+                    "specifier": "==2.4.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "uvicorn": {
+            "name": "uvicorn",
+            "version": "0.34.2",
+            "requirements": [
+                {
+                    "raw": "uvicorn==0.34.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "uvicorn",
+                    "specifier": "==0.34.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "uvloop": {
+            "name": "uvloop",
+            "version": "0.21.0",
+            "requirements": [
+                {
+                    "raw": "uvloop==0.21.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "uvloop",
+                    "specifier": "==0.21.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "watchfiles": {
+            "name": "watchfiles",
+            "version": "1.0.5",
+            "requirements": [
+                {
+                    "raw": "watchfiles==1.0.5",
+                    "extras": [],
+                    "marker": null,
+                    "name": "watchfiles",
+                    "specifier": "==1.0.5",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "websockets": {
+            "name": "websockets",
+            "version": "15.0.1",
+            "requirements": [
+                {
+                    "raw": "websockets==15.0.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "websockets",
+                    "specifier": "==15.0.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "wheel": {
+            "name": "wheel",
+            "version": "0.45.1",
+            "requirements": [
+                {
+                    "raw": "wheel==0.45.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "wheel",
+                    "specifier": "==0.45.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "yarl": {
+            "name": "yarl",
+            "version": "1.20.0",
+            "requirements": [
+                {
+                    "raw": "yarl==1.20.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "yarl",
+                    "specifier": "==1.20.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "z3-solver": {
+            "name": "z3-solver",
+            "version": "4.15.0.0",
+            "requirements": [
+                {
+                    "raw": "z3-solver==4.15.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "z3-solver",
+                    "specifier": "==4.15.0.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ]
+        },
+        "autocommand": {
+            "name": "autocommand",
+            "version": "2.2.2",
+            "requirements": [
+                {
+                    "raw": "autocommand==2.2.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "autocommand",
+                    "specifier": "==2.2.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "backports.tarfile": {
+            "name": "backports.tarfile",
+            "version": "1.2.0",
+            "requirements": [
+                {
+                    "raw": "backports.tarfile==1.2.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "backports.tarfile",
+                    "specifier": "==1.2.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "importlib-metadata": {
+            "name": "importlib-metadata",
+            "version": "8.0.0",
+            "requirements": [
+                {
+                    "raw": "importlib-metadata==8.0.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "importlib-metadata",
+                    "specifier": "==8.0.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "inflect": {
+            "name": "inflect",
+            "version": "7.3.1",
+            "requirements": [
+                {
+                    "raw": "inflect==7.3.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "inflect",
+                    "specifier": "==7.3.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "jaraco.collections": {
+            "name": "jaraco.collections",
+            "version": "5.1.0",
+            "requirements": [
+                {
+                    "raw": "jaraco.collections==5.1.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "jaraco.collections",
+                    "specifier": "==5.1.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "jaraco.context": {
+            "name": "jaraco.context",
+            "version": "5.3.0",
+            "requirements": [
+                {
+                    "raw": "jaraco.context==5.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "jaraco.context",
+                    "specifier": "==5.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "jaraco.functools": {
+            "name": "jaraco.functools",
+            "version": "4.0.1",
+            "requirements": [
+                {
+                    "raw": "jaraco.functools==4.0.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "jaraco.functools",
+                    "specifier": "==4.0.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "jaraco.text": {
+            "name": "jaraco.text",
+            "version": "3.12.1",
+            "requirements": [
+                {
+                    "raw": "jaraco.text==3.12.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "jaraco.text",
+                    "specifier": "==3.12.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "more-itertools": {
+            "name": "more-itertools",
+            "version": "10.3.0",
+            "requirements": [
+                {
+                    "raw": "more-itertools==10.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "more-itertools",
+                    "specifier": "==10.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "typeguard": {
+            "name": "typeguard",
+            "version": "4.3.0",
+            "requirements": [
+                {
+                    "raw": "typeguard==4.3.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "typeguard",
+                    "specifier": "==4.3.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        },
+        "zipp": {
+            "name": "zipp",
+            "version": "3.19.2",
+            "requirements": [
+                {
+                    "raw": "zipp==3.19.2",
+                    "extras": [],
+                    "marker": null,
+                    "name": "zipp",
+                    "specifier": "==3.19.2",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages/setuptools/_vendor"
+                }
+            ]
+        }
+    },
+    "affected_packages": {
+        "ecdsa": {
+            "name": "ecdsa",
+            "version": "0.19.1",
+            "requirements": [
+                {
+                    "raw": "ecdsa==0.19.1",
+                    "extras": [],
+                    "marker": null,
+                    "name": "ecdsa",
+                    "specifier": "==0.19.1",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.10",
+                "0.11",
+                "0.12",
+                "0.13",
+                "0.13.1",
+                "0.13.2",
+                "0.13.3",
+                "0.14",
+                "0.14.1",
+                "0.15",
+                "0.16.0",
+                "0.16.1",
+                "0.17.0",
+                "0.18.0",
+                "0.18.0b1",
+                "0.18.0b2",
+                "0.19.0",
+                "0.19.1",
+                "0.6",
+                "0.7",
+                "0.8",
+                "0.9"
+            ],
+            "secure_versions": [],
+            "latest_version_without_known_vulnerabilities": "",
+            "latest_version": "0.19.1",
+            "more_info_url": "https://data.safetycli.com/p/pypi/ecdsa/97c/"
+        },
+        "pyjwt": {
+            "name": "pyjwt",
+            "version": "2.8.0",
+            "requirements": [
+                {
+                    "raw": "pyjwt==2.8.0",
+                    "extras": [],
+                    "marker": null,
+                    "name": "pyjwt",
+                    "specifier": "==2.8.0",
+                    "url": null,
+                    "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                }
+            ],
+            "found": null,
+            "insecure_versions": [
+                "0.1.1",
+                "0.1.2",
+                "0.1.3",
+                "0.1.4",
+                "0.1.5",
+                "0.1.6",
+                "0.1.7",
+                "0.1.8",
+                "0.1.9",
+                "0.2.0",
+                "0.2.1",
+                "0.2.3",
+                "0.3.0",
+                "0.3.1",
+                "0.3.2",
+                "0.4.0",
+                "0.4.1",
+                "0.4.2",
+                "0.4.3",
+                "1.0.0",
+                "1.0.1",
+                "1.1.0",
+                "1.3.0",
+                "1.4.0",
+                "1.4.1",
+                "1.4.2",
+                "1.5.0",
+                "1.5.1",
+                "1.5.2",
+                "1.5.3",
+                "1.6.0",
+                "1.6.1",
+                "1.6.3",
+                "1.6.4",
+                "1.7.0",
+                "1.7.1",
+                "2.0.0",
+                "2.0.0a1",
+                "2.0.0a2",
+                "2.0.1",
+                "2.1.0",
+                "2.10.0",
+                "2.2.0",
+                "2.3.0",
+                "2.4.0",
+                "2.5.0",
+                "2.6.0",
+                "2.7.0",
+                "2.8.0",
+                "2.9.0"
+            ],
+            "secure_versions": [
+                "2.10.1"
+            ],
+            "latest_version_without_known_vulnerabilities": "2.10.1",
+            "latest_version": "2.10.1",
+            "more_info_url": "https://data.safetycli.com/p/pypi/pyjwt/97c/"
+        }
+    },
+    "announcements": [],
+    "vulnerabilities": [
+        {
+            "vulnerability_id": "64459",
+            "package_name": "ecdsa",
+            "ignored": {},
+            "ignored_reason": null,
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=0"
+            ],
+            "all_vulnerable_specs": [
+                ">=0"
+            ],
+            "analyzed_version": "0.19.1",
+            "analyzed_requirement": {
+                "raw": "ecdsa==0.19.1",
+                "extras": [],
+                "marker": null,
+                "name": "ecdsa",
+                "specifier": "==0.19.1",
+                "url": null,
+                "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+            },
+            "advisory": "The python-ecdsa library, which implements ECDSA cryptography in Python, is vulnerable to the Minerva attack (CVE-2024-23342). This vulnerability arises because scalar multiplication is not performed in constant time, affecting ECDSA signatures, key generation, and ECDH operations. ECDSA signature verification remains unaffected. The project maintainers have stated that there is no plan to release a fix for this vulnerability, citing their security policy:\r\n\"As stated in the security policy, side-channel vulnerabilities are outside the scope of the project. This is not due to a lack of interest in side-channel secure implementations but rather because the main goal of the project is to be pure Python. Implementing side-channel-free code in pure Python is impossible. Therefore, we do not plan to release a fix for this vulnerability.\"\r\nNOTE: The specs we include in this advisory differ from the publicly available on other sources. That's because research by Safety CLI Cybersecurity Team confirms that there is no plan to address this vulnerability.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-23342",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/64459/97c"
+        },
+        {
+            "vulnerability_id": "64396",
+            "package_name": "ecdsa",
+            "ignored": {},
+            "ignored_reason": null,
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                ">=0"
+            ],
+            "all_vulnerable_specs": [
+                ">=0"
+            ],
+            "analyzed_version": "0.19.1",
+            "analyzed_requirement": {
+                "raw": "ecdsa==0.19.1",
+                "extras": [],
+                "marker": null,
+                "name": "ecdsa",
+                "specifier": "==0.19.1",
+                "url": null,
+                "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+            },
+            "advisory": "Ecdsa does not protects against side-channel attacks. This is because Python does not provide side-channel secure primitives (with the exception of hmac.compare_digest()), making side-channel secure programming impossible. For a sophisticated attacker observing just one operation with a private key will be sufficient to completely reconstruct the private key.\r\nhttps://pypi.org/project/ecdsa/#Security",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": null,
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/64396/97c"
+        },
+        {
+            "vulnerability_id": "74429",
+            "package_name": "pyjwt",
+            "ignored": {},
+            "ignored_reason": null,
+            "ignored_expires": null,
+            "vulnerable_spec": [
+                "<2.10.1"
+            ],
+            "all_vulnerable_specs": [
+                "<2.10.1"
+            ],
+            "analyzed_version": "2.8.0",
+            "analyzed_requirement": {
+                "raw": "pyjwt==2.8.0",
+                "extras": [],
+                "marker": null,
+                "name": "pyjwt",
+                "specifier": "==2.8.0",
+                "url": null,
+                "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+            },
+            "advisory": "Affected versions of pyjwt are vulnerable to Partial Comparison (CWE-187). This flaw allows attackers to bypass issuer (iss) verification by providing partial matches, potentially granting unauthorized access. The vulnerability arises in the decode method of api_jwt.py, where issuer validation incorrectly treats strings as sequences, leading to partial matches (e.g., \"abc\" being accepted for \"__abc__\"). Exploiting this requires crafting JWTs with partially matching iss claims, which is straightforward.",
+            "is_transitive": false,
+            "published_date": null,
+            "fixed_versions": [],
+            "closest_versions_without_known_vulnerabilities": [],
+            "resources": [],
+            "CVE": "CVE-2024-53861",
+            "severity": null,
+            "affected_versions": [],
+            "more_info_url": "https://data.safetycli.com/v/74429/97c"
+        }
+    ],
+    "ignored_vulnerabilities": [],
+    "remediations": {
+        "ecdsa": {
+            "requirements": {
+                "==0.19.1": {
+                    "vulnerabilities_found": 2,
+                    "version": "0.19.1",
+                    "requirement": {
+                        "raw": "ecdsa==0.19.1",
+                        "extras": [],
+                        "marker": null,
+                        "name": "ecdsa",
+                        "specifier": "==0.19.1",
+                        "url": null,
+                        "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                    },
+                    "more_info_url": "https://data.safetycli.com/p/pypi/ecdsa/97c/"
+                }
+            },
+            "current_version": null,
+            "vulnerabilities_found": null,
+            "recommended_version": null,
+            "other_recommended_versions": [],
+            "more_info_url": null
+        },
+        "pyjwt": {
+            "requirements": {
+                "==2.8.0": {
+                    "vulnerabilities_found": 1,
+                    "version": "2.8.0",
+                    "requirement": {
+                        "raw": "pyjwt==2.8.0",
+                        "extras": [],
+                        "marker": null,
+                        "name": "pyjwt",
+                        "specifier": "==2.8.0",
+                        "url": null,
+                        "found": "/home/augment-agent/venv/lib/python3.10/site-packages"
+                    },
+                    "more_info_url": "https://data.safetycli.com/p/pypi/pyjwt/97c/"
+                }
+            },
+            "current_version": null,
+            "vulnerabilities_found": null,
+            "recommended_version": null,
+            "other_recommended_versions": [],
+            "more_info_url": null
+        }
+    },
+    "remediations_results": {
+        "vulnerabilities_fixed": [],
+        "remediations_applied": {},
+        "remediations_skipped": {}
+    }
+}
+
+
++===========================================================================================================================================================================================+
+
+
+DEPRECATED: this command (`check`) has been DEPRECATED, and will be unsupported beyond 01 June 2024.
+
+
+We highly encourage switching to the new `scan` command which is easier to use, more powerful, and can be set up to mimic the deprecated command if required.
+
+
++===========================================================================================================================================================================================+
+
+
