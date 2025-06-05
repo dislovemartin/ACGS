@@ -155,9 +155,12 @@ require_internal_service = RoleChecker(allowed_roles=["internal_service", "admin
 
 async def get_service_token() -> str:
     """
-    Get a service-to-service authentication token
-    This would typically be a long-lived token or service account token
-    For now, we'll use a placeholder that services can recognize
+    Generates a long-lived JWT token for internal service-to-service authentication.
+    
+    The token includes roles for internal service and admin, a unique identifier, and expires in one year.
+    
+    Returns:
+        A JWT token string for authenticating internal service requests.
     """
     # In production, this would authenticate with the auth service
     # and get a proper service token
@@ -181,7 +184,15 @@ async def get_service_token() -> str:
 
 async def get_auth_headers(token: Optional[str] = None) -> dict: # Changed to async
     """
-    Get authentication headers for service-to-service calls
+    Asynchronously generates HTTP authorization headers with a Bearer token.
+    
+    If no token is provided, generates a long-lived internal service JWT token. If a token is provided, ensures it is properly formatted as a Bearer token.
+    
+    Args:
+        token: Optional JWT token string to use for the Authorization header.
+    
+    Returns:
+        A dictionary containing the Authorization header with the Bearer token.
     """
     if not token:
         # Get service token if none provided
