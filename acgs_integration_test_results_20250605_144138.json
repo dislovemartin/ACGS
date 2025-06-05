@@ -1,0 +1,233 @@
+{
+  "test_execution_id": "integration_test_1749148552",
+  "start_time": "2025-06-05T18:35:52.810846+00:00",
+  "target_metrics": {
+    "integration_test_success_rate": ">95%",
+    "api_response_time": "<200ms",
+    "cross_service_auth": "successful",
+    "constitutional_workflows": "validated"
+  },
+  "service_health": {
+    "auth": {
+      "status": "error",
+      "error": "",
+      "url": "http://localhost:8000"
+    },
+    "ac": {
+      "status": "error",
+      "error": "",
+      "url": "http://localhost:8001"
+    },
+    "integrity": {
+      "status": "error",
+      "error": "",
+      "url": "http://localhost:8002"
+    },
+    "fv": {
+      "status": "error",
+      "error": "",
+      "url": "http://localhost:8003"
+    },
+    "gs": {
+      "status": "error",
+      "error": "",
+      "url": "http://localhost:8004"
+    },
+    "pgc": {
+      "status": "error",
+      "error": "",
+      "url": "http://localhost:8005"
+    }
+  },
+  "test_collection_results": {
+    "individual_files": {
+      "tests/test_constitutional_council_fixtures.py": {
+        "status": "completed",
+        "return_code": 4,
+        "execution_time_seconds": 0.31,
+        "test_count": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "success_rate": 0
+      },
+      "tests/test_enhanced_multi_model_validation.py": {
+        "status": "completed",
+        "return_code": 4,
+        "execution_time_seconds": 0.29,
+        "test_count": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "success_rate": 0
+      },
+      "tests/test_centralized_configuration.py": {
+        "status": "completed",
+        "return_code": 4,
+        "execution_time_seconds": 0.31,
+        "test_count": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "success_rate": 0
+      },
+      "tests/test_qec_enhancements.py": {
+        "status": "completed",
+        "return_code": 4,
+        "execution_time_seconds": 0.3,
+        "test_count": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "success_rate": 0
+      },
+      "tests/test_wina_performance_integration.py": {
+        "status": "completed",
+        "return_code": 4,
+        "execution_time_seconds": 0.28,
+        "test_count": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "success_rate": 0
+      }
+    },
+    "summary": {
+      "total_tests": 0,
+      "total_passed": 0,
+      "overall_success_rate": 0,
+      "target_achieved": false
+    }
+  },
+  "cross_service_tests": {
+    "authentication": {
+      "status": "testing",
+      "tests": {
+        "login": {
+          "status": "error",
+          "error": ""
+        }
+      },
+      "summary": {
+        "success_rate": 0.0,
+        "successful_tests": 0,
+        "total_tests": 1
+      }
+    },
+    "api_endpoints": {
+      "status": "testing",
+      "endpoints": {
+        "auth__health": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8000/health"
+        },
+        "auth__auth_me": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8000/auth/me"
+        },
+        "ac__health": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8001/health"
+        },
+        "ac__principles": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8001/principles"
+        },
+        "ac__amendments": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8001/amendments"
+        },
+        "integrity__health": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8002/health"
+        },
+        "integrity__verify": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8002/verify"
+        },
+        "fv__health": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8003/health"
+        },
+        "fv__validate": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8003/validate"
+        },
+        "gs__health": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8004/health"
+        },
+        "gs__synthesize": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8004/synthesize"
+        },
+        "pgc__health": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8005/health"
+        },
+        "pgc__compile": {
+          "status": "error",
+          "error": "",
+          "url": "http://localhost:8005/compile"
+        }
+      },
+      "summary": {
+        "success_rate": 0.0,
+        "successful_endpoints": 0,
+        "total_endpoints": 13,
+        "avg_response_time_ms": 0,
+        "target_response_time_achieved": true
+      }
+    },
+    "service_communication": {
+      "status": "testing",
+      "communication_tests": {
+        "ac_to_gs": {
+          "status": "error",
+          "error": "",
+          "from_service": "ac",
+          "to_service": "gs"
+        },
+        "gs_to_fv": {
+          "status": "error",
+          "error": "",
+          "from_service": "gs",
+          "to_service": "fv"
+        },
+        "fv_to_integrity": {
+          "status": "error",
+          "error": "",
+          "from_service": "fv",
+          "to_service": "integrity"
+        },
+        "integrity_to_pgc": {
+          "status": "error",
+          "error": "",
+          "from_service": "integrity",
+          "to_service": "pgc"
+        }
+      },
+      "summary": {
+        "success_rate": 0.0,
+        "successful_communications": 0,
+        "total_communications": 4
+      }
+    }
+  },
+  "phase_validation": {},
+  "policy_pipeline": {},
+  "performance_metrics": {},
+  "summary": {}
+}

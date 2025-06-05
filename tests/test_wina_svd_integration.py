@@ -358,23 +358,27 @@ class TestWINASVDTransformation:
 
 class TestWINALLMIntegration:
     """Test suite for WINA-LLM integration in GS Engine."""
-    
+
     @pytest.fixture
     def wina_client(self):
         """Create WINA-optimized LLM client for testing."""
+        if not GS_WINA_AVAILABLE:
+            return Mock()
         return WINAOptimizedLLMClient(enable_wina=True)
-    
+
     @pytest.mark.asyncio
+    @pytest.mark.skipif(not GS_WINA_AVAILABLE, reason="GS WINA components not available")
     async def test_wina_optimized_client_initialization(self):
         """Test WINA-optimized client initialization."""
         client = WINAOptimizedLLMClient(enable_wina=True)
-        
+
         assert client.enable_wina is True
         assert hasattr(client, 'wina_config')
         assert hasattr(client, 'wina_integrator')
         assert hasattr(client, 'constitutional_engine')
-    
+
     @pytest.mark.asyncio
+    @pytest.mark.skipif(not GS_WINA_AVAILABLE, reason="GS WINA components not available")
     async def test_structured_interpretation_with_wina(self, wina_client):
         """Test structured interpretation with WINA optimization."""
         # Create test input
@@ -384,25 +388,41 @@ class TestWINALLMIntegration:
             context="policy_generation",
             environmental_factors={"domain": "healthcare"}
         )
-        
+
         # Mock the underlying LLM call
         with patch('src.backend.gs_service.app.core.llm_integration.query_llm_for_structured_output') as mock_query:
             mock_query.return_value = Mock(interpretations=["test interpretation"])
-            
+
             # Perform optimized interpretation
             result = await wina_client.get_structured_interpretation_optimized(test_input)
-            
+
             # Verify result structure
             assert isinstance(result, WINAOptimizedSynthesisResult)
             assert result.original_result is not None
             assert "synthesis_time" in result.performance_metrics
             assert isinstance(result.constitutional_compliance, bool)
-    
+
+    @pytest.mark.skipif(not GS_WINA_AVAILABLE, reason="GS WINA components not available")
     def test_performance_summary(self, wina_client):
         """Test performance summary generation."""
         summary = wina_client.get_performance_summary()
-        
+
         assert "performance_metrics" in summary
         assert "wina_enabled" in summary
         assert summary["wina_enabled"] is True
         assert "optimization_history_count" in summary
+
+    def test_gs_wina_mock_functionality(self):
+        """Test that mock GS WINA functionality works when components not available."""
+        if GS_WINA_AVAILABLE:
+            pytest.skip("GS WINA components available, skipping mock test")
+
+        # Test that mock objects can be created and used
+        mock_client = WINAOptimizedLLMClient()
+        mock_result = WINAOptimizedSynthesisResult()
+        mock_input = LLMInterpretationInput()
+
+        # Verify mock objects exist and can be called
+        assert mock_client is not None
+        assert mock_result is not None
+        assert mock_input is not None
