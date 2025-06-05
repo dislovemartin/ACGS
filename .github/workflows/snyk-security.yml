@@ -52,25 +52,29 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
         # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
-        # Use || true to not fail the pipeline
+        # Use --severity-threshold=high to only fail for high/critical issues.
       - name: Snyk Code test
-        run: snyk code test --sarif > snyk-code.sarif # || true
+        run: snyk code test --sarif --severity-threshold=high > snyk-code.sarif
 
-        # Runs Snyk Open Source (SCA) analysis and uploads result to Snyk.
-      - name: Snyk Open Source monitor
-        run: snyk monitor --all-projects
+        # Runs Snyk Open Source (SCA) analysis.
+      - name: Snyk Open Source test and monitor
+        run: |
+          snyk test --all-projects --severity-threshold=high
+          snyk monitor --all-projects
 
-        # Runs Snyk Infrastructure as Code (IaC) analysis and uploads result to Snyk.
-        # Use || true to not fail the pipeline.
+        # Runs Snyk Infrastructure as Code (IaC) analysis.
+        # Use --severity-threshold=high to only fail for high/critical issues.
       - name: Snyk IaC test and report
-        run: snyk iac test --report # || true
+        run: snyk iac test --report --severity-threshold=high
 
         # Build the docker image for testing
       - name: Build a Docker image
         run: docker build -t your/image-to-test .
-        # Runs Snyk Container (Container and SCA) analysis and uploads result to Snyk.
-      - name: Snyk Container monitor
-        run: snyk container monitor your/image-to-test --file=Dockerfile
+        # Runs Snyk Container (Container and SCA) analysis.
+      - name: Snyk Container test and monitor
+        run: |
+          snyk container test your/image-to-test --file=Dockerfile --severity-threshold=high
+          snyk container monitor your/image-to-test --file=Dockerfile
 
         # Push the Snyk Code results into GitHub Code Scanning tab
       - name: Upload result to GitHub Code Scanning
