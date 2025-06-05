@@ -55,7 +55,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.sha,
-              environment: '${{ github.event.inputs.target_environment || "production" }}',
+              environment: ${{ github.event.inputs.target_environment || 'production' }},
               description: 'ACGS-PGP Production Deployment',
               auto_merge: false,
               required_contexts: []
@@ -82,7 +82,7 @@ jobs:
           
           # Notify deployment start
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"🚀 ACGS-PGP Production Deployment Started\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || "production" }}"}' \
+            --data '{"text":"🚀 ACGS-PGP Production Deployment Started\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || 'production' }}"}' \
             ${{ env.SLACK_WEBHOOK }} || true
 
   security-scan:
@@ -281,7 +281,7 @@ jobs:
 
           # Notify Slack about rollback
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"🔔 ACGS-PGP Production Deployment: ROLLBACK INITIATED\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || \"production\" }}\nTraffic has been reverted to the previous stable version. Failed blue deployment is being scaled down.\"}" \
+            --data '{"text":"🔔 ACGS-PGP Production Deployment: ROLLBACK INITIATED\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || 'production' }}\nTraffic has been reverted to the previous stable version. Failed blue deployment is being scaled down."}' \
             ${{ env.SLACK_WEBHOOK }} || echo "Slack notification for rollback failed, but rollback proceeded."
 
   notify-deployment-result:
@@ -310,12 +310,12 @@ jobs:
         if: needs.deploy-blue-green.result == 'success'
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ ACGS-PGP Production Deployment Successful\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || "production" }}\nDeployment URL: https://api.acgs-pgp.com"}' \
+            --data '{"text":"✅ ACGS-PGP Production Deployment Successful\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || 'production' }}\nDeployment URL: https://api.acgs-pgp.com"}' \
             ${{ env.SLACK_WEBHOOK }} || true
 
       - name: Notify failure
         if: needs.deploy-blue-green.result == 'failure'
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ ACGS-PGP Production Deployment Failed\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || "production" }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            --data '{"text":"❌ ACGS-PGP Production Deployment Failed\nCommit: ${{ github.sha }}\nEnvironment: ${{ github.event.inputs.target_environment || 'production' }}\nCheck logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
             ${{ env.SLACK_WEBHOOK }} || true
