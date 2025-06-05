@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 # Import the router from endpoints.py file (now that endpoints directory is removed)
-from app.api.v1.endpoints import router as auth_router
+from .endpoints import router as auth_router
 # Note: users router was in the endpoints directory which we removed
 # For now, we'll just use the main auth router
 

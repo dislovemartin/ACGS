@@ -21,16 +21,15 @@ from typing import Dict, List, Any
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..'))
 
-from app.core.wina_rego_synthesis import (
+from src.backend.gs_service.app.core.wina_rego_synthesis import (
     WINARegoSynthesizer,
     WINARegoSynthesisResult,
     WINARegoSynthesisMetrics,
     synthesize_rego_policy_with_wina,
     batch_synthesize_rego_policies_with_wina,
-    get_wina_rego_synthesis_performance_summary,
-    clear_wina_rego_synthesis_cache
+    get_wina_rego_synthesis_performance_summary
 )
 
 
@@ -89,8 +88,8 @@ class TestWINARegoSynthesizer:
         
         # Mock WINA LLM client
         with patch.object(wina_synthesizer.wina_llm_client, 'get_constitutional_synthesis_optimized') as mock_synthesis:
-            from app.core.wina_llm_integration import WINAOptimizedSynthesisResult
-            from app.schemas import ConstitutionalSynthesisOutput
+            from src.backend.gs_service.app.core.wina_llm_integration import WINAOptimizedSynthesisResult
+            from src.backend.gs_service.app.schemas import ConstitutionalSynthesisOutput
             
             mock_synthesis_output = ConstitutionalSynthesisOutput(
                 generated_rules=[

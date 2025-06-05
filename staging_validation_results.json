@@ -1,0 +1,121 @@
+{
+  "timestamp": "2025-06-05T10:22:33.028065",
+  "environment": "staging",
+  "phase": "3",
+  "overall_status": "FAILED",
+  "service_health": {
+    "ac_service": {
+      "status": "healthy",
+      "response_time_ms": 5.54,
+      "status_code": 200
+    },
+    "integrity_service": {
+      "status": "error",
+      "error": "('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+    },
+    "fv_service": {
+      "status": "error",
+      "error": "HTTPConnectionPool(host='localhost', port=8013): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175ac0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    "gs_service": {
+      "status": "error",
+      "error": "HTTPConnectionPool(host='localhost', port=8014): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb1762a0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    "pgc_service": {
+      "status": "error",
+      "error": "HTTPConnectionPool(host='localhost', port=8015): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb176a80>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    "prometheus": {
+      "status": "error",
+      "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/targets (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb176f60>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    "grafana": {
+      "status": "error",
+      "error": "HTTPConnectionPool(host='localhost', port=3002): Max retries exceeded with url: /api/health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175e20>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    }
+  },
+  "performance_metrics": {
+    "error": "HTTPConnectionPool(host='localhost', port=8014): Max retries exceeded with url: /api/v1/policies/synthesize (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175520>: Failed to establish a new connection: [Errno 111] Connection refused'))",
+    "cpu_usage_percent": 18.9,
+    "memory_usage_percent": 89.4
+  },
+  "security_validation": {
+    "raw_output": ""
+  },
+  "load_testing": {
+    "raw_output": ""
+  },
+  "monitoring_validation": {
+    "error": "HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/targets (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175610>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+  },
+  "issues": [
+    {
+      "timestamp": "2025-06-05T10:22:33.035247",
+      "level": "ERROR",
+      "message": "\u274c integrity_service health check failed: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:33.035753",
+      "level": "ERROR",
+      "message": "\u274c fv_service health check failed: HTTPConnectionPool(host='localhost', port=8013): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175ac0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:33.036141",
+      "level": "ERROR",
+      "message": "\u274c gs_service health check failed: HTTPConnectionPool(host='localhost', port=8014): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb1762a0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:33.036647",
+      "level": "ERROR",
+      "message": "\u274c pgc_service health check failed: HTTPConnectionPool(host='localhost', port=8015): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb176a80>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:33.037321",
+      "level": "ERROR",
+      "message": "\u274c prometheus health check failed: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/targets (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb176f60>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:33.037828",
+      "level": "ERROR",
+      "message": "\u274c grafana health check failed: HTTPConnectionPool(host='localhost', port=3002): Max retries exceeded with url: /api/health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175e20>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:33.038352",
+      "level": "ERROR",
+      "message": "\u274c Performance validation failed: HTTPConnectionPool(host='localhost', port=8014): Max retries exceeded with url: /api/v1/policies/synthesize (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175520>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:22:34.038828",
+      "level": "WARNING",
+      "message": "\u26a0\ufe0f High memory usage: 89.4%"
+    },
+    {
+      "timestamp": "2025-06-05T10:24:25.247765",
+      "level": "WARNING",
+      "message": "\u26a0\ufe0f Could not parse load testing results"
+    },
+    {
+      "timestamp": "2025-06-05T10:24:25.449699",
+      "level": "WARNING",
+      "message": "\u26a0\ufe0f Could not parse security testing results"
+    },
+    {
+      "timestamp": "2025-06-05T10:24:25.450613",
+      "level": "ERROR",
+      "message": "\u274c Monitoring validation failed: HTTPConnectionPool(host='localhost', port=9090): Max retries exceeded with url: /api/v1/targets (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7d8bfb175610>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+    },
+    {
+      "timestamp": "2025-06-05T10:24:25.450634",
+      "level": "ERROR",
+      "message": "\u274c Some staging validation tests FAILED!"
+    }
+  ],
+  "validation_duration_seconds": 112.42250633239746,
+  "tests_passed": {
+    "service_health": false,
+    "performance_metrics": false,
+    "load_testing": true,
+    "security_testing": true,
+    "monitoring": false
+  }
+}

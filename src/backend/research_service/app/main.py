@@ -25,6 +25,10 @@ from .api.routers import (
 from .services.experiment_tracker import ExperimentTracker
 from .services.research_automation import ResearchAutomationService
 
+# Import security middleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -60,6 +64,9 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan
 )
+
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
 
 # Configure CORS
 app.add_middleware(

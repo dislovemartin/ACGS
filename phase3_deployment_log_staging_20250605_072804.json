@@ -1,0 +1,41 @@
+{
+  "start_time": "2025-06-05T07:23:03.168866",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "FAILED",
+  "steps_completed": [
+    {
+      "name": "staging_deployment",
+      "description": "Deploy to staging environment",
+      "script": "scripts/phase3_staging_deployment.sh",
+      "duration_seconds": 301.6851782798767,
+      "return_code": 1,
+      "timestamp": "2025-06-05T07:28:04.854266",
+      "status": "FAILED",
+      "stderr": "faulting to a blank string.\"\ntime=\"2025-06-05T07:23:03-04:00\" level=warning msg=\"The \\\"GEMINI_API_KEY\\\" variable is not set. Defaulting to a blank string.\"\ntime=\"2025-06-05T07:23:03-04:00\" level=warning msg=\"The \\\"GROQ_API_KEY\\\" variable is not set. Defaulting to a blank string.\"\ntime=\"2025-06-05T07:23:03-04:00\" level=warning msg=\"The \\\"REDIS_PASSWORD\\\" variable is not set. Defaulting to a blank string.\"\ntime=\"2025-06-05T07:23:03-04:00\" level=warning msg=\"/home/dislove/ACGS-master/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion\"\n Network acgs-master_acgs-prod  Creating\n Network acgs-master_acgs-prod  Created\n Container acgs-redis-prod  Creating\n Container acgs-postgres-prod  Creating\n Container acgs-postgres-prod  Created\n Container acgs-redis-prod  Created\n Container acgs-redis-prod  Starting\n Container acgs-postgres-prod  Starting\n Container acgs-redis-prod  Started\n Container acgs-postgres-prod  Started\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [
+    {
+      "timestamp": "2025-06-05T07:28:04.854314",
+      "level": "ERROR",
+      "message": "\u274c Deploy to staging environment failed (exit code: 1)"
+    },
+    {
+      "timestamp": "2025-06-05T07:28:04.854328",
+      "level": "ERROR",
+      "message": "Required step failed: staging_deployment"
+    },
+    {
+      "timestamp": "2025-06-05T07:28:04.854341",
+      "level": "ERROR",
+      "message": "\u274c ACGS Phase 3 Deployment Workflow FAILED"
+    }
+  ],
+  "final_status": "FAILED",
+  "end_time": "2025-06-05T07:28:04.854331",
+  "workflow_duration_seconds": 301.68527483940125,
+  "steps_executed": 1,
+  "steps_passed": 0
+}

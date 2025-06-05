@@ -45,14 +45,14 @@ class LangGraphConfiguration(BaseModel):
     })
     
     fallback_models: Dict[ModelRole, str] = Field(default={
-        ModelRole.CONSTITUTIONAL_PROMPTING: "meta-llama/llama-4-maverick-17b-128e-instruct",
-        ModelRole.POLICY_SYNTHESIS: "grok-3-mini",
+        ModelRole.CONSTITUTIONAL_PROMPTING: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q8_K_XL",
+        ModelRole.POLICY_SYNTHESIS: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q8_K_XL",
         ModelRole.CONFLICT_RESOLUTION: "gemini-2.0-flash",
-        ModelRole.BIAS_MITIGATION: "meta-llama/llama-4-maverick-17b-128e-instruct",
-        ModelRole.REFLECTION: "grok-3-mini",
+        ModelRole.BIAS_MITIGATION: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q8_K_XL",
+        ModelRole.REFLECTION: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q8_K_XL",
         ModelRole.AMENDMENT_ANALYSIS: "gemini-2.0-flash",
-        ModelRole.STAKEHOLDER_COMMUNICATION: "grok-3-mini",
-        ModelRole.FIDELITY_MONITORING: "gemini-2.0-flash"
+        ModelRole.STAKEHOLDER_COMMUNICATION: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q8_K_XL",
+        ModelRole.FIDELITY_MONITORING: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q8_K_XL"
     })
     
     # Model performance settings
@@ -93,6 +93,9 @@ class LangGraphConfiguration(BaseModel):
     openai_api_key: Optional[str] = Field(default=None)
     groq_api_key: Optional[str] = Field(default=None)
     xai_api_key: Optional[str] = Field(default=None)
+    nvidia_api_key: Optional[str] = Field(default=None)
+    ollama_api_key: Optional[str] = Field(default=None)
+    ollama_base_url: str = Field(default="http://127.0.0.1:11434")
     
     # Monitoring and alerting
     enable_performance_monitoring: bool = Field(default=True)
@@ -117,6 +120,9 @@ class LangGraphConfiguration(BaseModel):
         openai_api_key = os.getenv("OPENAI_API_KEY")
         groq_api_key = os.getenv("GROQ_API_KEY")
         xai_api_key = os.getenv("XAI_API_KEY")
+        nvidia_api_key = os.getenv("NVIDIA_API_KEY")
+        ollama_api_key = os.getenv("OLLAMA_API_KEY")
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
         
         # Get Redis configuration
         redis_url = os.getenv("LANGGRAPH_REDIS_URL", "redis://localhost:6379")
@@ -155,6 +161,9 @@ class LangGraphConfiguration(BaseModel):
             openai_api_key=openai_api_key,
             groq_api_key=groq_api_key,
             xai_api_key=xai_api_key,
+            nvidia_api_key=nvidia_api_key,
+            ollama_api_key=ollama_api_key,
+            ollama_base_url=ollama_base_url,
             redis_url=redis_url,
             postgres_url=postgres_url,
             constitutional_fidelity_threshold=constitutional_fidelity_threshold,
@@ -186,7 +195,7 @@ class LangGraphConfiguration(BaseModel):
     def validate_api_keys(self) -> Dict[str, bool]:
         """
         Validate that required API keys are available.
-        
+
         Returns:
             Dictionary mapping provider names to availability status
         """
@@ -194,7 +203,9 @@ class LangGraphConfiguration(BaseModel):
             "gemini": self.gemini_api_key is not None,
             "openai": self.openai_api_key is not None,
             "groq": self.groq_api_key is not None,
-            "xai": self.xai_api_key is not None
+            "xai": self.xai_api_key is not None,
+            "nvidia": self.nvidia_api_key is not None,
+            "ollama": True  # Ollama typically doesn't require API key for local deployment
         }
     
     def get_redis_key(self, workflow_type: str, workflow_id: str) -> str:

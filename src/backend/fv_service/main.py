@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.verify import router as verify_router
 from app.services.ac_client import ac_service_client
 from app.services.integrity_client import integrity_service_client
-from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
+from shared.security_middleware import add_security_middleware # Import the shared middleware
 from shared import get_config
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
@@ -19,20 +19,8 @@ app = FastAPI(
 # Initialize metrics for FV service
 # metrics = get_metrics("fv_service")
 
-# Add CORS middleware with centralized configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=config.get('cors_origins', ['*']),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Add metrics middleware
-# app.middleware("http")(metrics_middleware("fv_service"))
-
-# Apply the security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Add enhanced security middleware (clean pattern)
+add_security_middleware(app)
 
 # Include the API router for verification
 app.include_router(verify_router, prefix="/api/v1/verify", tags=["Formal Verification"])

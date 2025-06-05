@@ -1,7 +1,7 @@
 from uuid import uuid4  # For generating unique emails
 
 import pytest
-from app.core.config import settings
+from ..core.config import settings
 from fastapi.testclient import TestClient  # Use TestClient from FastAPI
 
 # The client fixture and DB setup are now handled by conftest.py

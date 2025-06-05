@@ -50,11 +50,27 @@ except ImportError:
     OPENAI_AVAILABLE = False
     OpenAI = None
 
+# NVIDIA API support for Qwen models
+try:
+    import asyncio
+    NVIDIA_API_AVAILABLE = True
+except ImportError:
+    NVIDIA_API_AVAILABLE = False
+
 from shared.langgraph_config import (
     get_langgraph_config,
     ModelRole,
     PolicySynthesisConfig
 )
+
+# Ollama client import
+try:
+    from ..core.ollama_client import OllamaLLMClient, get_ollama_client
+    OLLAMA_AVAILABLE = True
+except ImportError:
+    OLLAMA_AVAILABLE = False
+    OllamaLLMClient = None
+    get_ollama_client = None
 
 logger = logging.getLogger(__name__)
 
@@ -244,6 +260,30 @@ class MultiModelManager:
                         self.performance_trackers[model_name] = ModelPerformanceTracker(model_name)
                         logger.info(f"Initialized OpenAI model: {model_name}")
 
+                elif model_name.startswith("qwen/") or model_name.startswith("nvidia/"):
+                    if self.config.nvidia_api_key and OPENAI_AVAILABLE:
+                        client = OpenAI(
+                            base_url="https://integrate.api.nvidia.com/v1",
+                            api_key=self.config.nvidia_api_key
+                        )
+                        self.model_clients[model_name] = client
+                        self.performance_trackers[model_name] = ModelPerformanceTracker(model_name)
+                        logger.info(f"Initialized NVIDIA API model: {model_name}")
+
+                elif (model_name.startswith("hf.co/") or
+                      model_name.startswith("deepseek") or
+                      model_name in ["llama3.1", "mistral", "codellama"]):
+                    # Ollama local models
+                    if OLLAMA_AVAILABLE:
+                        try:
+                            # Create Ollama client instance
+                            client = OllamaLLMClient()
+                            self.model_clients[model_name] = client
+                            self.performance_trackers[model_name] = ModelPerformanceTracker(model_name)
+                            logger.info(f"Initialized Ollama model: {model_name}")
+                        except Exception as ollama_error:
+                            logger.warning(f"Failed to initialize Ollama model {model_name}: {ollama_error}")
+
             except Exception as e:
                 logger.error(f"Failed to initialize model {model_name}: {e}")
     
@@ -382,26 +422,82 @@ class MultiModelManager:
                 return content
 
         elif isinstance(client, OpenAI):
-            # OpenAI client (for xAI Grok or OpenAI models)
-            # Run in thread pool since OpenAI client is synchronous
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: client.chat.completions.create(
-                    model=model_name,
-                    messages=[{"role": "user", "content": prompt}],
+            # OpenAI client (for xAI Grok, OpenAI models, or NVIDIA API models)
+            # Handle NVIDIA API models with reasoning capabilities
+            if model_name.startswith("qwen/") or model_name.startswith("nvidia/"):
+                # NVIDIA API with reasoning support
+                loop = asyncio.get_event_loop()
+
+                # Check if this is a reasoning model (Qwen 3 235B)
+                extra_body = {}
+                if "qwen3-235b" in model_name.lower():
+                    extra_body = {"chat_template_kwargs": {"thinking": True}}
+
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=temperature,
+                        top_p=0.7,
+                        max_tokens=8192,
+                        extra_body=extra_body,
+                        stream=False  # For now, use non-streaming for simplicity
+                    )
+                )
+                content = response.choices[0].message.content
+
+                # For reasoning models, we might want to extract reasoning content
+                if hasattr(response.choices[0].message, 'reasoning_content'):
+                    reasoning = response.choices[0].message.reasoning_content
+                    if reasoning:
+                        content = f"[REASONING]\n{reasoning}\n\n[RESPONSE]\n{content}"
+
+                return content
+            else:
+                # Standard OpenAI API call
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: client.chat.completions.create(
+                        model=model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=temperature,
+                        max_tokens=4096
+                    )
+                )
+                content = response.choices[0].message.content
+
+                if structured_output_class:
+                    # For structured output, we'd need to parse the JSON response
+                    # For now, return the raw content
+                    return content
+                else:
+                    return content
+
+        elif isinstance(client, OllamaLLMClient):
+            # Ollama local model client
+            if structured_output_class:
+                # For structured output, use the structured interpretation method
+                from ..core.llm_integration import LLMInterpretationInput
+
+                # Create a mock query for structured output
+                query = LLMInterpretationInput(
+                    principle_id="structured_output",
+                    principle_text=prompt,
+                    environmental_context={}
+                )
+
+                response = await client.get_structured_interpretation(query)
+                return response.raw_llm_response
+            else:
+                # Standard text generation
+                response = await client.generate_text(
+                    prompt=prompt,
                     temperature=temperature,
                     max_tokens=4096
                 )
-            )
-            content = response.choices[0].message.content
-
-            if structured_output_class:
-                # For structured output, we'd need to parse the JSON response
-                # For now, return the raw content
-                return content
-            else:
-                return content
+                return response
 
         else:
             raise ValueError(f"Unsupported client type for model {model_name}: {type(client)}")

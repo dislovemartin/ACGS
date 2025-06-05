@@ -4,7 +4,7 @@ import pytest
 import os
 import tempfile
 import json
-from unittest.mock import patch, mock_open
+from unittest.mock import patch
 from pathlib import Path
 
 from src.backend.shared.utils import (
@@ -204,10 +204,10 @@ OPENAI_API_KEY=test-openai-key
 
     def test_production_config_validation(self):
         """Test production-specific configuration validation."""
+        # Test with production environment and default JWT secret (should fail validation)
         with patch.dict(os.environ, {
             'ENVIRONMENT': 'production',
-            'DEBUG': 'true',  # Should trigger warning
-            'JWT_SECRET_KEY': 'your-secret-key-change-in-production',  # Should trigger warning
+            'JWT_SECRET_KEY': 'your-secret-key-change-in-production',  # Default value should fail in production
             'DATABASE_URL': 'postgresql+asyncpg://user:pass@localhost:5432/db',
             'AUTH_SERVICE_URL': 'http://localhost:8000',
             'AC_SERVICE_URL': 'http://localhost:8001',
@@ -216,13 +216,9 @@ OPENAI_API_KEY=test-openai-key
             'GS_SERVICE_URL': 'http://localhost:8004',
             'PGC_SERVICE_URL': 'http://localhost:8005'
         }):
-            config = ACGSConfig()
-            issues = config.validate_critical_config()
-            
-            # Should have issues for production
-            assert len(issues) > 0
-            assert any("JWT secret key must be changed" in issue for issue in issues)
-            assert any("Debug mode should be disabled" in issue for issue in issues)
+            # Should fail during construction due to invalid JWT secret in production
+            with pytest.raises(ValueError, match="JWT secret key must be changed from default value"):
+                config = ACGSConfig()
 
     def test_config_template_export(self, temp_env_file):
         """Test configuration template export."""
@@ -283,20 +279,23 @@ OPENAI_API_KEY=test-openai-key
 
     def test_config_error_handling(self):
         """Test configuration error handling."""
-        # Test with missing required environment variables
-        with patch.dict(os.environ, {}, clear=True):
+        # Test with production environment and default JWT secret (should fail)
+        with patch.dict(os.environ, {
+            'ENVIRONMENT': 'production',
+            'JWT_SECRET_KEY': 'your-secret-key-change-in-production'  # Default value should fail in production
+        }, clear=True):
             with pytest.raises(ValueError):
                 config = ACGSConfig()
                 config.get_validated_config()  # Should fail validation
 
     def test_config_file_loading_error_handling(self):
         """Test configuration file loading error handling."""
-        with patch('builtins.open', mock_open()) as mock_file:
-            mock_file.side_effect = FileNotFoundError("Config file not found")
-            
+        # Test with a non-existent environment file
+        with patch.dict(os.environ, {'ENVIRONMENT': 'testing'}):
             # Should handle missing config files gracefully
-            config = ACGSConfig()
+            config = ACGSConfig(env_file="/non/existent/file.env")
             assert config is not None
+            assert config.environment == Environment.TESTING
 
     @pytest.mark.parametrize("environment", [
         Environment.DEVELOPMENT,
@@ -324,11 +323,9 @@ OPENAI_API_KEY=test-openai-key
             'ENVIRONMENT': 'development',
             'DATABASE_URL': 'postgresql+asyncpg://user:pass@localhost:5432/db',
             'JWT_SECRET_KEY': 'test-secret-key-for-testing-purposes-only',
-            # Missing service URLs
-        }):
-            config = ACGSConfig()
-            issues = config.validate_critical_config()
-            
-            # Should detect missing service URLs
-            assert len(issues) > 0
-            assert any("Invalid service URL" in issue for issue in issues)
+            'AUTH_SERVICE_URL': '',  # Empty service URL should trigger validation error
+            'AC_SERVICE_URL': 'invalid-url-without-protocol',  # Invalid URL format
+        }, clear=True):
+            # Should fail during construction due to invalid service URLs
+            with pytest.raises(ValueError, match="Service URL must start with http"):
+                config = ACGSConfig()

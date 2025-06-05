@@ -4,12 +4,12 @@ arXiv Preprint Submission Package
 
 Author: Martin Honglin Lyu
 ORCID: 0009-0000-6094-8416
-Affiliation: Independent Researcher, Soln AI (Nvidia Inception)
-Email: martin.lyu@protonmail.com
+Affiliation: Independent Researcher
+Email: martin@git.com.co
 
 Files included:
 - main.tex: Main LaTeX source file (modified for arXiv)
-- main.bbl: Bibliography file with 36 references
+- main.bbl: Bibliography file with 317 references
 - AlphaEvolve-ACGS.bib: Source bibliography file
 - figs/: Directory containing 6 figures
   - Figure_1_Appeal_and_Dispute_Resolution_Workflow.png

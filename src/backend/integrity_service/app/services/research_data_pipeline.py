@@ -18,10 +18,10 @@ from enum import Enum
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 
-from src.backend.shared.models import (
+from shared.models import (
     CrossDomainTestResult, DomainContext, Principle, ResearchDataExport
 )
-from src.backend.integrity_service.app.services.pgp_assurance import PGPAssuranceService
+from app.services.pgp_assurance import PGPAssuranceService
 
 logger = logging.getLogger(__name__)
 

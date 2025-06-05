@@ -12,20 +12,19 @@ from app.api.public_consultation import router as public_consultation_router
 from fastapi import FastAPI
 
 from shared.metrics import create_metrics_endpoint, get_metrics, metrics_middleware
-from shared.security_middleware import (
-    SecurityHeadersMiddleware,
-)  # Import the shared middleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 
 app = FastAPI(title="Artificial Constitution (AC) Service")
 
 # Initialize metrics for AC service
 metrics = get_metrics("ac_service")
 
-# Add metrics middleware
-app.middleware("http")(metrics_middleware("ac_service"))
+# Add enhanced security middleware (clean pattern like fv_service)
+add_security_middleware(app)
 
-# Apply the security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Add metrics middleware - commented out to avoid conflicts
+# app.middleware("http")(metrics_middleware("ac_service"))
 
 # Include the API routers
 app.include_router(principles_router, prefix="/api/v1/principles", tags=["Principles"])

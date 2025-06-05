@@ -21,17 +21,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from src.backend.ec_service.app.api.v1.oversight import router as oversight_router
-from src.backend.ec_service.app.api.v1.alphaevolve import router as alphaevolve_router
-from src.backend.ec_service.app.api.v1.reporting import router as reporting_router
-from src.backend.ec_service.app.api.v1.monitoring import router as monitoring_router
-from src.backend.ec_service.app.api.v1.wina_oversight import router as wina_oversight_router
-from src.backend.shared.wina.performance_api import router as wina_performance_router, set_collector_getter
-from src.backend.ec_service.app.core.wina_oversight_coordinator import WINAECOversightCoordinator
-from src.backend.ec_service.app.services.gs_client import gs_service_client
-from src.backend.ec_service.app.services.ac_client import ac_service_client
-from src.backend.ec_service.app.services.pgc_client import pgc_service_client
-from shared.security_middleware import SecurityHeadersMiddleware
+from app.api.v1.oversight import router as oversight_router
+from app.api.v1.alphaevolve import router as alphaevolve_router
+from app.api.v1.reporting import router as reporting_router
+from app.api.v1.monitoring import router as monitoring_router
+from app.api.v1.wina_oversight import router as wina_oversight_router
+from shared.wina.performance_api import router as wina_performance_router, set_collector_getter
+from app.core.wina_oversight_coordinator import WINAECOversightCoordinator
+from app.services.gs_client import gs_service_client
+from app.services.ac_client import ac_service_client
+from app.services.pgc_client import pgc_service_client
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 from shared import get_config
 
@@ -128,23 +129,14 @@ app = FastAPI(
 # Initialize metrics for EC service
 metrics = get_metrics("ec_service")
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Add enhanced security middleware (clean pattern like fv_service)
+add_security_middleware(app)
 
 # Add compression middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Add security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
-
-# Add metrics middleware
-app.middleware("http")(metrics_middleware("ec_service"))
+# Add metrics middleware - commented out to avoid conflicts
+# app.middleware("http")(metrics_middleware("ec_service"))
 
 # Include API routers
 app.include_router(oversight_router, prefix="/api/v1/oversight", tags=["WINA Oversight"])
@@ -249,7 +241,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8006,  # EC service port (matches docker-compose)
+        port=8007,  # EC service port (matches docker-compose internal port)
         reload=True,
         log_level="info"
     )

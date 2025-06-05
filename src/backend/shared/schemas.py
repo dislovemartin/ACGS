@@ -16,12 +16,12 @@ class Token(BaseSchema):
 
 class TokenPayload(BaseModel): # Not inheriting BaseSchema as it's for internal processing
     sub: Optional[str] = None # Subject (user identifier, e.g., username or user ID)
-    user_id: Optional[int] = None # Or Optional[UUID] if User.id is UUID
+    user_id: Optional[UUID] = None # UUID for User.id
     # Add any other claims you expect in the token payload (e.g., roles, permissions)
     # exp: Optional[int] = None # Expiration time (handled by JWT library)
 
 class RefreshTokenCreate(BaseModel):
-    user_id: int # Or UUID
+    user_id: UUID # UUID for User.id
     jti: str
     token: str # The actual refresh token string
     expires_at: datetime

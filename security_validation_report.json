@@ -1,0 +1,564 @@
+{
+  "timestamp": "2025-06-05T10:14:03.009981",
+  "summary": {
+    "total_tests": 28,
+    "passed": 15,
+    "failed": 6,
+    "errors": 0,
+    "success_rate": "53.6%",
+    "security_score": "53.6%",
+    "avg_response_time_ms": "62.2"
+  },
+  "services_tested": 7,
+  "security_features": {
+    "enhanced_security_middleware": "IMPLEMENTED",
+    "security_headers": "ACTIVE",
+    "rate_limiting": "ACTIVE",
+    "input_validation": "ACTIVE",
+    "audit_logging": "ACTIVE"
+  },
+  "detailed_results": [
+    {
+      "service": "auth_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 7.934808731079102,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "ok",
+          "message": "Auth Service is operational."
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "auth_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 6.22868537902832,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "auth_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 18.169403076171875,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "auth_service",
+      "test": "Input Validation",
+      "status": "FAIL",
+      "response_time_ms": 4.430294036865234,
+      "details": {
+        "status_code": 500,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": false
+      }
+    },
+    {
+      "service": "ac_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 7.930994033813477,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "ok"
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "ac_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 7.729053497314453,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "ac_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 24.866819381713867,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "ac_service",
+      "test": "Input Validation",
+      "status": "FAIL",
+      "response_time_ms": 5.828380584716797,
+      "details": {
+        "status_code": 500,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": false
+      }
+    },
+    {
+      "service": "integrity_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 13.763189315795898,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "ok"
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "integrity_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 10.321855545043945,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "integrity_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 24.02806282043457,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "integrity_service",
+      "test": "Input Validation",
+      "status": "FAIL",
+      "response_time_ms": 9.85097885131836,
+      "details": {
+        "status_code": 500,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": false
+      }
+    },
+    {
+      "service": "fv_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 4.522562026977539,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "ok",
+          "message": "FV Service is operational.",
+          "environment": "development",
+          "configuration": {
+            "ac_service_url": "http://localhost:8001",
+            "integrity_service_url": "http://localhost:8002",
+            "api_version": "v1"
+          }
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "fv_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 4.4231414794921875,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "fv_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 12.009620666503906,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "fv_service",
+      "test": "Input Validation",
+      "status": "PASS",
+      "response_time_ms": 4.107475280761719,
+      "details": {
+        "status_code": 405,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": true
+      }
+    },
+    {
+      "service": "gs_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 112.3969554901123,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "degraded",
+          "service": "gs_service",
+          "version": "1.0.0",
+          "timestamp": "2024-01-20T00:00:00Z",
+          "dependencies": {
+            "ac_service": {
+              "status": "unhealthy",
+              "error": "All connection attempts failed"
+            },
+            "integrity_service": {
+              "status": "unhealthy",
+              "error": "All connection attempts failed"
+            }
+          },
+          "components": {
+            "llm_reliability": {
+              "status": "initialized"
+            }
+          },
+          "message": "Critical dependencies unhealthy: ac_service"
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "gs_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 111.68909072875977,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "gs_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 411.7310047149658,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "gs_service",
+      "test": "Input Validation",
+      "status": "FAIL",
+      "response_time_ms": 56.195974349975586,
+      "details": {
+        "status_code": 500,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": false
+      }
+    },
+    {
+      "service": "pgc_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 102.03909873962402,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "healthy",
+          "service": "pgc_service",
+          "version": "1.0.0",
+          "timestamp": "2024-01-20T00:00:00Z",
+          "dependencies": {
+            "opa": {
+              "status": "healthy",
+              "response_time_ms": 32.189
+            },
+            "integrity_service": {
+              "status": "unhealthy",
+              "error": "All connection attempts failed"
+            }
+          },
+          "components": {
+            "policy_manager": {
+              "status": "healthy",
+              "last_refresh": "2025-06-05 14:13:20.487112",
+              "policies_loaded": true
+            }
+          },
+          "message": "PGC Service is fully operational"
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "pgc_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 101.50718688964844,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "pgc_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 447.3400115966797,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "pgc_service",
+      "test": "Input Validation",
+      "status": "FAIL",
+      "response_time_ms": 50.66347122192383,
+      "details": {
+        "status_code": 500,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": false
+      }
+    },
+    {
+      "service": "ec_service",
+      "test": "Service Health",
+      "status": "PASS",
+      "response_time_ms": 13.40174674987793,
+      "details": {
+        "status_code": 200,
+        "response_data": {
+          "status": "healthy",
+          "service": "evolutionary_computation",
+          "timestamp": "2025-06-05T14:14:02.861928",
+          "version": "v1",
+          "wina_coordinator": "disabled",
+          "features": {
+            "wina_optimization": false,
+            "constitutional_oversight": true,
+            "alphaevolve_integration": true,
+            "performance_monitoring": true,
+            "wina_performance_api": true,
+            "real_time_metrics": true,
+            "performance_dashboard": true
+          },
+          "performance_monitoring": {
+            "collector_available": false,
+            "monitoring_active": false,
+            "monitoring_level": "unknown"
+          }
+        },
+        "service_operational": true
+      }
+    },
+    {
+      "service": "ec_service",
+      "test": "Security Headers",
+      "status": "PASS",
+      "response_time_ms": 9.630680084228516,
+      "details": {
+        "missing_headers": [],
+        "present_headers": [
+          "content-security-policy",
+          "x-content-type-options",
+          "x-frame-options",
+          "x-xss-protection",
+          "referrer-policy",
+          "strict-transport-security",
+          "permissions-policy",
+          "x-request-id",
+          "x-powered-by"
+        ],
+        "csp_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; report-uri /api/v1/security/csp-report;",
+        "x_powered_by": "ACGS-PGP"
+      }
+    },
+    {
+      "service": "ec_service",
+      "test": "Rate Limiting",
+      "status": "INFO",
+      "response_time_ms": 151.6554355621338,
+      "details": {
+        "responses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "rate_limited": false,
+        "note": "Rate limiting may not trigger with low request volume"
+      }
+    },
+    {
+      "service": "ec_service",
+      "test": "Input Validation",
+      "status": "FAIL",
+      "response_time_ms": 6.565093994140625,
+      "details": {
+        "status_code": 500,
+        "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
+        "validation_active": false
+      }
+    }
+  ]
+}

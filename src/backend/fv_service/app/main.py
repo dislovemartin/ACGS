@@ -6,11 +6,18 @@ from typing import Optional
 from app.api.v1 import verify as verify_router
 from app.api.v1 import cross_domain_testing as cross_domain_router
 
+# Import security middleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
+
 app = FastAPI(
     title="Formal Verification Service",
     description="ACGS-PGP Formal Verification Service with Cross-Domain Principle Testing",
     version="3.0.0"
 )
+
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
 
 # Include API routers
 app.include_router(verify_router.router, prefix="/api/v1", tags=["Verification"])
@@ -56,3 +63,7 @@ async def verify_policy(request: PolicyVerificationRequest):
 @app.get("/")
 async def read_root():
     return {"message": "Formal Verification Service is running"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "fv_service"}

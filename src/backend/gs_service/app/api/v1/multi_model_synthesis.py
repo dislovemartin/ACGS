@@ -21,15 +21,15 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from src.backend.gs_service.app.workflows.policy_synthesis_workflow import get_policy_synthesis_workflow
-from src.backend.gs_service.app.workflows.structured_output_models import (
+from app.workflows.policy_synthesis_workflow import get_policy_synthesis_workflow
+from app.workflows.structured_output_models import (
     PolicySynthesisRequest,
     PolicySynthesisResponse,
     PolicyType,
     ModelSpecializationConfig
 )
-from src.backend.gs_service.app.workflows.multi_model_manager import get_multi_model_manager
-from src.backend.shared.langgraph_config import ModelRole
+from app.workflows.multi_model_manager import get_multi_model_manager
+from shared.langgraph_config import ModelRole
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

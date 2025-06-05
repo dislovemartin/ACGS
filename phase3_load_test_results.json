@@ -1,0 +1,34 @@
+{
+  "test_start": "2025-06-05T10:22:34.159631",
+  "performance_metrics": {
+    "cache_performance": {
+      "total_requests": 52979,
+      "cache_hits": 0,
+      "hit_rate_percent": 0.0,
+      "target_met": false
+    }
+  },
+  "security_metrics": {
+    "injection_attempts": 11070,
+    "rate_limit_violations": 0,
+    "auth_failures": 0,
+    "security_active": true
+  },
+  "resource_metrics": {
+    "cpu_usage_percent": 18.3,
+    "memory_usage_percent": 88.3,
+    "memory_available_gb": 14.72000503540039,
+    "cpu_target_met": true,
+    "memory_target_met": false
+  },
+  "success_criteria": {
+    "policy_latency_target": false,
+    "cache_performance_target": false,
+    "cpu_usage_target": true,
+    "memory_usage_target": false,
+    "security_measures_active": true,
+    "overall_success": false,
+    "success_percentage": 40.0
+  },
+  "test_end": "2025-06-05T10:24:25.223974"
+}

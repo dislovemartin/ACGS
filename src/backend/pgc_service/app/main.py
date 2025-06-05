@@ -5,7 +5,8 @@ from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement
 from app.api.v1.incremental_compilation import router as incremental_compilation_router # Added Task 8
 from app.core.policy_manager import policy_manager
 from app.services.integrity_client import integrity_service_client
-from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(title="Protective Governance Controls (PGC) Service")
@@ -16,8 +17,8 @@ app = FastAPI(title="Protective Governance Controls (PGC) Service")
 # Add metrics middleware
 # app.middleware("http")(metrics_middleware("pgc_service"))
 
-# Apply the security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
 
 # Include the API router for policy enforcement
 app.include_router(enforcement_router, prefix="/api/v1/enforcement", tags=["Policy Enforcement"])

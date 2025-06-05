@@ -1,0 +1,316 @@
+# ACGS Phase 3 Staging Docker Compose Configuration
+# Staging deployment for validation and testing
+
+version: '3.8'
+
+networks:
+  acgs-staging:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
+
+services:
+  # PostgreSQL Database - Staging Configuration
+  postgres:
+    image: postgres:15-alpine
+    container_name: acgs-postgres-staging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-acgs_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-acgs_staging}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./config/database/staging_optimizations.sql:/docker-entrypoint-initdb.d/01-optimizations.sql
+      - ./config/database/production_schema.sql:/docker-entrypoint-initdb.d/02-schema.sql
+    ports:
+      - "5435:5432"
+    networks:
+      - acgs-staging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-acgs_user} -d ${POSTGRES_DB:-acgs_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+
+  # Redis Cache - Staging Configuration
+  redis:
+    image: redis:7.0-alpine
+    container_name: acgs-redis-staging
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_staging_data:/data
+    ports:
+      - "6382:6379"
+    networks:
+      - acgs-staging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # AC Service - Artificial Constitution
+  ac_service:
+    build:
+      context: ./src/backend
+      dockerfile: ac_service/Dockerfile.prod
+    container_name: acgs-ac-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - SECURITY_RATE_LIMIT_REQUESTS=100
+      - SECURITY_RATE_LIMIT_WINDOW_MINUTES=1
+      - CACHE_ENABLED=true
+      - CACHE_TTL_SECONDS=300
+      - PERFORMANCE_MAX_POLICY_DECISION_LATENCY_MS=50
+    ports:
+      - "8011:8001"
+    networks:
+      - acgs-staging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # Integrity Service - Cryptographic Verification
+  integrity_service:
+    build:
+      context: ./src/backend
+      dockerfile: integrity_service/Dockerfile.prod
+    container_name: acgs-integrity-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - CRYPTO_KEY_SIZE=2048
+      - HASH_ALGORITHM=SHA3-256
+      - SIGNATURE_ALGORITHM=RSA-PSS-SHA256
+    ports:
+      - "8012:8002"
+    networks:
+      - acgs-staging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # FV Service - Formal Verification
+  fv_service:
+    build:
+      context: ./src/backend
+      dockerfile: fv_service/Dockerfile.staging
+    container_name: acgs-fv-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/2
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - AC_SERVICE_URL=http://ac_service:8001
+      - INTEGRITY_SERVICE_URL=http://integrity_service:8002
+      - PARALLEL_MAX_CONCURRENT=50
+      - PARALLEL_BATCH_SIZE=25
+    ports:
+      - "8013:8003"
+    networks:
+      - acgs-staging
+    depends_on:
+      ac_service:
+        condition: service_healthy
+      integrity_service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: '2.0'
+        reservations:
+          memory: 1.5G
+          cpus: '1.0'
+
+  # GS Service - Governance Synthesis
+  gs_service:
+    build:
+      context: ./src/backend
+      dockerfile: gs_service/Dockerfile.staging
+    container_name: acgs-gs-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/3
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - AC_SERVICE_URL=http://ac_service:8001
+      - INTEGRITY_SERVICE_URL=http://integrity_service:8002
+      - FV_SERVICE_URL=http://fv_service:8003
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - POLICY_QUALITY_THRESHOLD=0.80
+      - MAX_SYNTHESIS_LOOPS=3
+    ports:
+      - "8014:8004"
+    networks:
+      - acgs-staging
+    depends_on:
+      ac_service:
+        condition: service_healthy
+      integrity_service:
+        condition: service_healthy
+      fv_service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+
+  # PGC Service - Prompt Governance Compiler
+  pgc_service:
+    build:
+      context: ./src/backend
+      dockerfile: pgc_service/Dockerfile.staging
+    container_name: acgs-pgc-service-staging
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-acgs_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-acgs_staging}
+      - REDIS_URL=redis://redis:6379/4
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+      - AC_SERVICE_URL=http://ac_service:8001
+      - GS_SERVICE_URL=http://gs_service:8004
+      - OPA_SERVER_URL=http://opa:8181
+      - PERFORMANCE_MAX_POLICY_DECISION_LATENCY_MS=50
+    ports:
+      - "8015:8005"
+    networks:
+      - acgs-staging
+    depends_on:
+      ac_service:
+        condition: service_healthy
+      gs_service:
+        condition: service_healthy
+      opa:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # OPA Server - Open Policy Agent
+  opa:
+    image: openpolicyagent/opa:latest-envoy
+    container_name: acgs-opa-staging
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "--log-level", "info"]
+    ports:
+      - "8191:8181"
+    networks:
+      - acgs-staging
+    volumes:
+      - ./config/opa/policies:/policies
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8181/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:

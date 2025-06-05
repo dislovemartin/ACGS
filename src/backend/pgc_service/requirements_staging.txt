@@ -1,0 +1,24 @@
+# PGC Service Staging Requirements (without hashes)
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+pydantic[email]==2.11.5
+python-dotenv==1.1.0
+httpx==0.28.1
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+tenacity==8.2.3
+prometheus_client==0.21.1
+psutil==6.1.0
+# Authentication dependencies
+python-jose[cryptography]==3.3.0
+PyJWT>=2.8.0
+passlib[bcrypt]==1.7.4
+# Additional shared dependencies
+email-validator==2.1.0
+# OPA (Open Policy Agent) Integration Dependencies
+requests>=2.31.0
+# Rate limiting
+slowapi>=0.1.9
+limits>=3.0.0
+# Networking
+networkx>=2.8
