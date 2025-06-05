@@ -1,11 +1,84 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, func, JSON, Index, LargeBinary, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY # For PostgreSQL specific ARRAY type
-from shared.database import Base
-from shared.models import PolicyRule, AuditLog, Appeal, DisputeResolution  # Import models from shared to avoid table conflicts
+from sqlalchemy.orm import declarative_base
 from datetime import datetime
 
-# Note: PolicyRule, AuditLog, Appeal, and DisputeResolution are imported from shared.models to avoid table conflicts
-# Note: AuditLog cryptographic fields are added via Alembic migrations
+# Create a local Base for this service to avoid import issues
+Base = declarative_base()
+
+# Define local models for integrity service to avoid shared module import issues
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+import uuid
+
+class PolicyRule(Base):
+    """Policy Rule model for integrity service"""
+    __tablename__ = "policy_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    rule_content = Column(Text, nullable=False)
+    source_principle_ids = Column(JSONB, nullable=True)
+    version = Column(Integer, default=1, nullable=False)
+    verification_status = Column(String(50), default="pending", nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # Cryptographic integrity fields
+    content_hash = Column(String(64), nullable=True, index=True)
+    pgp_signature = Column(Text, nullable=True)
+    signed_at = Column(DateTime, nullable=True)
+    signed_by_key_id = Column(String(100), nullable=True)
+
+class AuditLog(Base):
+    """Audit Log model for integrity service"""
+    __tablename__ = "audit_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    service_name = Column(String(100), nullable=False, index=True)
+    action = Column(String(100), nullable=False, index=True)
+    user_id = Column(String(255), nullable=True)
+    details = Column(JSONB, nullable=True)
+
+    # Cryptographic integrity fields
+    content_hash = Column(String(64), nullable=True, index=True)
+    pgp_signature = Column(Text, nullable=True)
+    signed_at = Column(DateTime, nullable=True)
+    signed_by_key_id = Column(String(100), nullable=True)
+
+class Appeal(Base):
+    """Appeal model for integrity service"""
+    __tablename__ = "appeals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    decision_id = Column(String, nullable=False, index=True)
+    appeal_reason = Column(Text, nullable=False)
+    evidence = Column(Text, nullable=True)
+    requested_remedy = Column(Text, nullable=False)
+    appellant_contact = Column(String, nullable=True)
+    status = Column(String, default="pending", nullable=False, index=True)
+    resolution = Column(Text, nullable=True)
+    reviewer_notes = Column(Text, nullable=True)
+    submitted_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    resolved_at = Column(DateTime, nullable=True)
+    assigned_reviewer_id = Column(String, nullable=True, index=True)
+    escalation_level = Column(Integer, default=1, nullable=False, index=True)
+
+class DisputeResolution(Base):
+    """Dispute Resolution model for integrity service"""
+    __tablename__ = "dispute_resolutions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    appeal_id = Column(Integer, nullable=False, index=True)
+    resolution_method = Column(String, nullable=False, index=True)
+    panel_composition = Column(JSONB, nullable=True)
+    timeline_days = Column(Integer, default=30, nullable=False)
+    status = Column(String, default="initiated", nullable=False, index=True)
+    findings = Column(Text, nullable=True)
+    recommendations = Column(JSONB, nullable=True)
+    final_decision = Column(Text, nullable=True)
+    initiated_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    completed_at = Column(DateTime, nullable=True)
+    panel_members = Column(JSONB, nullable=True)
 
 
 # --- Phase 3: Cryptographic Integrity Models ---

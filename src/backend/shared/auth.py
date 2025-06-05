@@ -239,3 +239,10 @@ auth_service_client = AuthServiceClient()
 
 # Alias for backward compatibility
 get_current_user = get_current_active_user
+
+async def get_current_user_id(current_user: User = Depends(get_current_active_user)) -> str:
+    """
+    Get current user ID from authenticated user
+    Returns the user ID as a string
+    """
+    return str(current_user.id)

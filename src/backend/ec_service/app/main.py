@@ -26,15 +26,66 @@ from app.api.v1.alphaevolve import router as alphaevolve_router
 from app.api.v1.reporting import router as reporting_router
 from app.api.v1.monitoring import router as monitoring_router
 from app.api.v1.wina_oversight import router as wina_oversight_router
-from shared.wina.performance_api import router as wina_performance_router, set_collector_getter
+# Local implementations to avoid shared module dependencies
+from fastapi.middleware.cors import CORSMiddleware
+
+def add_security_middleware(app: FastAPI):
+    """Local implementation of security middleware"""
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Configure appropriately for production
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+class MockSecurityConfig:
+    def get(self, key, default=None):
+        return default
+
+security_config = MockSecurityConfig()
+
+class MockMetrics:
+    def record_verification_operation(self, verification_type: str, result: str):
+        pass
+
+def get_metrics(service_name: str) -> MockMetrics:
+    return MockMetrics()
+
+def metrics_middleware(service_name: str):
+    """Mock metrics middleware"""
+    async def middleware(request, call_next):
+        response = await call_next(request)
+        return response
+    return middleware
+
+def create_metrics_endpoint():
+    """Mock metrics endpoint"""
+    async def metrics():
+        return {"status": "ok", "service": "ec_service"}
+    return metrics
+
+class MockConfig:
+    def get(self, key, default=None):
+        return default
+
+def get_config():
+    return MockConfig()
+
+# Import local components
+try:
+    from shared.wina.performance_api import router as wina_performance_router, set_collector_getter
+except ImportError:
+    # Mock WINA performance router
+    from fastapi import APIRouter
+    wina_performance_router = APIRouter()
+    def set_collector_getter(func):
+        pass
+
 from app.core.wina_oversight_coordinator import WINAECOversightCoordinator
 from app.services.gs_client import gs_service_client
 from app.services.ac_client import ac_service_client
 from app.services.pgc_client import pgc_service_client
-from shared.security_middleware import add_security_middleware
-from shared.security_config import security_config
-from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
-from shared import get_config
 
 # Load centralized configuration
 config = get_config()

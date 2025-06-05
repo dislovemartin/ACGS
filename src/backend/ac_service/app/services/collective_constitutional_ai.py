@@ -28,8 +28,8 @@ import aiohttp
 import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.metrics import get_metrics
-from ..models.constitutional_models import ConstitutionalPrinciple
+from shared.metrics import get_metrics
+from ..models import Principle as ConstitutionalPrinciple
 from .democratic_governance import DemocraticGovernanceOrchestrator
 
 logger = logging.getLogger(__name__)

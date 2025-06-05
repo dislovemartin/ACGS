@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package federated_evaluation;
+
+// The package containing the test to be dispatched
+message TestPackage {
+  string test_id = 1;
+  string test_content = 2; // This could be a path to the test, or the test itself
+}
+
+// The response after dispatching a test
+message DispatchResponse {
+  string task_id = 1;
+  string status = 2;
+}
+
+// The service definition for the Node Agent
+service NodeAgentService {
+  // Dispatches a test to a node agent
+  rpc DispatchTest (TestPackage) returns (DispatchResponse) {}
+}

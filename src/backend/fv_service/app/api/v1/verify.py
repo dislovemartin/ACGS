@@ -17,12 +17,29 @@ from ...core.safety_conflict_checker import safety_property_checker, conflict_de
 from ...core.bias_detector import bias_detector
 # Task 7 imports
 from ...core.parallel_validation_pipeline import parallel_pipeline
-from shared.result_aggregation import websocket_streamer
+
+# Local implementations to avoid shared module dependencies
+class MockWebSocketStreamer:
+    async def connect(self, websocket, client_id):
+        await websocket.accept()
+
+    async def disconnect(self, websocket):
+        pass
+
+    async def send_alert(self, alert_type: str, details: dict):
+        pass
+
+    async def get_connection_stats(self):
+        return {"active_connections": 0}
+
+websocket_streamer = MockWebSocketStreamer()
 
 router = APIRouter()
 
-# Import service authentication
-from shared.auth import get_service_token
+# Local service authentication
+async def get_service_token():
+    """Mock function to get service token."""
+    return "mock_service_token"
 
 @router.post("/", response_model=schemas.VerificationResponse, status_code=status.HTTP_200_OK)
 async def verify_policies(

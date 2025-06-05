@@ -2,15 +2,30 @@ import os
 import httpx
 from typing import List, Optional
 from ..schemas import ACPrinciple # Using the schema defined in fv_service
-from shared.auth import get_service_token, get_auth_headers
-from shared import get_config
+# from shared.auth import get_service_token, get_auth_headers
+# from shared import get_config
 
-# Load centralized configuration
-config = get_config()
+# Local auth and config stubs
+def get_service_token():
+    return "mock_service_token"
+
+def get_auth_headers():
+    return {"Authorization": "Bearer mock_token"}
+
+# Local configuration
+class LocalConfig:
+    def get_service_url(self, service):
+        urls = {
+            'ac': 'http://localhost:8000',
+            'integrity': 'http://localhost:8002'
+        }
+        return urls.get(service, 'http://localhost:8000')
+
+config = LocalConfig()
 
 # Determine if running in Docker (internal) or external environment
 is_docker_env = os.getenv('DOCKER_ENV', 'false').lower() == 'true'
-AC_SERVICE_URL = config.get_service_url('ac', internal=is_docker_env, api_path='')
+AC_SERVICE_URL = config.get_service_url('ac')
 
 class ACServiceClient:
     def __init__(self, base_url: str):

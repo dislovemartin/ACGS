@@ -143,3 +143,115 @@ async def get_active_principles_for_context_endpoint(
     """Get active principles applicable to a specific context, optionally filtered by category."""
     principles = await crud.get_active_principles_for_context(db, context=context, category=category)
     return {"principles": principles, "total": len(principles)}
+
+# Phase 3: Constitutional Validation Endpoint with Redis Caching
+@router.post("/validate-constitutional", response_model=dict)
+async def validate_constitutional_endpoint(
+    validation_request: dict,
+    db: AsyncSession = Depends(get_async_db)
+):
+    """
+    Validate constitutional compliance of proposals with Redis caching.
+
+    This endpoint provides constitutional validation with multi-tier caching
+    to achieve <25ms average latency and >80% cache hit rate targets.
+    """
+    try:
+        # Import caching components
+        from app.services.advanced_cache import MultiTierCache, LRUCache, RedisCache, CACHE_TTL_POLICIES
+        from shared.redis_client import ACGSRedisClient
+        import hashlib
+        import json
+        import time
+
+        # Initialize Redis client for caching
+        redis_client = ACGSRedisClient("ac_service")
+        await redis_client.initialize()
+
+        # Setup multi-tier cache
+        l1_cache = LRUCache(max_size=1000, default_ttl=CACHE_TTL_POLICIES["policy_decisions"])
+        l2_cache = RedisCache(redis_client.redis_client, key_prefix="acgs:ac:constitutional:")
+        cache = MultiTierCache(l1_cache, l2_cache)
+
+        # Generate cache key from request
+        request_str = json.dumps(validation_request, sort_keys=True)
+        cache_key = f"constitutional_validation:{hashlib.md5(request_str.encode()).hexdigest()}"
+
+        # Check cache first
+        start_time = time.time()
+        cached_result = await cache.get(cache_key)
+
+        if cached_result:
+            # Cache hit - return cached result
+            latency_ms = (time.time() - start_time) * 1000
+            return {
+                "validation_result": cached_result,
+                "cached": True,
+                "latency_ms": latency_ms,
+                "timestamp": time.time()
+            }
+
+        # Cache miss - perform constitutional validation
+        proposal = validation_request.get("proposal", {})
+        principles = validation_request.get("principles", [])
+
+        # Get relevant constitutional principles from database
+        if not principles:
+            principles = await crud.get_active_principles_for_context(
+                db,
+                context=proposal.get("context", "general"),
+                category="constitutional"
+            )
+
+        # Perform constitutional compliance check
+        validation_result = {
+            "compliant": True,
+            "compliance_score": 0.95,
+            "violations": [],
+            "recommendations": [],
+            "applicable_principles": [p.name for p in principles] if hasattr(principles[0], 'name') else principles,
+            "validation_timestamp": time.time()
+        }
+
+        # Basic constitutional checks
+        if not proposal.get("respects_human_dignity", True):
+            validation_result["compliant"] = False
+            validation_result["violations"].append("Violates human dignity principle")
+            validation_result["compliance_score"] -= 0.3
+
+        if not proposal.get("ensures_fairness", True):
+            validation_result["compliant"] = False
+            validation_result["violations"].append("Fails fairness requirement")
+            validation_result["compliance_score"] -= 0.2
+
+        if not proposal.get("protects_privacy", True):
+            validation_result["compliant"] = False
+            validation_result["violations"].append("Insufficient privacy protection")
+            validation_result["compliance_score"] -= 0.25
+
+        # Ensure compliance score is non-negative
+        validation_result["compliance_score"] = max(0.0, validation_result["compliance_score"])
+
+        # Cache the result with appropriate TTL
+        await cache.put(
+            cache_key,
+            validation_result,
+            ttl=CACHE_TTL_POLICIES["policy_decisions"],  # 5 minutes
+            tags=["constitutional_validation", "policy_decisions"]
+        )
+
+        latency_ms = (time.time() - start_time) * 1000
+
+        return {
+            "validation_result": validation_result,
+            "cached": False,
+            "latency_ms": latency_ms,
+            "timestamp": time.time()
+        }
+
+    except Exception as e:
+        logger.error(f"Constitutional validation failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Constitutional validation error: {str(e)}"
+        )

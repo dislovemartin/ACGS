@@ -1,0 +1,51 @@
+{
+  "start_time": "2025-06-05T17:23:46.174750",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "FAILED",
+  "steps_completed": [
+    {
+      "name": "fix_python_dependencies",
+      "description": "Fix Python dependencies and SHA256 hash mismatches",
+      "script": "python scripts/fix_requirements_hashes.py",
+      "duration_seconds": 1.386730670928955,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:23:47.561717",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "fix_database_schema",
+      "description": "Fix database schema UUID/INTEGER mismatch",
+      "script": "python scripts/fix_database_schema.py",
+      "duration_seconds": 0.06581854820251465,
+      "return_code": 1,
+      "timestamp": "2025-06-05T17:23:52.632274",
+      "status": "FAILED",
+      "stderr": "2025-06-05 17:23:52,623 - ERROR - \u274c Failed to connect to database: [Errno 111] Connect call failed ('172.18.0.3', 5432)\n2025-06-05 17:23:52,623 - ERROR - \u274c Database schema fix failed: [Errno 111] Connect call failed ('172.18.0.3', 5432)\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [
+    {
+      "timestamp": "2025-06-05T17:23:52.632314",
+      "level": "ERROR",
+      "message": "\u274c Fix database schema UUID/INTEGER mismatch failed (exit code: 1)"
+    },
+    {
+      "timestamp": "2025-06-05T17:23:52.632326",
+      "level": "ERROR",
+      "message": "Required step failed: fix_database_schema"
+    },
+    {
+      "timestamp": "2025-06-05T17:23:52.632340",
+      "level": "ERROR",
+      "message": "\u274c ACGS Phase 3 Deployment Workflow FAILED"
+    }
+  ],
+  "final_status": "FAILED",
+  "end_time": "2025-06-05T17:23:52.632328",
+  "workflow_duration_seconds": 6.457371950149536,
+  "steps_executed": 6,
+  "steps_passed": 1
+}

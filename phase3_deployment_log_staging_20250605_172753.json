@@ -1,0 +1,81 @@
+{
+  "start_time": "2025-06-05T17:27:19.751617",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "FAILED",
+  "steps_completed": [
+    {
+      "name": "fix_python_dependencies",
+      "description": "Fix Python dependencies and SHA256 hash mismatches",
+      "script": "python scripts/fix_requirements_hashes.py",
+      "duration_seconds": 1.4151558876037598,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:27:21.166974",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "fix_database_schema",
+      "description": "Fix database schema UUID/INTEGER mismatch",
+      "script": "python scripts/fix_database_schema.py",
+      "duration_seconds": 0.07354521751403809,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:27:26.244993",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "setup_redis_infrastructure",
+      "description": "Setup Redis infrastructure with health checks",
+      "script": "python scripts/setup_redis_infrastructure.py",
+      "duration_seconds": 0.08834028244018555,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:27:31.337753",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "validate_service_stack",
+      "description": "Validate all ACGS services health",
+      "script": "python scripts/validate_service_stack.py",
+      "duration_seconds": 10.149536848068237,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:27:46.492493",
+      "status": "SUCCESS",
+      "stdout": "on\": \"Evolutionary Computation Service\",\n      \"url\": \"http://localhost:8006\",\n      \"healthy\": false,\n      \"response_time_ms\": null,\n      \"status_code\": null,\n      \"error\": \"Connection refused\",\n      \"retries_attempted\": 3\n    },\n    {\n      \"service\": \"research_service\",\n      \"description\": \"Research Infrastructure Service\",\n      \"url\": \"http://localhost:8007\",\n      \"healthy\": false,\n      \"response_time_ms\": null,\n      \"status_code\": null,\n      \"error\": \"Connection refused\",\n      \"retries_attempted\": 3\n    }\n  ],\n  \"healthy_services\": [\n    \"auth_service\",\n    \"ac_service\",\n    \"integrity_service\"\n  ],\n  \"unhealthy_required_services\": [\n    \"fv_service\",\n    \"gs_service\",\n    \"pgc_service\"\n  ],\n  \"unhealthy_optional_services\": [\n    \"ec_service\",\n    \"research_service\"\n  ],\n  \"interaction_results\": {\n    \"auth_to_services\": {\n      \"health\": false\n    },\n    \"ac_to_integrity\": false,\n    \"gs_to_ac\": false,\n    \"pgc_to_integrity\": false\n  },\n  \"overall_status\": \"PARTIAL\"\n}\n"
+    },
+    {
+      "name": "optimize_memory_framework",
+      "description": "Optimize memory usage framework",
+      "script": "python scripts/optimize_memory_framework.py",
+      "duration_seconds": 1.5756735801696777,
+      "return_code": 1,
+      "timestamp": "2025-06-05T17:27:53.073344",
+      "status": "FAILED",
+      "stderr": "27:53,061 - INFO - Step 5: Validating memory targets\n2025-06-05 17:27:53,061 - INFO - \ud83c\udfaf Validating memory usage targets\n2025-06-05 17:27:53,062 - WARNING - \u26a0\ufe0f Memory target exceeded: 85.5% > 85.0%\n2025-06-05 17:27:53,062 - INFO - ============================================================\n2025-06-05 17:27:53,062 - INFO - \ud83d\udcca MEMORY FRAMEWORK OPTIMIZATION SUMMARY\n2025-06-05 17:27:53,062 - INFO - ============================================================\n2025-06-05 17:27:53,062 - INFO - Optimization Duration: 1.5 seconds\n2025-06-05 17:27:53,062 - INFO - Memory Usage: 85.5%\n2025-06-05 17:27:53,062 - INFO - Target (<85.0%): \u274c Exceeded\n2025-06-05 17:27:53,062 - INFO - Memory Freed: -554.5MB\n2025-06-05 17:27:53,062 - INFO - Monitoring: \u2705 Active\n2025-06-05 17:27:53,062 - INFO - Overall Status: FAILED\n2025-06-05 17:27:53,062 - INFO - Recommendations:\n2025-06-05 17:27:53,062 - INFO -   - Implement aggressive memory cleanup\n2025-06-05 17:27:53,062 - ERROR - Memory framework optimization failed\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [
+    {
+      "timestamp": "2025-06-05T17:27:53.073380",
+      "level": "ERROR",
+      "message": "\u274c Optimize memory usage framework failed (exit code: 1)"
+    },
+    {
+      "timestamp": "2025-06-05T17:27:53.073395",
+      "level": "ERROR",
+      "message": "Required step failed: optimize_memory_framework"
+    },
+    {
+      "timestamp": "2025-06-05T17:27:53.073409",
+      "level": "ERROR",
+      "message": "\u274c ACGS Phase 3 Deployment Workflow FAILED"
+    }
+  ],
+  "final_status": "FAILED",
+  "end_time": "2025-06-05T17:27:53.073398",
+  "workflow_duration_seconds": 33.32160925865173,
+  "steps_executed": 6,
+  "steps_passed": 4
+}

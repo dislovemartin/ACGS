@@ -1,0 +1,71 @@
+{
+  "start_time": "2025-06-05T17:26:02.877562",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "FAILED",
+  "steps_completed": [
+    {
+      "name": "fix_python_dependencies",
+      "description": "Fix Python dependencies and SHA256 hash mismatches",
+      "script": "python scripts/fix_requirements_hashes.py",
+      "duration_seconds": 1.4891996383666992,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:26:04.366975",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "fix_database_schema",
+      "description": "Fix database schema UUID/INTEGER mismatch",
+      "script": "python scripts/fix_database_schema.py",
+      "duration_seconds": 0.0627748966217041,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:26:09.434194",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "setup_redis_infrastructure",
+      "description": "Setup Redis infrastructure with health checks",
+      "script": "python scripts/setup_redis_infrastructure.py",
+      "duration_seconds": 0.09972810745239258,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:26:14.539160",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "validate_service_stack",
+      "description": "Validate all ACGS services health",
+      "script": "python scripts/validate_service_stack.py",
+      "duration_seconds": 10.163043022155762,
+      "return_code": 1,
+      "timestamp": "2025-06-05T17:26:29.707423",
+      "status": "FAILED",
+      "stderr": "===================================================\n2025-06-05 17:26:29,689 - INFO - \ud83d\udcca SERVICE STACK VALIDATION SUMMARY\n2025-06-05 17:26:29,689 - INFO - ============================================================\n2025-06-05 17:26:29,689 - INFO - Validation Duration: 10.0 seconds\n2025-06-05 17:26:29,689 - INFO - Infrastructure Services: 3/3 healthy\n2025-06-05 17:26:29,689 - INFO - Required ACGS Services: 1/6 healthy\n2025-06-05 17:26:29,689 - INFO - Optional ACGS Services: 2 unhealthy\n2025-06-05 17:26:29,689 - INFO - Overall Status: FAILED\n2025-06-05 17:26:29,689 - ERROR - \u274c Unhealthy required services:\n2025-06-05 17:26:29,689 - ERROR -   - fv_service\n2025-06-05 17:26:29,689 - ERROR -   - gs_service\n2025-06-05 17:26:29,689 - ERROR -   - pgc_service\n2025-06-05 17:26:29,689 - WARNING - \u26a0\ufe0f Unhealthy optional services:\n2025-06-05 17:26:29,689 - WARNING -   - ec_service\n2025-06-05 17:26:29,690 - WARNING -   - research_service\n2025-06-05 17:26:29,690 - ERROR - Service stack validation failed\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [
+    {
+      "timestamp": "2025-06-05T17:26:29.707457",
+      "level": "ERROR",
+      "message": "\u274c Validate all ACGS services health failed (exit code: 1)"
+    },
+    {
+      "timestamp": "2025-06-05T17:26:29.707473",
+      "level": "ERROR",
+      "message": "Required step failed: validate_service_stack"
+    },
+    {
+      "timestamp": "2025-06-05T17:26:29.707491",
+      "level": "ERROR",
+      "message": "\u274c ACGS Phase 3 Deployment Workflow FAILED"
+    }
+  ],
+  "final_status": "FAILED",
+  "end_time": "2025-06-05T17:26:29.707475",
+  "workflow_duration_seconds": 26.829728364944458,
+  "steps_executed": 6,
+  "steps_passed": 3
+}

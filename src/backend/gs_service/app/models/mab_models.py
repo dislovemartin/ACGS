@@ -11,8 +11,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, timezone
 import uuid
 
-# Fix the import to use the full package path
-from shared.database import Base
+# Local database base to avoid shared module issues
+from sqlalchemy.orm import declarative_base
+
+# Create local Base to avoid shared module dependency issues
+Base = declarative_base()
 
 
 class PromptTemplateModel(Base):

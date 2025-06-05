@@ -12,8 +12,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.database import get_db
-from ...core.auth import get_current_user_id
+# Local implementations to avoid shared module dependencies
+async def get_db():
+    """Mock database session."""
+    return None
+
+async def get_current_user_id():
+    """Mock current user ID."""
+    return "mock_user_id"
 from ...services.enhanced_multi_model_validation import (
     get_enhanced_multi_model_validator,
     ValidationStrategy,

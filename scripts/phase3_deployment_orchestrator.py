@@ -29,6 +29,52 @@ class DeploymentOrchestrator:
         }
         
         self.workflow_steps = [
+            # IMMEDIATE PRIORITY (0-2 hours)
+            {
+                'name': 'fix_python_dependencies',
+                'description': 'Fix Python dependencies and SHA256 hash mismatches',
+                'script': 'python scripts/fix_requirements_hashes.py',
+                'required': True,
+                'environment': 'both'
+            },
+            {
+                'name': 'fix_database_schema',
+                'description': 'Fix database schema UUID/INTEGER mismatch',
+                'script': 'python scripts/fix_database_schema.py',
+                'required': True,
+                'environment': 'both'
+            },
+            # SHORT-TERM PRIORITY (2-8 hours)
+            {
+                'name': 'setup_redis_infrastructure',
+                'description': 'Setup Redis infrastructure with health checks',
+                'script': 'python scripts/setup_redis_infrastructure.py',
+                'required': True,
+                'environment': 'both'
+            },
+            {
+                'name': 'validate_service_stack',
+                'description': 'Validate all ACGS services health',
+                'script': 'python scripts/validate_service_stack.py',
+                'required': True,
+                'environment': 'both'
+            },
+            # MEDIUM-TERM PRIORITY (8-24 hours)
+            {
+                'name': 'optimize_memory_framework',
+                'description': 'Optimize memory usage framework',
+                'script': 'python scripts/optimize_memory_framework.py',
+                'required': True,
+                'environment': 'both'
+            },
+            {
+                'name': 'fix_container_runtime',
+                'description': 'Fix container runtime and cgroup configuration',
+                'script': 'python scripts/fix_container_runtime.py',
+                'required': True,
+                'environment': 'both'
+            },
+            # ORIGINAL WORKFLOW STEPS
             {
                 'name': 'staging_deployment',
                 'description': 'Deploy to staging environment',
@@ -214,9 +260,12 @@ class DeploymentOrchestrator:
         
         for step in self.workflow_steps:
             # Skip steps not for current environment
-            if self.environment == "staging" and step['environment'] == 'production':
+            if step['environment'] == 'both':
+                # 'both' environment steps run in all environments
+                pass
+            elif self.environment == "staging" and step['environment'] == 'production':
                 continue
-            if self.environment == "production" and step['environment'] == 'staging':
+            elif self.environment == "production" and step['environment'] == 'staging':
                 continue
             
             # Handle start_from parameter

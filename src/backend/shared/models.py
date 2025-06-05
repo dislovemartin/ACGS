@@ -1,5 +1,39 @@
 # ACGS Federated Service Models
-from .database import Base
+import sys
+import os
+
+# Handle imports for both service context and alembic context
+Base = None
+
+try:
+    # Try relative import first (when used as a module)
+    from .database import Base
+except ImportError:
+    try:
+        # Try importing from the database.py file directly (for alembic)
+        sys.path.insert(0, os.path.dirname(__file__))
+        import database as db_module
+        Base = db_module.Base
+    except ImportError:
+        try:
+            # Last resort: try importing from database directory
+            from database import Base
+        except ImportError:
+            # Final fallback: create Base directly
+            from sqlalchemy.orm import declarative_base
+            Base = declarative_base()
+
+# Ensure Base is not None - this is critical for model definitions
+if Base is None:
+    print("WARNING: Base is None, creating fallback declarative_base")
+    from sqlalchemy.orm import declarative_base
+    Base = declarative_base()
+
+# Verify Base is properly initialized
+if not hasattr(Base, 'metadata'):
+    print("ERROR: Base does not have metadata attribute")
+    from sqlalchemy.orm import declarative_base
+    Base = declarative_base()
 from sqlalchemy import (
     Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func, JSON, Float, Index, Enum, Numeric
 )

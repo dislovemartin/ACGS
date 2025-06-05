@@ -1210,6 +1210,7 @@ class EnhancedMultiModelValidator:
         Returns a list of synthesis results, a list of errors, and metrics details.
         Each synthesis result includes the model name, the LLMStructuredOutput, weight, etc.
         """
+        start_time = time.time()  # Track start time for throughput calculation
         logger.info(f"Request {request_id}: Starting Stage 1 - Parallel Synthesis with {len(self.models)} models.")
         responses_data = [] # To store successful responses with their metadata
         errors = []

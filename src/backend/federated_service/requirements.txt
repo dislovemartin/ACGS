@@ -52,3 +52,4 @@ httpx==0.25.2
 
 # Development
 python-dotenv==1.0.0
+docker==6.1.3

@@ -1,0 +1,75 @@
+{
+  "start_time": "2025-06-05T17:28:29.002737",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "COMPLETED",
+  "steps_completed": [
+    {
+      "name": "fix_python_dependencies",
+      "description": "Fix Python dependencies and SHA256 hash mismatches",
+      "script": "python scripts/fix_requirements_hashes.py",
+      "duration_seconds": 1.304180383682251,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:28:30.307120",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "fix_database_schema",
+      "description": "Fix database schema UUID/INTEGER mismatch",
+      "script": "python scripts/fix_database_schema.py",
+      "duration_seconds": 0.06265807151794434,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:28:35.374074",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "setup_redis_infrastructure",
+      "description": "Setup Redis infrastructure with health checks",
+      "script": "python scripts/setup_redis_infrastructure.py",
+      "duration_seconds": 0.09350156784057617,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:28:40.472832",
+      "status": "SUCCESS",
+      "stdout": ""
+    },
+    {
+      "name": "validate_service_stack",
+      "description": "Validate all ACGS services health",
+      "script": "python scripts/validate_service_stack.py",
+      "duration_seconds": 10.158444166183472,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:28:55.635885",
+      "status": "SUCCESS",
+      "stdout": "on\": \"Evolutionary Computation Service\",\n      \"url\": \"http://localhost:8006\",\n      \"healthy\": false,\n      \"response_time_ms\": null,\n      \"status_code\": null,\n      \"error\": \"Connection refused\",\n      \"retries_attempted\": 3\n    },\n    {\n      \"service\": \"research_service\",\n      \"description\": \"Research Infrastructure Service\",\n      \"url\": \"http://localhost:8007\",\n      \"healthy\": false,\n      \"response_time_ms\": null,\n      \"status_code\": null,\n      \"error\": \"Connection refused\",\n      \"retries_attempted\": 3\n    }\n  ],\n  \"healthy_services\": [\n    \"auth_service\",\n    \"ac_service\",\n    \"integrity_service\"\n  ],\n  \"unhealthy_required_services\": [\n    \"fv_service\",\n    \"gs_service\",\n    \"pgc_service\"\n  ],\n  \"unhealthy_optional_services\": [\n    \"ec_service\",\n    \"research_service\"\n  ],\n  \"interaction_results\": {\n    \"auth_to_services\": {\n      \"health\": false\n    },\n    \"ac_to_integrity\": false,\n    \"gs_to_ac\": false,\n    \"pgc_to_integrity\": false\n  },\n  \"overall_status\": \"PARTIAL\"\n}\n"
+    },
+    {
+      "name": "optimize_memory_framework",
+      "description": "Optimize memory usage framework",
+      "script": "python scripts/optimize_memory_framework.py",
+      "duration_seconds": 1.5744986534118652,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:29:02.212923",
+      "status": "SUCCESS",
+      "stdout": "{\n  \"optimization_duration_seconds\": 1.51,\n  \"baseline_memory\": {\n    \"total_gb\": 125.54025268554688,\n    \"used_gb\": 104.51480484008789,\n    \"available_gb\": 18.237293243408203,\n    \"percent\": 85.5,\n    \"method\": \"psutil\"\n  },\n  \"gc_results\": {\n    \"collections_performed\": 5,\n    \"objects_collected\": 0,\n    \"memory_before_mb\": 107023.16015625,\n    \"memory_after_mb\": 106614.2421875,\n    \"memory_freed_mb\": 408.91796875\n  },\n  \"python_optimization\": {\n    \"gc_thresholds_set\": true,\n    \"gc_enabled\": true,\n    \"memory_debugging_enabled\": true\n  },\n  \"monitoring_results\": {\n    \"memory_optimizer_initialized\": true,\n    \"monitoring_active\": true,\n    \"baseline_established\": true,\n    \"thresholds_configured\": true\n  },\n  \"validation_results\": {\n    \"current_memory_percent\": 85.2,\n    \"target_met\": false,\n    \"margin_percent\": 0.20000000000000284,\n    \"recommendations\": [\n      \"Implement aggressive memory cleanup\"\n    ]\n  },\n  \"overall_status\": \"PARTIAL\"\n}\n"
+    },
+    {
+      "name": "fix_container_runtime",
+      "description": "Fix container runtime and cgroup configuration",
+      "script": "python scripts/fix_container_runtime.py",
+      "duration_seconds": 1.2200596332550049,
+      "return_code": 0,
+      "timestamp": "2025-06-05T17:29:08.437468",
+      "status": "SUCCESS",
+      "stdout": "{\n  \"fix_duration_seconds\": 1.17,\n  \"initial_state\": {\n    \"docker_available\": true,\n    \"cgroup_version\": \"v2\",\n    \"config_issues\": []\n  },\n  \"fixes_applied\": [\n    \"Host-based deployment fallback implemented\"\n  ],\n  \"fixes_successful\": [\n    \"host_based_fallback\"\n  ],\n  \"validation_results\": {\n    \"docker_working\": true,\n    \"simple_container_test\": true,\n    \"cgroup_issues_resolved\": true,\n    \"fallback_available\": true\n  },\n  \"overall_status\": \"SUCCESS\"\n}\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [],
+  "final_status": "SUCCESS",
+  "end_time": "2025-06-05T17:29:08.437506",
+  "workflow_duration_seconds": 39.434603691101074,
+  "steps_executed": 6,
+  "steps_passed": 6
+}

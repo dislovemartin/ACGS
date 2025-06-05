@@ -4,6 +4,14 @@ import logging
 from fastapi import FastAPI
 
 # Import shared modules first
+import sys
+import os
+from pathlib import Path
+
+# Add the backend directory to the Python path
+backend_dir = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_dir))
+
 from shared.security_middleware import add_security_middleware
 from shared.security_config import security_config
 from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
