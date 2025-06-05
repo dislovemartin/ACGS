@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-06-05T10:01:07.511013",
+  "timestamp": "2025-06-05T10:14:03.009981",
   "summary": {
     "total_tests": 28,
     "passed": 15,
@@ -7,7 +7,7 @@
     "errors": 0,
     "success_rate": "53.6%",
     "security_score": "53.6%",
-    "avg_response_time_ms": "63.0"
+    "avg_response_time_ms": "62.2"
   },
   "services_tested": 7,
   "security_features": {
@@ -22,7 +22,7 @@
       "service": "auth_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 15.367746353149414,
+      "response_time_ms": 7.934808731079102,
       "details": {
         "status_code": 200,
         "response_data": {
@@ -36,7 +36,7 @@
       "service": "auth_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 14.193296432495117,
+      "response_time_ms": 6.22868537902832,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -58,7 +58,7 @@
       "service": "auth_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 25.682926177978516,
+      "response_time_ms": 18.169403076171875,
       "details": {
         "responses": [
           200,
@@ -80,7 +80,7 @@
       "service": "auth_service",
       "test": "Input Validation",
       "status": "FAIL",
-      "response_time_ms": 11.6424560546875,
+      "response_time_ms": 4.430294036865234,
       "details": {
         "status_code": 500,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
@@ -91,7 +91,7 @@
       "service": "ac_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 17.292499542236328,
+      "response_time_ms": 7.930994033813477,
       "details": {
         "status_code": 200,
         "response_data": {
@@ -104,7 +104,7 @@
       "service": "ac_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 16.543149948120117,
+      "response_time_ms": 7.729053497314453,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -126,7 +126,7 @@
       "service": "ac_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 30.595779418945312,
+      "response_time_ms": 24.866819381713867,
       "details": {
         "responses": [
           200,
@@ -148,7 +148,7 @@
       "service": "ac_service",
       "test": "Input Validation",
       "status": "FAIL",
-      "response_time_ms": 15.452146530151367,
+      "response_time_ms": 5.828380584716797,
       "details": {
         "status_code": 500,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
@@ -159,7 +159,7 @@
       "service": "integrity_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 18.68462562561035,
+      "response_time_ms": 13.763189315795898,
       "details": {
         "status_code": 200,
         "response_data": {
@@ -172,7 +172,7 @@
       "service": "integrity_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 17.56143569946289,
+      "response_time_ms": 10.321855545043945,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -194,7 +194,7 @@
       "service": "integrity_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 29.407262802124023,
+      "response_time_ms": 24.02806282043457,
       "details": {
         "responses": [
           200,
@@ -216,7 +216,7 @@
       "service": "integrity_service",
       "test": "Input Validation",
       "status": "FAIL",
-      "response_time_ms": 16.68405532836914,
+      "response_time_ms": 9.85097885131836,
       "details": {
         "status_code": 500,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
@@ -227,7 +227,7 @@
       "service": "fv_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 6.484746932983398,
+      "response_time_ms": 4.522562026977539,
       "details": {
         "status_code": 200,
         "response_data": {
@@ -247,7 +247,7 @@
       "service": "fv_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 5.982398986816406,
+      "response_time_ms": 4.4231414794921875,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -269,7 +269,7 @@
       "service": "fv_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 17.348766326904297,
+      "response_time_ms": 12.009620666503906,
       "details": {
         "responses": [
           200,
@@ -291,7 +291,7 @@
       "service": "fv_service",
       "test": "Input Validation",
       "status": "PASS",
-      "response_time_ms": 6.420612335205078,
+      "response_time_ms": 4.107475280761719,
       "details": {
         "status_code": 405,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
@@ -302,7 +302,7 @@
       "service": "gs_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 109.51352119445801,
+      "response_time_ms": 112.3969554901123,
       "details": {
         "status_code": 200,
         "response_data": {
@@ -334,7 +334,7 @@
       "service": "gs_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 108.91032218933105,
+      "response_time_ms": 111.68909072875977,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -356,7 +356,7 @@
       "service": "gs_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 373.9187717437744,
+      "response_time_ms": 411.7310047149658,
       "details": {
         "responses": [
           200,
@@ -378,7 +378,7 @@
       "service": "gs_service",
       "test": "Input Validation",
       "status": "FAIL",
-      "response_time_ms": 64.26620483398438,
+      "response_time_ms": 56.195974349975586,
       "details": {
         "status_code": 500,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
@@ -389,7 +389,7 @@
       "service": "pgc_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 116.03379249572754,
+      "response_time_ms": 102.03909873962402,
       "details": {
         "status_code": 200,
         "response_data": {
@@ -400,7 +400,7 @@
           "dependencies": {
             "opa": {
               "status": "healthy",
-              "response_time_ms": 45.733000000000004
+              "response_time_ms": 32.189
             },
             "integrity_service": {
               "status": "unhealthy",
@@ -410,7 +410,7 @@
           "components": {
             "policy_manager": {
               "status": "healthy",
-              "last_refresh": "2025-06-05 13:58:17.960039",
+              "last_refresh": "2025-06-05 14:13:20.487112",
               "policies_loaded": true
             }
           },
@@ -423,7 +423,7 @@
       "service": "pgc_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 115.78106880187988,
+      "response_time_ms": 101.50718688964844,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -445,7 +445,7 @@
       "service": "pgc_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 387.61448860168457,
+      "response_time_ms": 447.3400115966797,
       "details": {
         "responses": [
           200,
@@ -467,7 +467,7 @@
       "service": "pgc_service",
       "test": "Input Validation",
       "status": "FAIL",
-      "response_time_ms": 61.62118911743164,
+      "response_time_ms": 50.66347122192383,
       "details": {
         "status_code": 500,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",
@@ -478,13 +478,13 @@
       "service": "ec_service",
       "test": "Service Health",
       "status": "PASS",
-      "response_time_ms": 16.90387725830078,
+      "response_time_ms": 13.40174674987793,
       "details": {
         "status_code": 200,
         "response_data": {
           "status": "healthy",
           "service": "evolutionary_computation",
-          "timestamp": "2025-06-05T14:01:07.399755",
+          "timestamp": "2025-06-05T14:14:02.861928",
           "version": "v1",
           "wina_coordinator": "disabled",
           "features": {
@@ -509,7 +509,7 @@
       "service": "ec_service",
       "test": "Security Headers",
       "status": "PASS",
-      "response_time_ms": 16.747713088989258,
+      "response_time_ms": 9.630680084228516,
       "details": {
         "missing_headers": [],
         "present_headers": [
@@ -531,7 +531,7 @@
       "service": "ec_service",
       "test": "Rate Limiting",
       "status": "INFO",
-      "response_time_ms": 114.42279815673828,
+      "response_time_ms": 151.6554355621338,
       "details": {
         "responses": [
           200,
@@ -553,7 +553,7 @@
       "service": "ec_service",
       "test": "Input Validation",
       "status": "FAIL",
-      "response_time_ms": 13.267040252685547,
+      "response_time_ms": 6.565093994140625,
       "details": {
         "status_code": 500,
         "expected": "405 (Method Not Allowed) or 415 (Unsupported Media Type)",

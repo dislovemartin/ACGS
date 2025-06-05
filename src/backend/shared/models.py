@@ -12,9 +12,7 @@ import enum
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    # Using UUID for a more globally unique ID, if desired, though integer ID is also fine.
-    # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     username = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False) # Increased length for stronger hashes
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -37,9 +35,7 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
-    # Or if User.id is UUID:
-    # user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     jti = Column(String(36), unique=True, index=True, nullable=False)  # JWT ID (standard UUID length)
     token = Column(String(512), nullable=False, index=True) # The actual refresh token string, if storing it directly (hashed recommended)
     expires_at = Column(DateTime(timezone=True), nullable=False)

@@ -51,8 +51,8 @@ app = FastAPI(
 # Initialize metrics for auth service
 metrics = get_metrics("auth_service")
 
-# Add metrics middleware
-app.middleware("http")(metrics_middleware("auth_service"))
+# Add metrics middleware - commented out to avoid conflicts
+# app.middleware("http")(metrics_middleware("auth_service"))
 
 # Store limiter in app state - temporarily disabled for debugging
 # app.state.limiter = limiter
@@ -80,18 +80,8 @@ async def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError
     )
 
 # Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+# Use clean middleware pattern like fv_service to avoid conflicts
 add_security_middleware(app)
-
-# Add CORS middleware
-cors_origins = security_config.get_cors_origins()
-if cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=cors_origins,
-        allow_credentials=True, # Crucial for cookies, including CSRF and auth tokens
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*", "X-CSRF-Token", "Authorization"], # Ensure required headers are allowed
-    )
 
 # Include the test router to debug the issue
 app.include_router(

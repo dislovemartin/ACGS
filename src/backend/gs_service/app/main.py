@@ -32,7 +32,7 @@ app = FastAPI(title="Governance Synthesis (GS) Service")
 # Add metrics middleware
 # app.middleware("http")(metrics_middleware("gs_service"))
 
-# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+# Add enhanced security middleware (clean pattern like fv_service)
 add_security_middleware(app)
 
 # Include the API router for synthesis

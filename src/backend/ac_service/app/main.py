@@ -20,11 +20,11 @@ app = FastAPI(title="Artificial Constitution (AC) Service")
 # Initialize metrics for AC service
 metrics = get_metrics("ac_service")
 
-# Add metrics middleware
-app.middleware("http")(metrics_middleware("ac_service"))
-
-# Add enhanced security middleware
+# Add enhanced security middleware (clean pattern like fv_service)
 add_security_middleware(app)
+
+# Add metrics middleware - commented out to avoid conflicts
+# app.middleware("http")(metrics_middleware("ac_service"))
 
 # Include the API routers
 app.include_router(principles_router, prefix="/api/v1/principles", tags=["Principles"])

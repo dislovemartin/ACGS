@@ -129,23 +129,14 @@ app = FastAPI(
 # Initialize metrics for EC service
 metrics = get_metrics("ec_service")
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Add enhanced security middleware (clean pattern like fv_service)
+add_security_middleware(app)
 
 # Add compression middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
-add_security_middleware(app)
-
-# Add metrics middleware
-app.middleware("http")(metrics_middleware("ec_service"))
+# Add metrics middleware - commented out to avoid conflicts
+# app.middleware("http")(metrics_middleware("ec_service"))
 
 # Include API routers
 app.include_router(oversight_router, prefix="/api/v1/oversight", tags=["WINA Oversight"])

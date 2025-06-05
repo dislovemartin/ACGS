@@ -1,0 +1,56 @@
+{
+  "test_start": "2025-06-05T10:24:25.416629",
+  "injection_tests": {
+    "sql_injection": {
+      "total_tests": 10,
+      "blocked_count": 0,
+      "prevention_rate_percent": 0.0,
+      "target_met": false
+    },
+    "xss_prevention": {
+      "total_tests": 10,
+      "blocked_count": 0,
+      "prevention_rate_percent": 0.0,
+      "target_met": false
+    },
+    "command_injection": {
+      "total_tests": 10,
+      "blocked_count": 0,
+      "prevention_rate_percent": 0.0,
+      "target_met": false
+    }
+  },
+  "authentication_tests": {
+    "bypass_prevention": {
+      "total_tests": 8,
+      "blocked_count": 0,
+      "prevention_rate_percent": 0.0,
+      "target_met": false
+    }
+  },
+  "authorization_tests": {},
+  "rate_limiting_tests": {
+    "effectiveness": {
+      "total_requests": 50,
+      "rate_limited_count": 0,
+      "effectiveness_percent": 0.0,
+      "target_met": false
+    }
+  },
+  "input_validation_tests": {
+    "boundary_cases": {
+      "total_tests": 8,
+      "handled_count": 0,
+      "effectiveness_percent": 0.0,
+      "target_met": false
+    }
+  },
+  "security_summary": {
+    "total_test_categories": 6,
+    "passed_categories": 0,
+    "success_rate_percent": 0.0,
+    "overall_security_status": "NEEDS_ATTENTION",
+    "critical_issues": 6
+  },
+  "test_end": "2025-06-05T10:24:25.430588"
+}

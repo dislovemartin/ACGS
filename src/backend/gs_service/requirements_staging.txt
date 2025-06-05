@@ -1,0 +1,32 @@
+# GS Service Staging Requirements (without hashes)
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+pydantic[email]==2.11.5
+python-dotenv==1.1.0
+httpx==0.28.1
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+tenacity==8.2.3
+openai==1.82.0
+groq>=0.4.1
+prometheus_client==0.21.1
+numpy==1.26.4
+# LangGraph dependencies for workflow management
+langgraph>=0.2.6
+langchain>=0.3.19
+langchain-community>=0.3.19
+langchain-google-genai>=2.0.0
+redis>=5.0.0
+# Authentication dependencies
+python-jose[cryptography]==3.3.0
+PyJWT>=2.8.0
+passlib[bcrypt]==1.7.4
+# Additional shared dependencies
+email-validator==2.1.0
+# WINA (Weight Informed Neuron Activation) Dependencies
+scipy==1.11.4
+torch==2.7.1
+scikit-learn==1.5.1
+aiohttp>=3.8.0
+# OPA (Open Policy Agent) Integration Dependencies
+requests>=2.31.0
