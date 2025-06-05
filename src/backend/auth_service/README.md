@@ -35,3 +35,10 @@ Refer to `requirements.txt` for specific package versions. Core shared models an
 ## Local Development
 
 For general setup, refer to the main project `README.md` and `docs/developer_guide.md`. This service can be run using Uvicorn: `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
+
+## Configuration
+
+The service reads an `APP_ENV` environment variable to decide whether cookies
+should be marked as `Secure`. Set `APP_ENV=production` in production
+deployments so authentication cookies are only sent over HTTPS. Any other value
+(or if the variable is unset) disables the flag for local development.

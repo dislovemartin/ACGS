@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-from fastapi.responses import JSONResponse # Added JSONResponse import
+from fastapi.responses import JSONResponse  # Added JSONResponse import
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 import secrets
 from datetime import timedelta
 from typing import Optional
 from fastapi_csrf_protect import CsrfProtect
+import os
 
 from .. import crud, schemas
 from shared import models
@@ -15,10 +16,10 @@ from ..core.limiter import limiter # Import the limiter instance
 
 router = APIRouter()
 
-# Determine Secure flag based on environment (e.g., if APP_ENV is 'production')
-# For simplicity, let's assume Secure=True should be used if not explicitly in dev.
-# In a real app, this would be based on a config setting.
-SECURE_COOKIE = True # TODO: Make this configurable, e.g., os.getenv("APP_ENV") == "production" 
+# Determine Secure flag based on environment. If ``APP_ENV`` is set to
+# ``production`` the authentication cookies will include the ``Secure``
+# attribute. Any other value defaults to development behaviour.
+SECURE_COOKIE = os.getenv("APP_ENV", "development").lower() == "production"
 
 # This dependency will be moved to security.py or a similar place
 # For now, defined here to illustrate the change in get_current_user's signature
