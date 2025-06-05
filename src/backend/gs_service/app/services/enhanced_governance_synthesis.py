@@ -96,21 +96,33 @@ class EnhancedSynthesisResponse:
 
 class EnhancedGovernanceSynthesis:
     """
-    Enhanced governance synthesis service with comprehensive OPA integration.
-    
+    Enhanced governance synthesis service with comprehensive OPA integration and Phase 2 WINA optimization.
+
     Combines existing synthesis capabilities (WINA, AlphaEvolve, LangGraph)
     with new OPA-based policy validation, conflict detection, and compliance
     checking for robust governance rule synthesis.
+
+    Phase 2 Enhancements:
+    - Advanced WINA optimization with SVD transformation
+    - Real-time constitutional fidelity monitoring
+    - Multi-model ensemble coordination
+    - Performance target achievement (40-70% GFLOPs reduction, >95% accuracy)
     """
-    
+
     def __init__(self):
         self.policy_validator: Optional[PolicyValidationEngine] = None
         self.wina_synthesizer: Optional[WINARegoSynthesizer] = None
         self.alphaevolve_bridge: Optional[AlphaEvolveBridge] = None
         self.langgraph_workflow: Optional[PolicySynthesisWorkflow] = None
         self._initialized = False
-        
-        # Performance tracking
+
+        # Phase 2: Advanced WINA optimization components
+        self.wina_svd_transformer = None
+        self.constitutional_fidelity_monitor = None
+        self.multi_model_coordinator = None
+        self.performance_optimizer = None
+
+        # Performance tracking with Phase 2 metrics
         self.metrics = {
             "total_syntheses": 0,
             "successful_syntheses": 0,
@@ -118,31 +130,93 @@ class EnhancedGovernanceSynthesis:
             "average_synthesis_time_ms": 0.0,
             "average_validation_time_ms": 0.0,
             "opa_validation_enabled_count": 0,
-            "performance_threshold_violations": 0
+            "performance_threshold_violations": 0,
+            # Phase 2 metrics
+            "wina_optimization_success_rate": 0.0,
+            "gflops_reduction_achieved": 0.0,
+            "constitutional_fidelity_score": 0.0,
+            "svd_transformation_count": 0,
+            "multi_model_ensemble_usage": 0,
+            "target_performance_achieved": False
         }
     
     async def initialize(self):
-        """Initialize all synthesis and validation components."""
+        """Initialize all synthesis and validation components including Phase 2 WINA optimization."""
         if self._initialized:
             return
-        
+
         try:
             # Initialize OPA-based policy validator
             self.policy_validator = await get_policy_validator()
-            
+
             # Initialize existing synthesis components
             self.wina_synthesizer = get_wina_rego_synthesizer()
             self.alphaevolve_bridge = AlphaEvolveBridge()
             await self.alphaevolve_bridge.initialize()
-            
+
             # Initialize LangGraph workflow
             self.langgraph_workflow = PolicySynthesisWorkflow()
-            
+
+            # Phase 2: Initialize advanced WINA optimization components
+            await self._initialize_phase2_components()
+
             self._initialized = True
-            logger.info("Enhanced governance synthesis service initialized")
-            
+            logger.info("Enhanced governance synthesis service initialized with Phase 2 WINA optimization")
+
         except Exception as e:
             logger.error(f"Failed to initialize enhanced governance synthesis: {e}")
+            raise
+
+    async def _initialize_phase2_components(self):
+        """Initialize Phase 2 advanced WINA optimization components."""
+        try:
+            # Import Phase 2 components
+            from ...shared.wina.svd_transformation import SVDTransformation, WINAConfig
+            from ...shared.wina.constitutional_integration import ConstitutionalWINAIntegration
+            from ..core.multi_model_coordinator import MultiModelCoordinator
+            from ..core.performance_optimizer import WINAPerformanceOptimizer
+
+            # Initialize WINA SVD transformer
+            wina_config = WINAConfig(
+                svd_rank_reduction=0.7,  # Target 70% rank reduction
+                accuracy_threshold=0.95,  # Maintain >95% accuracy
+                constitutional_compliance_threshold=0.85,
+                enable_runtime_gating=True,
+                enable_performance_monitoring=True
+            )
+            self.wina_svd_transformer = SVDTransformation(wina_config)
+
+            # Initialize constitutional fidelity monitor
+            self.constitutional_fidelity_monitor = ConstitutionalWINAIntegration()
+            await self.constitutional_fidelity_monitor.initialize()
+
+            # Initialize multi-model coordinator for ensemble synthesis
+            self.multi_model_coordinator = MultiModelCoordinator({
+                "primary_model": "gemini-2.5-pro",
+                "fallback_models": ["gemini-2.0-flash", "gemini-2.5-flash"],
+                "ensemble_strategy": "weighted_voting",
+                "wina_optimization_enabled": True
+            })
+
+            # Initialize performance optimizer
+            self.performance_optimizer = WINAPerformanceOptimizer({
+                "target_gflops_reduction": 0.5,  # 50% GFLOPs reduction target
+                "accuracy_retention_threshold": 0.95,
+                "constitutional_compliance_threshold": 0.85,
+                "optimization_strategy": "adaptive"
+            })
+
+            logger.info("Phase 2 WINA optimization components initialized successfully")
+
+        except ImportError as e:
+            logger.warning(f"Phase 2 components not available: {e}")
+            # Set fallback implementations
+            self.wina_svd_transformer = None
+            self.constitutional_fidelity_monitor = None
+            self.multi_model_coordinator = None
+            self.performance_optimizer = None
+        except Exception as e:
+            logger.error(f"Failed to initialize Phase 2 components: {e}")
             raise
     
     async def synthesize_policy(self, request: EnhancedSynthesisRequest) -> EnhancedSynthesisResponse:
@@ -261,10 +335,54 @@ class EnhancedGovernanceSynthesis:
             )
     
     async def _execute_synthesis(self, request: EnhancedSynthesisRequest) -> Dict[str, Any]:
-        """Execute policy synthesis using available synthesis methods."""
+        """Execute policy synthesis using available synthesis methods with Phase 2 enhancements."""
         synthesis_results = {}
-        
-        # Method 1: WINA-optimized Rego synthesis (if enabled)
+
+        # Phase 2: Multi-model ensemble synthesis (if available)
+        if self.multi_model_coordinator and request.enable_wina_optimization:
+            try:
+                ensemble_result = await self.multi_model_coordinator.coordinate_synthesis(
+                    synthesis_request={
+                        "goal": request.synthesis_goal,
+                        "principles": request.constitutional_principles,
+                        "constraints": request.constraints,
+                        "context": request.context_data
+                    },
+                    enable_wina=True
+                )
+
+                if ensemble_result.synthesized_policy:
+                    # Apply performance optimization
+                    if self.performance_optimizer:
+                        optimization_result = await self.performance_optimizer.optimize_synthesis_performance(
+                            synthesis_context=request.context_data or {},
+                            current_metrics={
+                                "accuracy": ensemble_result.confidence_score,
+                                "constitutional_compliance": ensemble_result.constitutional_fidelity
+                            }
+                        )
+
+                        synthesis_results["optimization_result"] = optimization_result
+                        synthesis_results["phase2_enhanced"] = True
+
+                    synthesis_results["ensemble_result"] = ensemble_result
+                    synthesis_results["policy_content"] = ensemble_result.synthesized_policy
+                    synthesis_results["metadata"] = {
+                        "synthesis_method": "phase2_multi_model_ensemble",
+                        "contributing_models": ensemble_result.contributing_models,
+                        "ensemble_strategy": ensemble_result.ensemble_strategy_used.value,
+                        "confidence_score": ensemble_result.confidence_score,
+                        "constitutional_fidelity": ensemble_result.constitutional_fidelity,
+                        "wina_optimization_applied": ensemble_result.wina_optimization_applied,
+                        "phase2_features": ["multi_model_coordination", "performance_optimization"]
+                    }
+                    logger.info("Phase 2 multi-model ensemble synthesis completed successfully")
+                    return synthesis_results
+
+            except Exception as e:
+                logger.warning(f"Phase 2 ensemble synthesis failed, falling back to Phase 1: {e}")
+
+        # Method 1: WINA-optimized Rego synthesis (Phase 1 fallback)
         if request.enable_wina_optimization:
             try:
                 wina_result = await synthesize_rego_policy_with_wina(
@@ -274,7 +392,7 @@ class EnhancedGovernanceSynthesis:
                     context_data=request.context_data,
                     apply_wina=True
                 )
-                
+
                 if wina_result and wina_result.rego_content:
                     synthesis_results["wina_result"] = wina_result
                     synthesis_results["policy_content"] = wina_result.rego_content
@@ -285,7 +403,7 @@ class EnhancedGovernanceSynthesis:
                     }
                     logger.info("WINA synthesis completed successfully")
                     return synthesis_results
-                    
+
             except Exception as e:
                 logger.warning(f"WINA synthesis failed: {e}")
         
@@ -451,8 +569,71 @@ class EnhancedGovernanceSynthesis:
         ) / total
     
     def get_metrics(self) -> Dict[str, Any]:
-        """Get performance and usage metrics."""
-        return self.metrics.copy()
+        """Get performance and usage metrics including Phase 2 enhancements."""
+        base_metrics = self.metrics.copy()
+
+        # Add Phase 2 metrics if components are available
+        if self.multi_model_coordinator:
+            base_metrics["multi_model_performance"] = self.multi_model_coordinator.get_performance_summary()
+
+        if self.performance_optimizer:
+            base_metrics["wina_optimization_performance"] = self.performance_optimizer.get_performance_summary()
+
+        if self.constitutional_fidelity_monitor:
+            try:
+                current_fidelity = self.constitutional_fidelity_monitor.get_current_fidelity()
+                if current_fidelity:
+                    base_metrics["constitutional_fidelity"] = {
+                        "composite_score": current_fidelity.composite_score,
+                        "principle_coverage": current_fidelity.principle_coverage,
+                        "synthesis_success": current_fidelity.synthesis_success,
+                        "enforcement_reliability": current_fidelity.enforcement_reliability
+                    }
+            except Exception as e:
+                logger.warning(f"Failed to get constitutional fidelity metrics: {e}")
+
+        # Calculate Phase 2 achievement status
+        base_metrics["phase2_status"] = self._calculate_phase2_achievement()
+
+        return base_metrics
+
+    def _calculate_phase2_achievement(self) -> Dict[str, Any]:
+        """Calculate Phase 2 target achievement status."""
+        targets = {
+            "gflops_reduction_target": 0.5,  # 50% target
+            "accuracy_retention_target": 0.95,  # 95% target
+            "constitutional_compliance_target": 0.85,  # 85% target
+            "reliability_target": 0.999  # 99.9% target
+        }
+
+        achievements = {}
+
+        # Check current performance against targets
+        current_gflops = self.metrics.get("gflops_reduction_achieved", 0.0)
+        current_fidelity = self.metrics.get("constitutional_fidelity_score", 0.0)
+        current_success_rate = (
+            self.metrics["successful_syntheses"] / max(self.metrics["total_syntheses"], 1)
+        )
+
+        achievements["gflops_reduction_achieved"] = current_gflops >= targets["gflops_reduction_target"]
+        achievements["constitutional_compliance_achieved"] = current_fidelity >= targets["constitutional_compliance_target"]
+        achievements["reliability_achieved"] = current_success_rate >= targets["reliability_target"]
+
+        # Overall Phase 2 achievement
+        achievements["phase2_targets_met"] = all([
+            achievements["gflops_reduction_achieved"],
+            achievements["constitutional_compliance_achieved"],
+            achievements["reliability_achieved"]
+        ])
+
+        achievements["targets"] = targets
+        achievements["current_values"] = {
+            "gflops_reduction": current_gflops,
+            "constitutional_fidelity": current_fidelity,
+            "success_rate": current_success_rate
+        }
+
+        return achievements
     
     async def health_check(self) -> Dict[str, Any]:
         """Perform health check on all components."""

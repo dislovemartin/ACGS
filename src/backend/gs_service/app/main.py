@@ -39,6 +39,7 @@ from app.api.v1.fidelity_monitoring_websocket import router as fidelity_websocke
 from app.api.v1.constitutional_reports import router as constitutional_reports_router
 from app.api.v1.performance_monitoring import router as performance_monitoring_router
 from app.api.v1.enhanced_multi_model import router as enhanced_multi_model_router
+from app.api.v1.phase2_synthesis import router as phase2_synthesis_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,6 +70,7 @@ app.include_router(fidelity_websocket_router, prefix="/api/v1", tags=["Real-time
 app.include_router(constitutional_reports_router, prefix="/api/v1", tags=["Constitutional Reports"]) # Added Task 19.4
 app.include_router(performance_monitoring_router, prefix="/api/v1/performance", tags=["Performance Monitoring"]) # Added Phase 3
 app.include_router(enhanced_multi_model_router, prefix="/api/v1/enhanced-multi-model", tags=["Enhanced Multi-Model Validation"]) # Added AlphaEvolve Enhancement
+app.include_router(phase2_synthesis_router, prefix="/api/v1/phase2", tags=["Phase 2 AlphaEvolve-ACGS Enhanced Synthesis"]) # Added Phase 2 Integration
 
 @app.on_event("startup")
 async def on_startup():

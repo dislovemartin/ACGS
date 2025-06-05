@@ -1,0 +1,41 @@
+{
+  "start_time": "2025-06-05T18:26:47.237063",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "FAILED",
+  "steps_completed": [
+    {
+      "name": "staging_deployment",
+      "description": "Deploy to staging environment",
+      "script": "scripts/phase3_staging_deployment.sh",
+      "duration_seconds": 69.16477346420288,
+      "return_code": -2,
+      "timestamp": "2025-06-05T18:27:56.402666",
+      "status": "FAILED",
+      "stderr": "dis-prod  Started\n Container acgs-postgres-prod  Started\ntime=\"2025-06-05T18:27:10-04:00\" level=warning msg=\"/home/dislove/ACGS-master/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion\"\n Container acgs-opa-prod  Creating\n Container acgs-opa-prod  Created\n Container acgs-opa-prod  Starting\n Container acgs-opa-prod  Started\ntime=\"2025-06-05T18:27:49-04:00\" level=warning msg=\"/home/dislove/ACGS-master/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion\"\n Container acgs-redis-prod  Running\n Container acgs-postgres-prod  Running\n Container acgs-ac-service-prod  Creating\n Container acgs-ac-service-prod  Created\n Container acgs-redis-prod  Waiting\n Container acgs-postgres-prod  Waiting\n Container acgs-redis-prod  Healthy\n Container acgs-postgres-prod  Healthy\n Container acgs-ac-service-prod  Starting\n Container acgs-ac-service-prod  Started\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [
+    {
+      "timestamp": "2025-06-05T18:27:56.402944",
+      "level": "ERROR",
+      "message": "\u274c Deploy to staging environment failed (exit code: -2)"
+    },
+    {
+      "timestamp": "2025-06-05T18:27:56.402962",
+      "level": "ERROR",
+      "message": "Required step failed: staging_deployment"
+    },
+    {
+      "timestamp": "2025-06-05T18:27:56.402976",
+      "level": "ERROR",
+      "message": "\u274c ACGS Phase 3 Deployment Workflow FAILED"
+    }
+  ],
+  "final_status": "FAILED",
+  "end_time": "2025-06-05T18:27:56.402965",
+  "workflow_duration_seconds": 69.16537666320801,
+  "steps_executed": 4,
+  "steps_passed": 0
+}
