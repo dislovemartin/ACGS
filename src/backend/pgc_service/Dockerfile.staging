@@ -12,7 +12,7 @@ COPY shared/ ./shared/
 
 # Copy service requirements and install Python dependencies (without hash checking)
 COPY pgc_service/requirements_staging.txt .
-RUN pip install --no-cache-dir --no-deps -r requirements_staging.txt
+RUN pip install --no-cache-dir -r requirements_staging.txt
 
 # Copy service application code
 COPY pgc_service/ ./

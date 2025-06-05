@@ -15,14 +15,19 @@ from unittest.mock import Mock, AsyncMock, patch
 # Import test dependencies
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src', 'backend'))
+from pathlib import Path
 
-from ac_service.app.services.qec_conflict_resolver import (
+# Add project root to path for imports
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src/backend"))
+
+from src.backend.ac_service.app.services.qec_conflict_resolver import (
     QECConflictResolver,
     ConflictAnalysis,
     PatchResult
 )
-from shared.models import ACPrinciple, ACConflictResolution
+from src.backend.shared.models import ACPrinciple, ACConflictResolution
 
 
 class TestQECConflictResolver:

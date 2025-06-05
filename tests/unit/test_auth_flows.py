@@ -3,6 +3,13 @@ import pytest
 from httpx import AsyncClient
 from fastapi import status
 import uuid
+import sys
+from pathlib import Path
+
+# Add project root to path for imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src/backend"))
 
 from src.backend.auth_service.app.core.config import settings # For API prefixes
 from src.backend.shared.schemas.user import UserCreate # For type hinting if needed, though client sends JSON

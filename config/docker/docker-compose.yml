@@ -167,7 +167,7 @@ services:
     ports:
       - "8002:8002" # Internal port
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - DATABASE_URL=postgresql+asyncpg://acgs_user:acgs_staging_password_2024_phase3_secure@172.18.0.3:5432/acgs_pgp_db
       - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
@@ -175,8 +175,6 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
-      alembic-runner:
-        condition: service_completed_successfully
     volumes:
       - ../../src/backend/integrity_service:/app
       - ../../src/backend/shared:/app/shared

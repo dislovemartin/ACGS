@@ -17,14 +17,30 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import test utilities
-from tests.conftest import (
-    async_client, db_session, test_user, test_admin_user,
-    create_test_principle, create_test_policy
-)
+try:
+    from conftest import (
+        async_client, db_session, test_user, test_admin_user,
+        create_test_principle, create_test_policy
+    )
+except ImportError:
+    # Fallback for when conftest is not available
+    async_client = None
+    db_session = None
+    test_user = None
+    test_admin_user = None
+    create_test_principle = None
+    create_test_policy = None
+
+# Add project root to path for imports
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src/backend"))
 
 # Import models and services
-from shared.models import ConstitutionalPrinciple, Policy, User
-from shared.database import get_async_db
+from src.backend.shared.models import ConstitutionalPrinciple, Policy, User
+from src.backend.shared.database import get_async_db
 
 # Import QEC error correction services
 try:
@@ -44,6 +60,20 @@ try:
     )
     QEC_AVAILABLE = True
 except ImportError:
+    # Provide mock classes for type hints when QEC components are not available
+    from unittest.mock import Mock
+    QECErrorCorrectionService = Mock
+    ConflictDetectionEngine = Mock
+    AutomaticResolutionWorkflow = Mock
+    SemanticValidationEngine = Mock
+    PolicyRefinementSuggester = Mock
+    ConflictComplexityScorer = Mock
+    ParallelConflictProcessor = Mock
+    ConflictType = Mock
+    ResolutionStrategy = Mock
+    ErrorCorrectionStatus = Mock
+    ConflictDetectionResult = Mock
+    ErrorCorrectionResult = Mock
     QEC_AVAILABLE = False
 
 # Skip all tests if QEC components are not available

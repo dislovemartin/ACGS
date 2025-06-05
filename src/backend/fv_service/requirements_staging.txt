@@ -16,3 +16,10 @@ PyJWT>=2.8.0
 passlib[bcrypt]==1.7.4
 # Additional shared dependencies
 email-validator==2.1.0
+# Machine learning and bias detection dependencies
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+fairlearn==0.10.0
+# Redis dependency
+redis==5.0.1

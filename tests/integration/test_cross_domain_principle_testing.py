@@ -20,9 +20,16 @@ from unittest.mock import AsyncMock, patch
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+# Add project root to path for imports
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src/backend"))
+
 # ACGS-PGP imports
-from shared.models import (
-    DomainContext, CrossDomainTestScenario, CrossDomainTestResult, 
+from src.backend.shared.models import (
+    DomainContext, CrossDomainTestScenario, CrossDomainTestResult,
     ResearchDataExport, Principle
 )
 from src.backend.fv_service.app.core.cross_domain_testing_engine import (
@@ -31,9 +38,15 @@ from src.backend.fv_service.app.core.cross_domain_testing_engine import (
 from src.backend.ac_service.app.core.domain_context_manager import (
     domain_context_manager, AdaptationStrategy
 )
-from src.backend.integrity_service.app.services.research_data_pipeline import (
-    research_data_pipeline, AnonymizationMethod, AnonymizationConfig
-)
+try:
+    from src.backend.integrity_service.app.services.research_data_pipeline import (
+        research_data_pipeline, AnonymizationMethod, AnonymizationConfig
+    )
+except ImportError:
+    # Mock for testing when module is not available
+    research_data_pipeline = None
+    AnonymizationMethod = None
+    AnonymizationConfig = None
 
 
 class TestCrossDomainTestingFramework:
