@@ -4,6 +4,106 @@
 
 This guide provides step-by-step troubleshooting procedures for common issues in the ACGS-PGP production environment, including service failures, performance problems, authentication issues, and monitoring alerts.
 
+## 🚨 Current Critical Issues (Phase 2.3)
+
+### **Integrity Service Database DNS Resolution Failure**
+- **Status:** ❌ CRITICAL - Service Down
+- **Impact:** Cryptographic verification and PGP assurance unavailable
+- **Symptoms:** Integrity service fails to start, database connection errors
+- **Quick Fix:** See [Integrity Service DNS Resolution](#integrity-service-dns-resolution) section below
+
+### **Security Middleware Health Endpoint Blocking**
+- **Status:** ⚠️ MEDIUM - Workaround Available
+- **Impact:** Health monitoring may show false negatives
+- **Symptoms:** Health checks return 405 Method Not Allowed
+- **Quick Fix:** See [Security Middleware Configuration](#security-middleware-configuration) section below
+
+## Critical Issue Resolution
+
+### Integrity Service DNS Resolution
+
+#### Problem
+The Integrity Service fails to start due to database DNS resolution issues, preventing cryptographic verification and PGP assurance functionality.
+
+#### Symptoms
+```bash
+# Container logs show DNS resolution errors
+docker-compose logs integrity_service
+
+# Common error messages:
+# "could not translate host name to address: Name or service not known"
+# "connection to server failed: could not connect to server"
+```
+
+#### Solution
+```bash
+# 1. Check database connectivity from host
+ping postgres_db
+nslookup postgres_db
+
+# 2. Update database URL with direct IP (temporary fix)
+# In .env file, replace hostname with IP:
+DATABASE_URL=postgresql://acgs_user:password@172.18.0.2:5432/acgs_db
+
+# 3. Restart integrity service
+docker-compose restart integrity_service
+
+# 4. Verify service health
+curl http://localhost:8002/health
+```
+
+#### Permanent Fix
+```bash
+# 1. Update Docker Compose network configuration
+# Add explicit network aliases in docker-compose.yml:
+services:
+  postgres_db:
+    networks:
+      acgs_network:
+        aliases:
+          - postgres
+          - database
+
+# 2. Update service dependencies
+# Ensure integrity_service depends_on postgres_db
+```
+
+### Security Middleware Configuration
+
+#### Problem
+Security middleware blocks health check endpoints, causing monitoring to show false negatives.
+
+#### Symptoms
+```bash
+# Health checks return 405 Method Not Allowed
+curl -X GET http://localhost:8002/health
+# Response: {"error": "Method Not Allowed", "detail": "Method GET not allowed for /health"}
+```
+
+#### Solution
+```bash
+# 1. Update security middleware configuration
+# In src/backend/shared/security_middleware.py, whitelist health endpoints
+
+# 2. Restart affected services
+docker-compose restart integrity_service gs_service fv_service pgc_service
+
+# 3. Verify health checks work
+curl http://localhost:8001/health  # AC Service
+curl http://localhost:8002/health  # Integrity Service
+curl http://localhost:8003/health  # FV Service
+```
+
+#### Configuration Update
+```python
+# In security_middleware.py, ensure health endpoints are whitelisted:
+HEALTH_ENDPOINTS = ["/health", "/api/health", "/api/v1/health"]
+
+# Skip security validation for health checks
+if request.url.path in HEALTH_ENDPOINTS:
+    return await call_next(request)
+```
+
 ## Quick Diagnostic Commands
 
 ### System Health Check
