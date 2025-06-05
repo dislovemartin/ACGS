@@ -44,7 +44,7 @@ except ImportError as e:
 from .opa_client import OPAClient, PolicyEvaluationRequest, PolicyEvaluationResponse
 from .incremental_compiler import IncrementalCompiler, CompilationMetrics
 from .wina_policy_compiler import WINAPolicyCompiler, WINACompilationResult
-from ..models.policy_models import IntegrityPolicyRule
+from ..schemas import IntegrityPolicyRule
 from .. import schemas
 
 logger = logging.getLogger(__name__)
