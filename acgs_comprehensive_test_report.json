@@ -1,15 +1,24 @@
 {
   "summary": {
     "total_tests": 15,
+<<<<<<< HEAD
     "passed": 6,
     "failed": 9,
     "skipped": 0,
     "success_rate": 40.0,
     "avg_response_time": 0.08170413970947266
+=======
+    "passed": 0,
+    "failed": 15,
+    "skipped": 0,
+    "success_rate": 0.0,
+    "avg_response_time": 0.07238192558288574
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
   },
   "test_results": [
     {
       "test_name": "Authentication Service Health Check",
+<<<<<<< HEAD
       "status": "PASS",
       "response_time": 0.004174947738647461,
       "timestamp": "2025-06-05T02:13:55.467292",
@@ -19,34 +28,48 @@
           "status": "ok",
           "message": "Auth Service is operational."
         }
+=======
+      "status": "FAIL",
+      "response_time": 0.0172271728515625,
+      "timestamp": "2025-06-05T03:10:17.808342",
+      "details": {
+        "error": "Cannot connect to host localhost:8000 ssl:default [Connect call failed ('127.0.0.1', 8000)]"
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       }
     },
     {
       "test_name": "AC Service Health Check",
+<<<<<<< HEAD
       "status": "PASS",
       "response_time": 0.0015554428100585938,
       "timestamp": "2025-06-05T02:13:55.468990",
+=======
+      "status": "FAIL",
+      "response_time": 0.005218982696533203,
+      "timestamp": "2025-06-05T03:10:17.813929",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "status_code": 200,
-        "response": {
-          "status": "ok"
-        }
+        "error": "Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]"
       }
     },
     {
       "test_name": "Integrity Service Health Check",
+<<<<<<< HEAD
       "status": "PASS",
       "response_time": 0.00141143798828125,
       "timestamp": "2025-06-05T02:13:55.470542",
+=======
+      "status": "FAIL",
+      "response_time": 0.004872322082519531,
+      "timestamp": "2025-06-05T03:10:17.819139",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "status_code": 200,
-        "response": {
-          "status": "ok"
-        }
+        "error": "Cannot connect to host localhost:8002 ssl:default [Connect call failed ('127.0.0.1', 8002)]"
       }
     },
     {
       "test_name": "FV Service Health Check",
+<<<<<<< HEAD
       "status": "PASS",
       "response_time": 0.001468658447265625,
       "timestamp": "2025-06-05T02:13:55.472159",
@@ -62,10 +85,18 @@
             "api_version": "v1"
           }
         }
+=======
+      "status": "FAIL",
+      "response_time": 0.0057451725006103516,
+      "timestamp": "2025-06-05T03:10:17.825235",
+      "details": {
+        "error": "Cannot connect to host localhost:8003 ssl:default [Connect call failed ('127.0.0.1', 8003)]"
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       }
     },
     {
       "test_name": "GS Service Health Check",
+<<<<<<< HEAD
       "status": "PASS",
       "response_time": 0.0453343391418457,
       "timestamp": "2025-06-05T02:13:55.517626",
@@ -93,15 +124,46 @@
           },
           "message": "Critical dependencies unhealthy: ac_service"
         }
+=======
+      "status": "FAIL",
+      "response_time": 0.005488395690917969,
+      "timestamp": "2025-06-05T03:10:17.834552",
+      "details": {
+        "error": "Cannot connect to host localhost:8004 ssl:default [Connect call failed ('127.0.0.1', 8004)]"
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       }
     },
     {
       "test_name": "PGC Service Health Check",
+<<<<<<< HEAD
       "status": "FAIL",
       "response_time": 0.003635883331298828,
       "timestamp": "2025-06-05T02:13:55.521450",
+=======
+      "status": "FAIL",
+      "response_time": 0.0031042098999023438,
+      "timestamp": "2025-06-05T03:10:17.838072",
       "details": {
-        "error": "Server disconnected"
+        "error": "Cannot connect to host localhost:8005 ssl:default [Connect call failed ('127.0.0.1', 8005)]"
+      }
+    },
+    {
+      "test_name": "Authentication Flow",
+      "status": "FAIL",
+      "response_time": 0.0040187835693359375,
+      "timestamp": "2025-06-05T03:10:17.842402",
+      "details": {
+        "error": "Cannot connect to host localhost:8000 ssl:default [Connect call failed ('127.0.0.1', 8000)]"
+      }
+    },
+    {
+      "test_name": "AC Service CRUD Operations",
+      "status": "FAIL",
+      "response_time": 0.0039937496185302734,
+      "timestamp": "2025-06-05T03:10:17.847110",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
+      "details": {
+        "error": "Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]"
       }
     },
     {
@@ -127,63 +189,92 @@
     {
       "test_name": "Integrity Service Policy Storage",
       "status": "FAIL",
+<<<<<<< HEAD
       "response_time": 0.002590656280517578,
       "timestamp": "2025-06-05T02:13:55.626739",
+=======
+      "response_time": 0.002876758575439453,
+      "timestamp": "2025-06-05T03:10:17.850427",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "status_code": 401,
-        "error": "Failed to store policy"
+        "error": "Cannot connect to host localhost:8002 ssl:default [Connect call failed ('127.0.0.1', 8002)]"
       }
     },
     {
       "test_name": "FV Service Z3 Integration",
       "status": "FAIL",
+<<<<<<< HEAD
       "response_time": 0.0016183853149414062,
       "timestamp": "2025-06-05T02:13:55.628508",
+=======
+      "response_time": 0.003063678741455078,
+      "timestamp": "2025-06-05T03:10:17.854279",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "status_code": 401,
-        "error": "Z3 verification failed"
+        "error": "Cannot connect to host localhost:8003 ssl:default [Connect call failed ('127.0.0.1', 8003)]"
       }
     },
     {
       "test_name": "GS Service LLM Integration",
       "status": "FAIL",
+<<<<<<< HEAD
       "response_time": 0.00960087776184082,
       "timestamp": "2025-06-05T02:13:55.638232",
+=======
+      "response_time": 0.0027437210083007812,
+      "timestamp": "2025-06-05T03:10:17.857337",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "status_code": 422,
-        "error": "Policy synthesis failed"
+        "error": "Cannot connect to host localhost:8004 ssl:default [Connect call failed ('127.0.0.1', 8004)]"
       }
     },
     {
       "test_name": "PGC Service OPA Integration",
       "status": "FAIL",
+<<<<<<< HEAD
       "response_time": 0.0004589557647705078,
       "timestamp": "2025-06-05T02:13:55.638855",
       "details": {
         "error": "[Errno 104] Connection reset by peer"
+=======
+      "response_time": 0.002454996109008789,
+      "timestamp": "2025-06-05T03:10:17.863674",
+      "details": {
+        "error": "Cannot connect to host localhost:8005 ssl:default [Connect call failed ('127.0.0.1', 8005)]"
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       }
     },
     {
       "test_name": "Cross-Service Integration Pipeline",
       "status": "FAIL",
+<<<<<<< HEAD
       "response_time": 0.0017995834350585938,
       "timestamp": "2025-06-05T02:13:55.640904",
+=======
+      "response_time": 0.0030739307403564453,
+      "timestamp": "2025-06-05T03:10:17.867680",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "error": "Failed to create principle: 401"
+        "error": "Cannot connect to host localhost:8001 ssl:default [Connect call failed ('127.0.0.1', 8001)]"
       }
     },
     {
       "test_name": "Phase 1 Features",
       "status": "FAIL",
+<<<<<<< HEAD
       "response_time": 0.0035331249237060547,
       "timestamp": "2025-06-05T02:13:55.644690",
+=======
+      "response_time": 0.002285003662109375,
+      "timestamp": "2025-06-05T03:10:17.870446",
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
       "details": {
-        "constitutional_prompting": false,
-        "meta_rules": false
+        "error": "Cannot connect to host localhost:8004 ssl:default [Connect call failed ('127.0.0.1', 8004)]"
       }
     },
     {
       "test_name": "Performance Metrics",
+<<<<<<< HEAD
       "status": "PASS",
       "response_time": 1.0461773872375488,
       "timestamp": "2025-06-05T02:13:56.691013",
@@ -204,4 +295,15 @@
     }
   ],
   "timestamp": "2025-06-05T02:13:56.691255"
+=======
+      "status": "FAIL",
+      "response_time": 1.019562005996704,
+      "timestamp": "2025-06-05T03:10:18.890483",
+      "details": {
+        "error": "division by zero"
+      }
+    }
+  ],
+  "timestamp": "2025-06-05T03:10:18.890999"
+>>>>>>> f879f0a10d250ecfd7d77cac3917b8c9c76d5e8b
 }

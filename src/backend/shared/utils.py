@@ -147,7 +147,7 @@ class DatabaseConfig(BaseModel):
     @field_validator('url')
     @classmethod
     def validate_database_url(cls, v):
-        if not v.startswith(('postgresql://', 'postgresql+asyncpg://', 'sqlite://')):
+        if not v.startswith(('postgresql://', 'postgresql+asyncpg://', 'sqlite://', 'sqlite+aiosqlite://')):
             raise ValueError("Database URL must use supported scheme")
         return v
 

@@ -73,7 +73,8 @@ class BiasDetector:
         # Calculate overall bias assessment
         overall_bias_score = self._calculate_overall_bias_score(all_results)
         risk_level = self._determine_risk_level(overall_bias_score)
-        human_review_required = risk_level in ["high", "critical"]
+        # Human review required if risk level is high/critical OR any individual result requires review
+        human_review_required = risk_level in ["high", "critical"] or any(r.requires_human_review for r in all_results)
         
         # Generate summary and recommendations
         summary = self._generate_bias_summary(all_results, overall_bias_score, risk_level)
@@ -304,7 +305,7 @@ class BiasDetector:
             confidence=0.75,
             explanation=explanation,
             recommendations=recommendations,
-            requires_human_review=bias_score > 0.6
+            requires_human_review=bias_score > 0.3  # Lower threshold for human review
         )
 
     async def _counterfactual_bias_detection(

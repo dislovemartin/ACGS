@@ -9,12 +9,13 @@ from typing import Optional, List
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta # Added timedelta
+import uuid # Added uuid
 from pydantic import BaseModel
 
 # Environment variables
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth_service:8000")
-SECRET_KEY = os.getenv("SECRET_KEY", "your_strong_jwt_secret_key_for_auth_service")
+SECRET_KEY = os.getenv("SECRET_KEY", "acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing") # Updated default
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 # OAuth2 scheme for token extraction
@@ -154,21 +155,49 @@ require_internal_service = RoleChecker(allowed_roles=["internal_service", "admin
 
 async def get_service_token() -> str:
     """
-    Get a service-to-service authentication token
-    This would typically be a long-lived token or service account token
-    For now, we'll use a placeholder that services can recognize
+    Generates a long-lived JWT token for internal service-to-service authentication.
+    
+    The token includes roles for internal service and admin, a unique identifier, and expires in one year.
+    
+    Returns:
+        A JWT token string for authenticating internal service requests.
     """
     # In production, this would authenticate with the auth service
     # and get a proper service token
-    return "internal_service_token"
 
-def get_auth_headers(token: Optional[str] = None) -> dict:
+    # Use the same SECRET_KEY and ALGORITHM as defined globally for consistency
+    # Ensure SECRET_KEY uses the updated default if the environment variable is not set
+    effective_secret_key = os.getenv("SECRET_KEY", "acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing")
+
+    expiration_delta = timedelta(days=365) # Long expiry for this placeholder
+    expire = datetime.now(timezone.utc) + expiration_delta
+    payload = {
+        "sub": "internal_service_user",
+        "user_id": 0, # Or a conventional ID for internal services
+        "roles": ["internal_service", "admin"], # Include admin as per RoleChecker
+        "type": "access", # Mark as an access token
+        "exp": expire,
+        "jti": str(uuid.uuid4()) # Unique token identifier
+    }
+    encoded_jwt = jwt.encode(payload, effective_secret_key, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_auth_headers(token: Optional[str] = None) -> dict: # Changed to async
     """
-    Get authentication headers for service-to-service calls
+    Asynchronously generates HTTP authorization headers with a Bearer token.
+    
+    If no token is provided, generates a long-lived internal service JWT token. If a token is provided, ensures it is properly formatted as a Bearer token.
+    
+    Args:
+        token: Optional JWT token string to use for the Authorization header.
+    
+    Returns:
+        A dictionary containing the Authorization header with the Bearer token.
     """
     if not token:
         # Get service token if none provided
-        return {"Authorization": "Bearer internal_service_token"}
+        service_token = await get_service_token() # Await the async call
+        return {"Authorization": f"Bearer {service_token}"}
     
     if not token.startswith("Bearer "):
         token = f"Bearer {token}"
