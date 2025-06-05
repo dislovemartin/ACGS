@@ -12,16 +12,16 @@ from typing import Dict, List, Any, Optional
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from pydantic import BaseModel, Field
 
-from src.backend.ec_service.app.core.wina_oversight_coordinator import (
+from app.core.wina_oversight_coordinator import (
     WINAECOversightCoordinator,
     ECOversightRequest,
     WINAOversightResult,
     ECOversightContext,
     ECOversightStrategy
 )
-from src.backend.ec_service.app.services.ac_client import ac_service_client
-from src.backend.ec_service.app.services.gs_client import gs_service_client
-from src.backend.ec_service.app.services.pgc_client import pgc_service_client
+from app.services.ac_client import ac_service_client
+from app.services.gs_client import gs_service_client
+from app.services.pgc_client import pgc_service_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -70,7 +70,7 @@ class BatchOversightResponseModel(BaseModel):
 
 def get_wina_coordinator() -> WINAECOversightCoordinator:
     """Dependency to get WINA oversight coordinator."""
-    from src.backend.ec_service.app.main import get_wina_coordinator
+    from app.main import get_wina_coordinator
     return get_wina_coordinator()
 
 

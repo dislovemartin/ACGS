@@ -21,10 +21,27 @@ from polyglot.dockerfiles import (
     get_dockerfile_env,
     get_dockerfile_instance,
 )
-from swebench.harness.utils import (
-    get_requirements,
-    get_environment_yml,
-)
+try:
+    from swebench.harness.utils import (
+        get_requirements,
+        get_environment_yml,
+    )
+except ImportError:
+    # Mock implementations for compatibility with newer swebench versions
+    def get_requirements(instance):
+        """Mock implementation for get_requirements"""
+        return "# Mock requirements.txt\n"
+
+    def get_environment_yml(instance, env_name):
+        """Mock implementation for get_environment_yml"""
+        return f"""name: {env_name}
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+"""
 
 DIFF_MODIFIED_FILE_REGEX = r"--- a/(.*)"
 

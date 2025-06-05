@@ -17,8 +17,10 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 
-# Import metrics functionality
+# Import metrics functionality and enhanced security
 from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 # Temporarily create a simple test router to debug the issue
 from fastapi import APIRouter
 test_router = APIRouter()
@@ -77,15 +79,18 @@ async def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError
         content={"detail": exc.message},
     )
 
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
+
 # Add CORS middleware
-cors_origins = settings.cors_origins_list
+cors_origins = security_config.get_cors_origins()
 if cors_origins:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=True, # Crucial for cookies, including CSRF and auth tokens
-        allow_methods=["*"],
-        allow_headers=["*", "X-CSRF-Token"], # Ensure "X-CSRF-Token" or custom CSRF header is allowed
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*", "X-CSRF-Token", "Authorization"], # Ensure required headers are allowed
     )
 
 # Include the test router to debug the issue

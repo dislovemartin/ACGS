@@ -12,7 +12,7 @@ from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Import password functions from separate module to avoid circular imports
-from app.core.password import verify_password, get_password_hash
+from .password import verify_password, get_password_hash
 
 # Adjust path if shared is not directly under a dir in sys.path
 # This assumes 'acgspcp-main' is the project root and is in PYTHONPATH
@@ -28,8 +28,8 @@ except ImportError: # Fallback for different execution contexts (e.g. tests vs u
     from shared.models import User
 
 
-from app.core.config import settings
-from app.crud import crud_user # Ensure this import works (might need to adjust based on final structure)
+from .config import settings
+from ..crud import crud_user  # Ensure this import works
 
 # --- Pydantic model for token payload validation ---
 class TokenPayload(BaseModel):

@@ -1,15 +1,15 @@
 # Fdb version 4
-["bibtex main"] 1749102645.43198 "main.aux" "main.bbl" "main" 1749102665.73583 0
+["bibtex main"] 1749102645.43198 "main.aux" "main.bbl" "main" 1749119648.37368 0
   "./AlphaEvolve-ACGS.bib" 1749084072.28868 15921 a8148c8119f8588ddd40c9956ef9990c ""
   "/usr/share/texlive/texmf-dist/bibtex/bst/acmart/ACM-Reference-Format.bst" 1680299675 90332 18dc4e5c9b5c2ddd337e9f97727d04f1 ""
-  "main.aux" 1749102665.45561 44824 3169b5121e389f39c551b215aeb28206 "pdflatex"
+  "main.aux" 1749119648.09048 44824 3169b5121e389f39c551b215aeb28206 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1749102663.781 "/home/dislove/ACGS-master/docs/research/AlphaEvolve-ACGS_arXiv_submission/arxiv_submission_package/main.tex" "main.pdf" "main" 1749102665.73605 0
+["pdflatex"] 1749119646.36558 "/home/dislove/ACGS-master/docs/research/AlphaEvolve-ACGS_arXiv_submission/arxiv_submission_package/main.tex" "main.pdf" "main" 1749119648.3739 0
   "/etc/texmf/web2c/texmf.cnf" 1746903930.98296 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/dislove/ACGS-master/docs/research/AlphaEvolve-ACGS_arXiv_submission/arxiv_submission_package/main.tex" 1749102663.57562 145166 c48674402b8a804b402a66008ce0664c ""
+  "/home/dislove/ACGS-master/docs/research/AlphaEvolve-ACGS_arXiv_submission/arxiv_submission_package/main.tex" 1749119645.99448 145158 c0e8e86bf4307e4e9cd29e67cb95868b ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-4.enc" 1558214095 7693 0f2dce6d313c82989ec3a67fc24df2a0 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc" 1490131464 2921 8ca0eb0831f9bc5da080d3697cfe67bf ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc" 1490131464 2933 9ad527ce78d7c5fa0a642dead095f172 ""
@@ -265,17 +265,17 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1748896237.34129 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1747083669 8211355 bc6dcf965fb56e15832c202c29bbd44b ""
-  "comment.cut" 1749102665.28361 716 579f5212ea7a3de289bdcf4c0f5b48f6 "pdflatex"
+  "comment.cut" 1749119647.92348 716 579f5212ea7a3de289bdcf4c0f5b48f6 "pdflatex"
   "figs/Figure_1_Appeal_and_Dispute_Resolution_Workflow.png" 1749087164.57223 196410 615b9fb80e2a21e27ab83fcb020fa003 ""
   "figs/Figure_2_Enhanced_Explainability_Dashboard_Mockup.png" 1749065961.02549 338978 6b7f24bef25ef1604b243331bb12d26e ""
   "figs/Figure_3_Rule_Synthesis_Success_Rate_per_Principle.png" 1749065961.02348 1276323 95a57afed17aded3a2f2afddf0b11545 ""
   "figs/Figure_4_Constitutional_Compliance_Over_Generations.png" 1749065646.67164 1354235 d8f0cdbf924c57cad0a6f47951af4376 ""
   "figs/Figure_5_compliance_generations.png" 1749065961.02249 189539 abc9ae63edd8bedb85082eea9bcf2025 ""
   "figs/architecture_overview.png" 1749086942.69545 1709584 5e6f3016d4e663a9633d1efb05a5d032 ""
-  "main.aux" 1749102665.45561 44824 3169b5121e389f39c551b215aeb28206 "pdflatex"
+  "main.aux" 1749119648.09048 44824 3169b5121e389f39c551b215aeb28206 "pdflatex"
   "main.bbl" 1749102645.49172 24371 2f72cf59a458db63fb196f75fbe57556 "bibtex main"
-  "main.out" 1749102665.45761 5723 28ab4fbfd5668fe9be08d98987719820 "pdflatex"
-  "main.tex" 1749102663.57562 145166 c48674402b8a804b402a66008ce0664c ""
+  "main.out" 1749119648.09148 5723 28ab4fbfd5668fe9be08d98987719820 "pdflatex"
+  "main.tex" 1749119645.99448 145158 c0e8e86bf4307e4e9cd29e67cb95868b ""
   (generated)
   "comment.cut"
   "main.aux"

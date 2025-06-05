@@ -1,0 +1,41 @@
+{
+  "start_time": "2025-06-05T07:00:46.636925",
+  "environment": "staging",
+  "phase": "3",
+  "workflow_status": "FAILED",
+  "steps_completed": [
+    {
+      "name": "staging_deployment",
+      "description": "Deploy to staging environment",
+      "script": "scripts/phase3_staging_deployment.sh",
+      "duration_seconds": 0.05249929428100586,
+      "return_code": 127,
+      "timestamp": "2025-06-05T07:00:46.689613",
+      "status": "FAILED",
+      "stderr": "scripts/phase3_staging_deployment.sh: \u7b2c 77 \u884c\uff1a [: : \u9700\u8981\u6574\u6570\u8868\u8fbe\u5f0f\n/home/dislove/ACGS-master/config/env/staging.env: \u884c 73: 2: \u672a\u627e\u5230\u547d\u4ee4\n"
+    }
+  ],
+  "performance_metrics": {},
+  "issues": [
+    {
+      "timestamp": "2025-06-05T07:00:46.689641",
+      "level": "ERROR",
+      "message": "\u274c Deploy to staging environment failed (exit code: 127)"
+    },
+    {
+      "timestamp": "2025-06-05T07:00:46.689656",
+      "level": "ERROR",
+      "message": "Required step failed: staging_deployment"
+    },
+    {
+      "timestamp": "2025-06-05T07:00:46.689670",
+      "level": "ERROR",
+      "message": "\u274c ACGS Phase 3 Deployment Workflow FAILED"
+    }
+  ],
+  "final_status": "FAILED",
+  "end_time": "2025-06-05T07:00:46.689658",
+  "workflow_duration_seconds": 0.05257248878479004,
+  "steps_executed": 2,
+  "steps_passed": 0
+}

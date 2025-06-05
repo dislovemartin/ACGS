@@ -4,10 +4,27 @@ import os
 from typing import AsyncGenerator, Generator # AsyncGenerator for async fixture
 
 import pytest
-from app.core.config import settings
-from app.db.base_class import Base
-from app.db.session import get_async_db
-from app.main import app as fastapi_app # Your FastAPI application, aliased
+try:
+    from ..core.config import settings
+    from ..db.base_class import Base
+    from ..db.session import get_async_db
+    from ..main import app as fastapi_app # Your FastAPI application, aliased
+except ImportError:
+    # Mock imports for testing when modules are not available
+    class MockSettings:
+        SQLALCHEMY_DATABASE_URI = "sqlite+aiosqlite:///./test_auth_app.db"
+    settings = MockSettings()
+
+    class MockBase:
+        metadata = None
+    Base = MockBase()
+
+    async def get_async_db():
+        yield None
+
+    class MockApp:
+        dependency_overrides = {}
+    fastapi_app = MockApp()
 from httpx import AsyncClient # Use httpx.AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker

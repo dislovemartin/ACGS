@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 import pytest
-from app.core import security  # Assuming your security functions are here
-from app.core.config import settings
+from ..core import security  # Assuming your security functions are here
+from ..core.config import settings
 
 # from app.schemas.token import TokenPayload # Unused, adjust if needed
 

@@ -4,9 +4,9 @@ from httpx import AsyncClient
 from fastapi import status
 import uuid
 
-from app.core.config import settings # For API prefixes
+from ..core.config import settings # For API prefixes
 from shared.schemas.user import UserCreate # For type hinting if needed, though client sends JSON
-from app.core import security # For direct calls if needed for test setup, e.g. password hashing
+from ..core import security # For direct calls if needed for test setup, e.g. password hashing
 
 # Pytest marker for async tests
 pytestmark = pytest.mark.asyncio

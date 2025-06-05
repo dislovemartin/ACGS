@@ -1,19 +1,25 @@
 import os
 import httpx
 from fastapi import FastAPI
-from src.backend.gs_service.app.api.v1.synthesize import router as synthesize_router
-from src.backend.gs_service.app.api.v1.policy_management import router as policy_management_router # Added
-from src.backend.gs_service.app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router # Added Phase 1
-from src.backend.gs_service.app.api.v1.alphaevolve_integration import router as alphaevolve_router # Added Phase 2
-from src.backend.gs_service.app.api.v1.mab_optimization import router as mab_router # Added Task 5 MAB
-from src.backend.gs_service.app.api.v1.wina_rego_synthesis import router as wina_rego_router # Added Task 17.5 WINA Rego
-from src.backend.gs_service.app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance # Added for LLM Reliability Dashboard
-from src.backend.gs_service.app.api.v1.multi_model_synthesis import router as multi_model_synthesis_router # Added Task 18 Multi-Model Enhancement
-from src.backend.gs_service.app.api.v1.fidelity_monitoring_websocket import router as fidelity_websocket_router # Added Task 19 Real-time Monitoring
-from src.backend.gs_service.app.api.v1.constitutional_reports import router as constitutional_reports_router # Added Task 19.4 Performance Dashboard Integration
-from src.backend.gs_service.app.services.ac_client import ac_service_client
-from src.backend.gs_service.app.services.integrity_client import integrity_service_client
-from src.backend.gs_service.app.services.fv_client import fv_service_client # Added FV client for shutdown
+from app.api.v1.synthesize import router as synthesize_router
+from app.api.v1.policy_management import router as policy_management_router # Added
+from app.api.v1.constitutional_synthesis import router as constitutional_synthesis_router # Added Phase 1
+from app.api.v1.alphaevolve_integration import router as alphaevolve_router # Added Phase 2
+from app.api.v1.mab_optimization import router as mab_router # Added Task 5 MAB
+from app.api.v1.wina_rego_synthesis import router as wina_rego_router # Added Task 17.5 WINA Rego
+from app.api.v1.enhanced_synthesis import router as enhanced_synthesis_router # Added Phase 2 OPA Integration
+from app.api.v1.reliability_metrics import router as reliability_metrics_router, llm_reliability_framework_instance # Added for LLM Reliability Dashboard
+from app.api.v1.multi_model_synthesis import router as multi_model_synthesis_router # Added Task 18 Multi-Model Enhancement
+from app.api.v1.fidelity_monitoring_websocket import router as fidelity_websocket_router # Added Task 19 Real-time Monitoring
+from app.api.v1.constitutional_reports import router as constitutional_reports_router # Added Task 19.4 Performance Dashboard Integration
+from app.api.v1.performance_monitoring import router as performance_monitoring_router # Added Phase 3 Performance Monitoring
+from app.services.ac_client import ac_service_client
+from app.services.integrity_client import integrity_service_client
+from app.services.fv_client import fv_service_client # Added FV client for shutdown
+
+# Phase 3: Performance Optimization and Security Compliance imports
+from app.services.performance_monitor import get_performance_monitor
+from app.services.security_compliance import get_security_service
 from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
@@ -35,10 +41,12 @@ app.include_router(constitutional_synthesis_router, prefix="/api/v1/constitution
 app.include_router(alphaevolve_router, prefix="/api/v1/alphaevolve", tags=["AlphaEvolve Integration"]) # Added Phase 2
 app.include_router(mab_router, prefix="/api/v1/mab", tags=["Multi-Armed Bandit Optimization"]) # Added Task 5
 app.include_router(wina_rego_router, prefix="/api/v1", tags=["WINA Rego Synthesis"]) # Added Task 17.5
+app.include_router(enhanced_synthesis_router, prefix="/api/v1/enhanced", tags=["Enhanced Governance Synthesis with OPA"]) # Added Phase 2
 app.include_router(reliability_metrics_router, prefix="/api/v1/reliability", tags=["LLM Reliability Metrics"]) # Added for LLM Reliability Dashboard
 app.include_router(multi_model_synthesis_router, prefix="/api/v1/multi-model", tags=["Multi-Model Policy Synthesis"]) # Added Task 18
 app.include_router(fidelity_websocket_router, prefix="/api/v1", tags=["Real-time Fidelity Monitoring"]) # Added Task 19
 app.include_router(constitutional_reports_router, prefix="/api/v1", tags=["Constitutional Reports"]) # Added Task 19.4
+app.include_router(performance_monitoring_router, prefix="/api/v1/performance", tags=["Performance Monitoring"]) # Added Phase 3
 
 @app.on_event("startup")
 async def on_startup():
@@ -49,12 +57,32 @@ async def on_startup():
     await llm_reliability_framework_instance.initialize()
     print("LLM Reliability Framework initialized.")
 
+    # Phase 3: Initialize performance monitoring and security services
+    try:
+        performance_monitor = get_performance_monitor()
+        await performance_monitor.initialize()
+        print("Performance monitoring initialized.")
+
+        security_service = get_security_service()
+        print("Security compliance service initialized.")
+    except Exception as e:
+        print(f"Warning: Failed to initialize Phase 3 services: {e}")
+
 @app.on_event("shutdown")
 async def on_shutdown():
     # Gracefully close HTTPX clients
     await ac_service_client.close()
     await integrity_service_client.close()
     await fv_service_client.close() # Close FV client
+
+    # Phase 3: Shutdown performance monitoring and security services
+    try:
+        performance_monitor = get_performance_monitor()
+        await performance_monitor.shutdown()
+        print("Performance monitoring shutdown.")
+    except Exception as e:
+        print(f"Warning: Failed to shutdown Phase 3 services: {e}")
+
     print("GS Service shutdown: HTTP clients closed.")
 
 @app.get("/")

@@ -6,6 +6,7 @@ from typing import AsyncGenerator, Generator
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 
 # Add the src directory to Python path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -54,7 +55,7 @@ def event_loop() -> Generator:
     loop.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture(scope="session", autouse=True)
 async def initialize_test_database():
     """Initialize test DB: creates tables before tests, drops them after."""
     if not ASYNC_DEPS_AVAILABLE or not async_test_engine:
@@ -81,9 +82,21 @@ def mock_client():
     return MockClient()
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture()
 async def async_client():
     """Get an AsyncClient for testing if dependencies are available."""
+    if not ASYNC_DEPS_AVAILABLE:
+        pytest.skip("AsyncClient dependencies not available")
+
+    # This would need to be configured per service
+    # For now, provide a basic client
+    async with AsyncClient(base_url="http://testserver") as c:
+        yield c
+
+
+@pytest_asyncio.fixture()
+async def client():
+    """Alias for async_client to match auth service test expectations."""
     if not ASYNC_DEPS_AVAILABLE:
         pytest.skip("AsyncClient dependencies not available")
 

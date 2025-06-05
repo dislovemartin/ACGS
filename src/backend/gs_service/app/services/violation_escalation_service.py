@@ -31,14 +31,14 @@ from shared.models import (
 from shared.database import get_async_db
 
 # Import notification services
-from src.backend.gs_service.app.services.stakeholder_engagement import (
+from app.services.stakeholder_engagement import (
     StakeholderNotificationService,
     NotificationChannel,
     StakeholderRole
 )
 
 # Import Constitutional Council integration
-from src.backend.gs_service.app.core.constitutional_council_scalability import (
+from app.core.constitutional_council_scalability import (
     ConstitutionalCouncilScalabilityFramework,
     CoEvolutionMode
 )

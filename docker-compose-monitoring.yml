@@ -19,9 +19,10 @@ services:
     networks:
     - acgs-monitoring
     ports:
-    - 3001:3000
+    - 3002:3000
     volumes:
     - grafana-storage:/var/lib/grafana
+    - ./config/monitoring/grafana/dashboards:/var/lib/grafana/dashboards
     - ./monitoring/mab_dashboard.json:/var/lib/grafana/dashboards/mab_dashboard.json
   prometheus:
     command:
@@ -38,7 +39,8 @@ services:
     ports:
     - 9090:9090
     volumes:
-    - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./config/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./config/monitoring/phase3_alert_rules.yml:/etc/prometheus/phase3_alert_rules.yml
     - ./monitoring/mab_alert_rules.yml:/etc/prometheus/mab_alert_rules.yml
 version: '3.8'
 volumes:

@@ -1,0 +1,178 @@
+groups:
+- name: phase3_performance_alerts
+  rules:
+  # Policy Decision Latency Alert
+  - alert: PolicyDecisionLatencyHigh
+    expr: histogram_quantile(0.95, rate(acgs_policy_decision_duration_seconds_bucket[5m])) > 0.05
+    for: 2m
+    labels:
+      severity: critical
+      component: governance_synthesis
+    annotations:
+      summary: "Policy decision latency exceeding 50ms threshold"
+      description: "95th percentile policy decision latency is {{ $value }}s, exceeding the 50ms target"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/performance/policy-latency"
+
+  # Cache Hit Rate Alert
+  - alert: CacheHitRateLow
+    expr: (rate(acgs_cache_hits_total[5m]) / rate(acgs_cache_requests_total[5m])) < 0.8
+    for: 5m
+    labels:
+      severity: warning
+      component: caching
+    annotations:
+      summary: "Cache hit rate below 80% threshold"
+      description: "Cache hit rate is {{ $value | humanizePercentage }}, below the 80% target"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/performance/cache-performance"
+
+  # Memory Usage Alert
+  - alert: MemoryUsageHigh
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+    for: 3m
+    labels:
+      severity: warning
+      component: system
+    annotations:
+      summary: "Memory usage exceeding 85% threshold"
+      description: "Memory usage is {{ $value | humanizePercentage }}, exceeding the 85% threshold"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/system/memory-usage"
+
+  # CPU Usage Alert
+  - alert: CPUUsageHigh
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: warning
+      component: system
+    annotations:
+      summary: "CPU usage exceeding 80% threshold"
+      description: "CPU usage is {{ $value }}%, exceeding the 80% threshold"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/system/cpu-usage"
+
+- name: phase3_security_alerts
+  rules:
+  # Rate Limiting Violations
+  - alert: RateLimitViolationsHigh
+    expr: rate(acgs_rate_limit_violations_total[5m]) > 10
+    for: 1m
+    labels:
+      severity: critical
+      component: security
+    annotations:
+      summary: "High rate of rate limiting violations"
+      description: "Rate limiting violations: {{ $value }} per second"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/security/rate-limiting"
+
+  # Authentication Failures
+  - alert: AuthenticationFailuresHigh
+    expr: rate(acgs_auth_failures_total[5m]) > 5
+    for: 2m
+    labels:
+      severity: warning
+      component: security
+    annotations:
+      summary: "High rate of authentication failures"
+      description: "Authentication failures: {{ $value }} per second"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/security/auth-failures"
+
+  # Security Injection Attempts
+  - alert: SecurityInjectionAttempts
+    expr: rate(acgs_security_injection_attempts_total[5m]) > 1
+    for: 1m
+    labels:
+      severity: critical
+      component: security
+    annotations:
+      summary: "Security injection attempts detected"
+      description: "Injection attempts: {{ $value }} per second"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/security/injection-attempts"
+
+- name: phase3_service_health_alerts
+  rules:
+  # Service Availability
+  - alert: ServiceDown
+    expr: up{job=~"acgs-pgp-.*"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: "{{ $labels.job }}"
+    annotations:
+      summary: "ACGS service is down"
+      description: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/services/service-down"
+
+  # High Error Rate
+  - alert: HighErrorRate
+    expr: rate(acgs_http_requests_total{status=~"5.."}[5m]) / rate(acgs_http_requests_total[5m]) > 0.05
+    for: 3m
+    labels:
+      severity: warning
+      component: "{{ $labels.service }}"
+    annotations:
+      summary: "High error rate detected"
+      description: "Error rate is {{ $value | humanizePercentage }} for service {{ $labels.service }}"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/services/error-rate"
+
+  # Response Time High
+  - alert: ResponseTimeHigh
+    expr: histogram_quantile(0.95, rate(acgs_http_request_duration_seconds_bucket[5m])) > 0.2
+    for: 5m
+    labels:
+      severity: warning
+      component: "{{ $labels.service }}"
+    annotations:
+      summary: "High response time detected"
+      description: "95th percentile response time is {{ $value }}s for service {{ $labels.service }}"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/services/response-time"
+
+- name: phase3_database_alerts
+  rules:
+  # Database Connection Pool
+  - alert: DatabaseConnectionPoolHigh
+    expr: pg_stat_activity_count / pg_settings_max_connections > 0.8
+    for: 3m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "Database connection pool usage high"
+      description: "Connection pool usage is {{ $value | humanizePercentage }}"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/database/connection-pool"
+
+  # Database Query Performance
+  - alert: DatabaseQuerySlow
+    expr: pg_stat_statements_mean_time_ms > 1000
+    for: 5m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "Slow database queries detected"
+      description: "Average query time is {{ $value }}ms"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/database/query-performance"
+
+- name: phase3_redis_alerts
+  rules:
+  # Redis Memory Usage
+  - alert: RedisMemoryUsageHigh
+    expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+    for: 3m
+    labels:
+      severity: warning
+      component: redis
+    annotations:
+      summary: "Redis memory usage high"
+      description: "Redis memory usage is {{ $value | humanizePercentage }}"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/redis/memory-usage"
+
+  # Redis Connection Count
+  - alert: RedisConnectionsHigh
+    expr: redis_connected_clients > 100
+    for: 5m
+    labels:
+      severity: warning
+      component: redis
+    annotations:
+      summary: "High number of Redis connections"
+      description: "Redis has {{ $value }} connected clients"
+      runbook_url: "https://docs.acgs-pgp.com/runbooks/redis/connections"

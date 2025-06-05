@@ -8,9 +8,26 @@ global:
   scrape_interval: 15s
 rule_files:
 - acgs_pgp_rules.yml
+- phase3_alert_rules.yml
 scrape_configs:
 - job_name: acgs-pgp-services
   metrics_path: /metrics
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - ac_service:8001
+    - integrity_service:8002
+    - fv_service:8003
+    - gs_service:8004
+    - pgc_service:8005
+- job_name: acgs-pgp-performance
+  metrics_path: /api/v1/performance/prometheus-metrics
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - gs_service:8004
+- job_name: acgs-pgp-health
+  metrics_path: /api/v1/performance/health
   scrape_interval: 10s
   static_configs:
   - targets:
@@ -27,3 +44,7 @@ scrape_configs:
   static_configs:
   - targets:
     - node_exporter:9100
+- job_name: redis-exporter
+  static_configs:
+  - targets:
+    - redis_exporter:9121

@@ -1,14 +1,15 @@
 # backend/auth_service/app/api/v1/deps.py
-from app.core.security import get_current_active_user
+from ...core.security import get_current_active_user
 from fastapi import Depends, HTTPException, status
 from shared.database import get_async_db
 from shared.models import User
 from sqlalchemy.ext.asyncio import AsyncSession  # For type hinting
+from typing import AsyncGenerator
 
 
 # Wrapper for get_async_db to provide the session.
 # Endpoints will depend on this to get an AsyncSession.
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async for db_session in get_async_db():
         yield db_session
 

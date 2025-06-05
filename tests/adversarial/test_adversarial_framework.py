@@ -19,10 +19,17 @@ from typing import Dict, List, Any
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from tests.adversarial.core.adversarial_framework import (
-    AdversarialTestingFramework, AdversarialTestConfig, AttackCategory
-)
-from tests.adversarial.core.security_hardening import SecurityHardeningRecommendations
+try:
+    from .core.adversarial_framework import (
+        AdversarialTestingFramework, AdversarialTestConfig, AttackCategory
+    )
+    from .core.security_hardening import SecurityHardeningRecommendations
+except ImportError:
+    # Fallback for when running as script
+    from core.adversarial_framework import (
+        AdversarialTestingFramework, AdversarialTestConfig, AttackCategory
+    )
+    from core.security_hardening import SecurityHardeningRecommendations
 
 # Configure logging
 logging.basicConfig(

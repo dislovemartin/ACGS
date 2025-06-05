@@ -2,7 +2,7 @@
 import os
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, field_validator, model_validator
+from pydantic import AnyHttpUrl, field_validator, model_validator, ConfigDict
 from pydantic_settings import BaseSettings
 
 
@@ -66,11 +66,12 @@ class Settings(BaseSettings):
         # Otherwise, SQLALCHEMY_DATABASE_URI (from DATABASE_URL) is used.
         return self
 
-    class Config:
-        case_sensitive = True
-        # Load environment variables from .env file for local development
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = ConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"  # Allow extra environment variables to be ignored
+    )
 
 
 settings = Settings()
