@@ -411,8 +411,12 @@ class CrossDomainTestingEngine:
         start_time = time.time()
         
         # Get domain-specific validator
-        domain_type = DomainType(domain.domain_name.lower())
-        validator_class = self.validators.get(domain_type)
+        try:
+            domain_type = DomainType(domain.domain_name.lower())
+            validator_class = self.validators.get(domain_type)
+        except ValueError:
+            logger.warning("Unknown domain type: %s", domain.domain_name)
+            validator_class = None
         
         if not validator_class:
             # Use generic validation for unsupported domains
