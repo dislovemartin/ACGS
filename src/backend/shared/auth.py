@@ -169,14 +169,15 @@ async def get_service_token() -> str:
     # Ensure SECRET_KEY uses the updated default if the environment variable is not set
     effective_secret_key = os.getenv("SECRET_KEY", "acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing")
 
-    expiration_delta = timedelta(days=365) # Long expiry for this placeholder
+    expiration_delta = timedelta(days=365)  # Long expiry for this placeholder
     expire = datetime.now(timezone.utc) + expiration_delta
     payload = {
         "sub": "internal_service_user",
         "user_id": 0, # Or a conventional ID for internal services
         "roles": ["internal_service", "admin"], # Include admin as per RoleChecker
         "type": "access", # Mark as an access token
-        "exp": expire,
+        # python-jose cannot serialize datetimes directly; use a Unix timestamp
+        "exp": int(expire.timestamp()),
         "jti": str(uuid.uuid4()) # Unique token identifier
     }
     encoded_jwt = jwt.encode(payload, effective_secret_key, algorithm=ALGORITHM)
