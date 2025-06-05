@@ -1016,6 +1016,7 @@ class EnhancedMultiModelValidator:
         self.model_health_status: Dict[str, Dict[str, Any]] = {} # Track model health metrics
         self.degraded_models: Dict[str, Dict[str, Any]] = {} # Track degraded models for potential recovery
         self.last_health_check: Dict[str, float] = {} # Track last health check timestamp per model
+        self.ultra_result_cache: Dict[str, UltraReliableResult] = {}
 
     async def initialize(self):
         """Initialize multiple LLM models for ensemble validation based on config."""
@@ -1118,8 +1119,12 @@ class EnhancedMultiModelValidator:
         principle_text = getattr(input_data, 'principle_text', '')
         synthesis_context = getattr(input_data, 'context', None)
 
-
-        # TODO: Cache check for UltraReliableResult if applicable at this higher level
+        cache_key = self.cache_manager._generate_cache_key(input_data) + ":ultra"
+        if cache_key in self.ultra_result_cache:
+            metrics = self._create_cached_metrics(start_time, request_id)
+            self.performance_history.append(metrics)
+            logger.debug(f"Request {request_id}: Returning cached ultra reliable result")
+            return self.ultra_result_cache[cache_key]
 
         # Stage 1: Multi-model synthesis (Parallel synthesis by multiple models)
         # `responses` here are the initial synthesis attempts from various models.
@@ -1161,30 +1166,40 @@ class EnhancedMultiModelValidator:
             synthesis_results, validation_matrix, semantic_scores, formal_verification_results, request_id
         )
         
-        # TODO: Calculate comprehensive ReliabilityMetrics based on the entire process
-        # metrics = self._calculate_overall_reliability_metrics(...)
-        # self.performance_history.append(metrics)
-        # self.cache_manager.cache_response(...) # Cache the final UltraReliableResult if successful
+        metrics = self._calculate_overall_reliability_metrics(
+            synthesis_results,
+            synthesis_errors,
+            validation_matrix,
+            semantic_scores,
+            formal_verification_results,
+            final_policy is not None,
+            final_confidence,
+            synthesis_metrics_details,
+            start_time,
+            request_id
+        )
+        self.performance_history.append(metrics)
 
         if final_policy and final_confidence >= self.config.confidence_threshold:
             logger.info(f"Request {request_id}: Automated consensus achieved with confidence {final_confidence:.4f}")
-            return UltraReliableResult(
-                policy=final_policy, # This should be the chosen LLMStructuredOutput or similar
+            ultra_result = UltraReliableResult(
+                policy=final_policy,
                 confidence=final_confidence,
                 validation_path="automated_consensus",
                 requires_human_review=False,
                 synthesis_details=consensus_details,
-                performance_metrics_details=synthesis_metrics_details # Pass the metrics
+                performance_metrics_details=synthesis_metrics_details
             )
         else:
             logger.warning(f"Request {request_id}: Automated consensus failed or confidence too low ({final_confidence:.4f}). Escalating.")
             # Pass all gathered information to the escalation process
-            return await self._escalate_to_expert_review(
+            ultra_result = await self._escalate_to_expert_review(
                 synthesis_results, validation_matrix, semantic_scores, formal_verification_results,
                 final_policy, final_confidence, principle_text, synthesis_context, request_id,
                 synthesis_metrics_details # Pass the metrics to escalation
             )
-
+        self.ultra_result_cache[cache_key] = ultra_result
+        return ultra_result
     async def _parallel_synthesis(
         self,
         input_data: LLMInterpretationInput,
@@ -1734,6 +1749,53 @@ class EnhancedMultiModelValidator:
             fallback_usage_rate=0.0,
             confidence_score=0.95,
             cache_hit_rate=1.0,
+            request_id=request_id
+        )
+
+    def _calculate_overall_reliability_metrics(
+        self,
+        synthesis_results: List[Dict[str, Any]],
+        errors: List[str],
+        validation_matrix: Dict[str, Any],
+        semantic_scores: Dict[str, Any],
+        formal_verification_results: Dict[str, Any],
+        success: bool,
+        final_confidence: float,
+        metrics_details: Dict[str, Any],
+        start_time: float,
+        request_id: str
+    ) -> ReliabilityMetrics:
+        total_time = time.time() - start_time
+        total_attempts = metrics_details.get("synthesis_attempts", len(synthesis_results) + len(errors))
+        response_times = list(metrics_details.get("response_times_map", {}).values())
+
+        avg_response = metrics_details.get("avg_individual_response_time", np.mean(response_times) if response_times else 0.0)
+        p95_time = metrics_details.get("p95_individual_response_time", np.percentile(response_times, 95) if response_times else 0.0)
+        p99_time = metrics_details.get("p99_individual_response_time", np.percentile(response_times, 99) if response_times else 0.0)
+
+        semantic_avg = float(np.mean([v.get("overall_score", 0) for v in semantic_scores.values()])) if semantic_scores else 0.0
+        agreement_scores = []
+        for vals in validation_matrix.values():
+            for item in vals.values():
+                if isinstance(item, dict) and "score" in item:
+                    agreement_scores.append(item["score"])
+        model_agreement = float(np.mean(agreement_scores)) if agreement_scores else final_confidence
+
+        error_rate = len(errors) / total_attempts if total_attempts else 0.0
+
+        return ReliabilityMetrics(
+            success_rate=1.0 if success else 0.0,
+            consensus_rate=final_confidence,
+            bias_detection_rate=0.0,
+            semantic_faithfulness_score=semantic_avg,
+            average_response_time=avg_response,
+            error_rate=error_rate,
+            fallback_usage_rate=0.0,
+            confidence_score=final_confidence,
+            model_agreement_score=model_agreement,
+            p95_response_time=p95_time,
+            p99_response_time=p99_time,
+            throughput_requests_per_second=metrics_details.get("synthesis_throughput_rps", 0.0),
             request_id=request_id
         )
 
