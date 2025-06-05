@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy AC service application code
 COPY ac_service/ ./
 
+# Set Python path to include shared module
+ENV PYTHONPATH="/app:/app/shared:$PYTHONPATH"
+
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash acgs
 RUN chown -R acgs:acgs /app

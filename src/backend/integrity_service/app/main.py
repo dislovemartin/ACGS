@@ -7,7 +7,8 @@ from app.api.v1 import integrity as integrity_router  # Phase 3: Integrity Verif
 from app.api.v1 import pgp_assurance as pgp_router  # Phase 3: PGP Assurance
 from app.api.v1 import research_data as research_data_router  # Task 13: Research Data Pipeline
 from shared.database import create_db_and_tables
-from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(
@@ -22,8 +23,8 @@ app = FastAPI(
 # Add metrics middleware
 # app.middleware("http")(metrics_middleware("integrity_service"))
 
-# Apply the security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
 
 # Include the API routers
 app.include_router(policies_router.router, prefix="/api/v1/policies", tags=["Policy Rules"])

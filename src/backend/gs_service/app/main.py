@@ -20,7 +20,8 @@ from app.services.fv_client import fv_service_client # Added FV client for shutd
 # Phase 3: Performance Optimization and Security Compliance imports
 from app.services.performance_monitor import get_performance_monitor
 from app.services.security_compliance import get_security_service
-from shared.security_middleware import SecurityHeadersMiddleware # Import the shared middleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 # from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 
 app = FastAPI(title="Governance Synthesis (GS) Service")
@@ -31,8 +32,8 @@ app = FastAPI(title="Governance Synthesis (GS) Service")
 # Add metrics middleware
 # app.middleware("http")(metrics_middleware("gs_service"))
 
-# Apply the security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
 
 # Include the API router for synthesis
 app.include_router(synthesize_router, prefix="/api/v1/synthesize", tags=["Governance Synthesis"])

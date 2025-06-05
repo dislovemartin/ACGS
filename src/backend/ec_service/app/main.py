@@ -31,7 +31,8 @@ from app.core.wina_oversight_coordinator import WINAECOversightCoordinator
 from app.services.gs_client import gs_service_client
 from app.services.ac_client import ac_service_client
 from app.services.pgc_client import pgc_service_client
-from shared.security_middleware import SecurityHeadersMiddleware
+from shared.security_middleware import add_security_middleware
+from shared.security_config import security_config
 from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 from shared import get_config
 
@@ -140,8 +141,8 @@ app.add_middleware(
 # Add compression middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Add security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# Add enhanced security middleware (includes rate limiting, input validation, security headers, audit logging)
+add_security_middleware(app)
 
 # Add metrics middleware
 app.middleware("http")(metrics_middleware("ec_service"))
