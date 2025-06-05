@@ -2706,7 +2706,10 @@ class EnhancedLLMReliabilityFramework:
             return output, metrics
 
         except Exception as e:
-            logger.error(f"Error in process_with_reliability for input {input_data.input_hash}: {e}", exc_info=True)
+            logger.error(
+                f"Error in process_with_reliability for input {getattr(input_data, 'input_hash', 'n/a')}: {e}",
+                exc_info=True,
+            )
             self.metrics_collector.increment_failures() # Increment overall failures
             # In case of an unexpected error, apply emergency safeguards as a last resort
             final_policy = await self._apply_emergency_safeguards(
