@@ -24,7 +24,7 @@ from shared.auth import get_current_active_user, require_admin
 from shared.models import User
 from shared.metrics import get_metrics
 
-from app.services.constitutional_reporting_service import (
+from src.backend.gs_service.app.services.constitutional_reporting_service import (
     ConstitutionalReportingService,
     ReportType,
     ReportFormat,

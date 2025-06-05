@@ -13,8 +13,8 @@ from typing import List, Dict, Any
 import sys
 sys.path.append('src/backend/fv_service')
 
-from app.core.bias_detector import BiasDetector, FAIRLEARN_AVAILABLE
-from app.schemas import (
+from src.backend.fv_service.app.core.bias_detector import BiasDetector, FAIRLEARN_AVAILABLE
+from src.backend.fv_service.app.schemas import (
     BiasDetectionRequest, BiasDetectionResult, BiasMetric, PolicyRule
 )
 

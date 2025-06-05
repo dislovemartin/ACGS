@@ -147,6 +147,10 @@ class WINAIntegrationMetrics:
     timestamp: datetime
 
 
+# Create alias for backward compatibility
+WINAIntegrationPerformanceMetrics = WINAIntegrationMetrics
+
+
 @dataclass
 class WINASystemHealthMetrics:
     """Overall system health metrics."""

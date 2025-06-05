@@ -379,6 +379,8 @@ class ACAmendmentComment(Base):
 
 # Create ACPrinciple as an alias for Principle for backward compatibility
 ACPrinciple = Principle
+# Create ConstitutionalPrinciple as an alias for Principle for backward compatibility
+ConstitutionalPrinciple = Principle
 
 class ACConflictResolution(Base):
     """Conflict Resolution Mapping (M) component of the Artificial Constitution"""

@@ -14,7 +14,9 @@ try:
     from backend.auth_service.app.core.config import settings
 except ImportError:
     # Fallback for testing without full backend setup
-    settings = None
+    class MockSettings:
+        API_V1_STR = "/api/v1"
+    settings = MockSettings()
 
 # The client fixture and DB setup are now handled by conftest.py
 # No need for override_get_async_db_users or local client fixture here.

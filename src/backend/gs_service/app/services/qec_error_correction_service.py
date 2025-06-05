@@ -51,13 +51,13 @@ from alphaevolve_gs_engine.services.qec_enhancement.recovery_strategy_dispatcher
 )
 
 # Import existing services
-from app.services.violation_detection_service import (
+from src.backend.gs_service.app.services.violation_detection_service import (
     ViolationDetectionService, ViolationType, ViolationSeverity
 )
-from app.services.violation_escalation_service import (
+from src.backend.gs_service.app.services.violation_escalation_service import (
     ViolationEscalationService, EscalationLevel
 )
-from app.workflows.multi_model_manager import MultiModelManager
+from src.backend.gs_service.app.workflows.multi_model_manager import MultiModelManager
 
 logger = logging.getLogger(__name__)
 

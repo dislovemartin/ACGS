@@ -28,7 +28,7 @@ from shared.database import get_async_db
 
 # Import QEC error correction services
 try:
-    from app.services.qec_error_correction_service import (
+    from src.backend.gs_service.app.services.qec_error_correction_service import (
         QECErrorCorrectionService,
         ConflictDetectionEngine,
         AutomaticResolutionWorkflow,

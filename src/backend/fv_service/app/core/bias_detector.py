@@ -21,7 +21,8 @@ try:
 except ImportError:
     # Fallback for when fairlearn is not available
     FAIRLEARN_AVAILABLE = False
-    logger.warning("Fairlearn not available, using mock implementations")
+    import logging
+    logging.getLogger(__name__).warning("Fairlearn not available, using mock implementations")
 from ..schemas import (
     BiasDetectionRequest, BiasDetectionResponse, BiasDetectionResult,
     FairnessValidationRequest, FairnessValidationResponse, FairnessValidationResult,
