@@ -127,38 +127,28 @@ async def test_determine_gating_decision_empty_weights():
     assert gating_decision.metadata["num_components_processed"] == 0
     assert gating_decision.metadata["wina_calculation_method"] == "unknown" # Default from function
 
-# Placeholder for future tests involving default_gating_state if logic changes
-# @pytest.mark.asyncio
-# async def test_determine_gating_decision_with_default_state_logic():
-#     """
-#     Test scenario where default_gating_state might be applied.
-#     This test is a placeholder as current logic in determine_gating_decision
-#     primarily relies on wina_weights.weights keys. If logic is expanded to
-#     use metadata for a full list of neurons, this test would be relevant.
-#     """
-#     wina_weights_data = {
-#         "weights": {
-#             "neuron_1": 0.6, # Active
-#         },
-#         "metadata": {
-#             "all_neuron_ids": ["neuron_1", "neuron_2_missing_weight"],
-#             "calculation_method": "default_test"
-#         }
-#     }
-#     wina_weights = WINAWeightOutput(**wina_weights_data)
+@pytest.mark.asyncio
+async def test_determine_gating_decision_with_default_state_logic():
+    """Verify neurons missing weights use the default gating state."""
+    wina_weights_data = {
+        "weights": {"neuron_1": 0.6},
+        "metadata": {
+            "all_neuron_ids": ["neuron_1", "neuron_2_missing_weight"],
+            "calculation_method": "default_test",
+        },
+    }
+    wina_weights = WINAWeightOutput(**wina_weights_data)
 
-#     gating_config_data = {
-#         "threshold": 0.5,
-#         "default_gating_state": True # neuron_2_missing_weight should become True
-#     }
-#     gating_config = GatingThresholdConfig(**gating_config_data)
+    gating_config_data = {"threshold": 0.5, "default_gating_state": True}
+    gating_config = GatingThresholdConfig(**gating_config_data)
 
-#     # Assuming determine_gating_decision is updated to use all_neuron_ids from metadata
-#     # expected_gating_mask = {
-#     #     "neuron_1": True,
-#     #     "neuron_2_missing_weight": True,
-#     # }
-#     # gating_decision = await determine_gating_decision(wina_weights, gating_config)
-#     # assert gating_decision.gating_mask == expected_gating_mask
-#     # assert gating_decision.metadata["num_components_activated"] == 2
-#     pass # Keep as placeholder until logic in gating.py is expanded
+    expected_gating_mask = {
+        "neuron_1": True,
+        "neuron_2_missing_weight": True,
+    }
+
+    gating_decision = await determine_gating_decision(wina_weights, gating_config)
+
+    assert gating_decision.gating_mask == expected_gating_mask
+    assert gating_decision.metadata["num_components_activated"] == 2
+    assert gating_decision.metadata["num_components_processed"] == 2
