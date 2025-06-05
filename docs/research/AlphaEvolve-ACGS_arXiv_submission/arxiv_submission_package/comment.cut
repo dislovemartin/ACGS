@@ -1,1 +1,3 @@
 We thank the research community for valuable feedback and discussions that significantly improved this work. This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors. The author is grateful to the open-source community for the foundational tools and libraries that made this research possible.
+
+This research was supported by AI research tools including Gemini Deep Research, ChatGPT Deep Research, and Claude for coding support, which contributed to various aspects of the research methodology, implementation, and analysis. The complete implementation and supplementary materials are available at \url{https://github.com/dislovemartin/HTPA-master.git}.
