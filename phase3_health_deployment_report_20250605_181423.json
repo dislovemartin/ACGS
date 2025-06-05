@@ -1,0 +1,263 @@
+{
+  "timestamp": "2025-06-05T18:14:23.504069",
+  "phase": "Phase 3 Staging Deployment",
+  "services": {
+    "ac_service": {
+      "status": "error",
+      "port": 8011,
+      "response_time_ms": null,
+      "critical": true,
+      "response_data": null
+    },
+    "integrity_service": {
+      "status": "error",
+      "port": 8012,
+      "response_time_ms": null,
+      "critical": true,
+      "response_data": null
+    },
+    "fv_service": {
+      "status": "error",
+      "port": 8013,
+      "response_time_ms": null,
+      "critical": true,
+      "response_data": null
+    },
+    "gs_service": {
+      "status": "error",
+      "port": 8014,
+      "response_time_ms": null,
+      "critical": true,
+      "response_data": null
+    },
+    "pgc_service": {
+      "status": "error",
+      "port": 8015,
+      "response_time_ms": null,
+      "critical": true,
+      "response_data": null
+    }
+  },
+  "infrastructure": {
+    "postgres": {
+      "status": "unhealthy",
+      "port": 5435,
+      "critical": true
+    },
+    "redis": {
+      "status": "unhealthy",
+      "port": 6382,
+      "critical": true
+    },
+    "opa": {
+      "status": "error",
+      "port": 8191,
+      "critical": true,
+      "error": "Cannot connect to host localhost:8191 ssl:default [Connect call failed ('127.0.0.1', 8191)]"
+    }
+  },
+  "monitoring": {},
+  "performance_metrics": {},
+  "security_compliance": {},
+  "deployment_actions": [
+    {
+      "timestamp": "2025-06-05T18:14:23.504333",
+      "action": "Checking Docker Environment",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.546194",
+      "action": "Docker Container Status",
+      "status": "INFO",
+      "details": "Current containers:\nNAMES                     STATUS\ncompassionate_lederberg   Up 3 minutes"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.546431",
+      "action": "Infrastructure Health Assessment",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.564464",
+      "action": "POSTGRES Health",
+      "status": "ERROR",
+      "details": "Database not accessible: Error response from daemon: No such container: acgs-postgres-staging\n"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.584789",
+      "action": "REDIS Health",
+      "status": "ERROR",
+      "details": "Cache not accessible"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.591333",
+      "action": "OPA Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8191 ssl:default [Connect call failed ('127.0.0.1', 8191)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.591511",
+      "action": "ACGS Services Health Assessment",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.592738",
+      "action": "AC_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8011 ssl:default [Connect call failed ('127.0.0.1', 8011)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.593789",
+      "action": "INTEGRITY_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8012 ssl:default [Connect call failed ('127.0.0.1', 8012)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.594874",
+      "action": "FV_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8013 ssl:default [Connect call failed ('127.0.0.1', 8013)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.595879",
+      "action": "GS_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8014 ssl:default [Connect call failed ('127.0.0.1', 8014)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.597059",
+      "action": "PGC_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8015 ssl:default [Connect call failed ('127.0.0.1', 8015)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.597267",
+      "action": "Infrastructure Deployment",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.597998",
+      "action": "Infrastructure Deployment",
+      "status": "ERROR",
+      "details": "[Errno 2] No such file or directory: 'docker-compose'"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.598169",
+      "action": "ACGS Services Deployment",
+      "status": "INFO",
+      "details": "Deploying services in order: ['ac_service', 'integrity_service', 'fv_service', 'gs_service', 'pgc_service']"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.598202",
+      "action": "Deploying AC_SERVICE",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.598709",
+      "action": "AC_SERVICE Deployment",
+      "status": "ERROR",
+      "details": "[Errno 2] No such file or directory: 'docker-compose'"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.598843",
+      "action": "Deploying INTEGRITY_SERVICE",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.599256",
+      "action": "INTEGRITY_SERVICE Deployment",
+      "status": "ERROR",
+      "details": "[Errno 2] No such file or directory: 'docker-compose'"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.599370",
+      "action": "Deploying FV_SERVICE",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.599849",
+      "action": "FV_SERVICE Deployment",
+      "status": "ERROR",
+      "details": "[Errno 2] No such file or directory: 'docker-compose'"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.599915",
+      "action": "Deploying GS_SERVICE",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.600262",
+      "action": "GS_SERVICE Deployment",
+      "status": "ERROR",
+      "details": "[Errno 2] No such file or directory: 'docker-compose'"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.600447",
+      "action": "Deploying PGC_SERVICE",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.601041",
+      "action": "PGC_SERVICE Deployment",
+      "status": "ERROR",
+      "details": "[Errno 2] No such file or directory: 'docker-compose'"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.601208",
+      "action": "ACGS Services Health Assessment",
+      "status": "INFO",
+      "details": ""
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.602511",
+      "action": "AC_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8011 ssl:default [Connect call failed ('127.0.0.1', 8011)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.603753",
+      "action": "INTEGRITY_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8012 ssl:default [Connect call failed ('127.0.0.1', 8012)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.604905",
+      "action": "FV_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8013 ssl:default [Connect call failed ('127.0.0.1', 8013)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.605981",
+      "action": "GS_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8014 ssl:default [Connect call failed ('127.0.0.1', 8014)]"
+    },
+    {
+      "timestamp": "2025-06-05T18:14:23.607030",
+      "action": "PGC_SERVICE Health",
+      "status": "ERROR",
+      "details": "Cannot connect to host localhost:8015 ssl:default [Connect call failed ('127.0.0.1', 8015)]"
+    }
+  ],
+  "issues": [],
+  "recommendations": [],
+  "completion_time": "2025-06-05T18:14:23.607192",
+  "total_duration_seconds": 0.103123,
+  "summary": {
+    "overall_health_percentage": 0.0,
+    "services_health_percentage": 0.0,
+    "infrastructure_health_percentage": 0.0,
+    "healthy_services": 0,
+    "total_services": 5,
+    "healthy_infrastructure": 0,
+    "total_infrastructure": 3
+  }
+}
