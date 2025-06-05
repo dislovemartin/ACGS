@@ -206,3 +206,6 @@ class AuthServiceClient:
 
 # Global auth service client
 auth_service_client = AuthServiceClient()
+
+# Alias for backward compatibility
+get_current_user = get_current_active_user

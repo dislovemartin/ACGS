@@ -377,6 +377,9 @@ class ACAmendmentComment(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
+# Create ACPrinciple as an alias for Principle for backward compatibility
+ACPrinciple = Principle
+
 class ACConflictResolution(Base):
     """Conflict Resolution Mapping (M) component of the Artificial Constitution"""
     __tablename__ = "ac_conflict_resolutions"

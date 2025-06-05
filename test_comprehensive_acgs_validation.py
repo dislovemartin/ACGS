@@ -66,7 +66,7 @@ class ACGSTestSuite:
         }
         # API endpoint configurations
         self.api_endpoints = {
-            'auth_register': '/auth/users/',
+            'auth_register': '/auth/register',
             'auth_token': '/auth/token',
             'ac_principles': '/api/v1/principles/',
             'ac_meta_rules': '/api/v1/meta-rules/',

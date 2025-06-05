@@ -53,6 +53,19 @@ except ImportError as e:
     WINA_AVAILABLE = False
     logging.getLogger(__name__).warning(f"WINA modules not available: {e}")
 
+    # Create fallback enum for when WINA modules are not available
+    class WINAComponentType(Enum):
+        """Fallback WINA component types."""
+        NEURON_ACTIVATION = "neuron_activation"
+        SVD_TRANSFORMATION = "svd_transformation"
+        DYNAMIC_GATING = "dynamic_gating"
+        CONSTITUTIONAL_INTEGRATION = "constitutional_integration"
+        CORE_OPTIMIZATION = "core_optimization"
+        REGO_POLICY_SYNTHESIS = "rego_policy_synthesis"
+        EC_LAYER_OVERSIGHT = "ec_layer_oversight"
+        PGC_ENFORCEMENT = "pgc_enforcement"
+        LEARNING_FEEDBACK = "learning_feedback"
+
 logger = logging.getLogger(__name__)
 
 
@@ -443,10 +456,10 @@ class WINAContinuousLearningSystem:
     def _initialize_component_profiles(self):
         """Initialize learning profiles for all WINA components."""
         for component_type in WINAComponentType:
-            if component_type in [WINAComponentType.NEURON_ACTIVATION, 
+            if component_type in [WINAComponentType.NEURON_ACTIVATION,
                                 WINAComponentType.SVD_TRANSFORMATION,
                                 WINAComponentType.DYNAMIC_GATING,
-                                WINAComponentType.CONSTITUTIONAL_VERIFICATION]:
+                                WINAComponentType.CONSTITUTIONAL_INTEGRATION]:
                 
                 # Component-specific parameter bounds
                 if component_type == WINAComponentType.NEURON_ACTIVATION:

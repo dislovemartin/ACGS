@@ -45,6 +45,7 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(deps.get_db
 
 
 @router.post("/token", response_model=Token)
+@router.post("/login", response_model=Token)  # Add alias for compatibility
 async def login_for_access_token(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),

@@ -21,16 +21,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.api.v1.oversight import router as oversight_router
-from app.api.v1.alphaevolve import router as alphaevolve_router
-from app.api.v1.reporting import router as reporting_router
-from app.api.v1.monitoring import router as monitoring_router
-from app.api.v1.wina_oversight import router as wina_oversight_router
-from shared.wina.performance_api import router as wina_performance_router, set_collector_getter
-from app.core.wina_oversight_coordinator import WINAECOversightCoordinator
-from app.services.gs_client import gs_service_client
-from app.services.ac_client import ac_service_client
-from app.services.pgc_client import pgc_service_client
+from src.backend.ec_service.app.api.v1.oversight import router as oversight_router
+from src.backend.ec_service.app.api.v1.alphaevolve import router as alphaevolve_router
+from src.backend.ec_service.app.api.v1.reporting import router as reporting_router
+from src.backend.ec_service.app.api.v1.monitoring import router as monitoring_router
+from src.backend.ec_service.app.api.v1.wina_oversight import router as wina_oversight_router
+from src.backend.shared.wina.performance_api import router as wina_performance_router, set_collector_getter
+from src.backend.ec_service.app.core.wina_oversight_coordinator import WINAECOversightCoordinator
+from src.backend.ec_service.app.services.gs_client import gs_service_client
+from src.backend.ec_service.app.services.ac_client import ac_service_client
+from src.backend.ec_service.app.services.pgc_client import pgc_service_client
 from shared.security_middleware import SecurityHeadersMiddleware
 from shared.metrics import get_metrics, metrics_middleware, create_metrics_endpoint
 from shared import get_config

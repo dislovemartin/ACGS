@@ -12,10 +12,10 @@ import logging
 
 # Fix the import paths to use the full package path
 from shared.database import get_async_db
-from shared.auth import get_current_user_from_token, get_current_active_user
-from app.core.mab_integration import MABIntegratedGSService
-from app.core.mab_prompt_optimizer import MABConfig, MABAlgorithm, PromptTemplate
-from app.schemas import ConstitutionalSynthesisInput, ConstitutionalSynthesisOutput
+from src.backend.shared.auth import get_current_user_from_token, get_current_active_user
+from src.backend.gs_service.app.core.mab_integration import MABIntegratedGSService
+from src.backend.gs_service.app.core.mab_prompt_optimizer import MABConfig, MABAlgorithm, PromptTemplate
+from src.backend.gs_service.app.schemas import ConstitutionalSynthesisInput, ConstitutionalSynthesisOutput
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)

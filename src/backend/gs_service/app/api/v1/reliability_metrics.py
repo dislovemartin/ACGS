@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.core.llm_reliability_framework import EnhancedLLMReliabilityFramework, ReliabilityMetrics
+from src.backend.gs_service.app.core.llm_reliability_framework import EnhancedLLMReliabilityFramework, ReliabilityMetrics
 from typing import Dict, Any
 
 router = APIRouter()

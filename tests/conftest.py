@@ -132,13 +132,32 @@ async def isolated_database_session():
 def mock_async_session_factory():
     """Mock async session factory."""
     from unittest.mock import AsyncMock, MagicMock
-    
+
     mock_factory = MagicMock()
     mock_session = AsyncMock()
     mock_factory.return_value.__aenter__.return_value = mock_session
     mock_factory.return_value.__aexit__.return_value = None
-    
+
     return mock_factory, mock_session
+
+
+@pytest_asyncio.fixture
+async def db_session():
+    """Database session fixture for tests that need it."""
+    from unittest.mock import AsyncMock
+
+    mock_session = AsyncMock()
+    mock_session.add = MagicMock()
+    mock_session.commit = AsyncMock()
+    mock_session.rollback = AsyncMock()
+    mock_session.close = AsyncMock()
+    mock_session.execute = AsyncMock()
+    mock_session.scalar = AsyncMock()
+    mock_session.scalars = AsyncMock()
+
+    yield mock_session
+
+    await mock_session.close()
 
 
 # =============================================================================
@@ -297,6 +316,64 @@ def mock_auth_headers(mock_jwt_token):
 def mock_csrf_token():
     """Mock CSRF token for security testing."""
     return 'mock_csrf_token_for_testing'
+
+
+@pytest.fixture
+def test_user():
+    """Test user data for authentication tests."""
+    return {
+        'id': 'test_user_123',
+        'username': 'test_user',
+        'email': 'test@example.com',
+        'roles': ['user', 'policy_manager'],
+        'is_active': True,
+        'created_at': '2024-01-01T00:00:00Z'
+    }
+
+
+@pytest.fixture
+def test_admin_user():
+    """Test admin user data for authentication tests."""
+    return {
+        'id': 'admin_user_456',
+        'username': 'admin_user',
+        'email': 'admin@example.com',
+        'roles': ['admin', 'policy_manager', 'system_admin'],
+        'is_active': True,
+        'created_at': '2024-01-01T00:00:00Z'
+    }
+
+
+@pytest.fixture
+def create_test_principle():
+    """Factory function to create test principles."""
+    def _create_principle(title="Test Principle", content="Test content", priority_weight=0.8):
+        return {
+            'title': title,
+            'content': content,
+            'priority_weight': priority_weight,
+            'scope': 'global',
+            'normative_statement': 'Test normative statement',
+            'constraints': ['test_constraint'],
+            'rationale': 'Test rationale',
+        }
+    return _create_principle
+
+
+@pytest.fixture
+def create_test_policy():
+    """Factory function to create test policies."""
+    def _create_policy(title="Test Policy", content="Test policy content", version="1.0.0"):
+        return {
+            'title': title,
+            'content': content,
+            'version': version,
+            'status': 'active',
+            'created_by': 'test_user',
+            'policy_type': 'rego',
+            'enforcement_level': 'strict',
+        }
+    return _create_policy
 
 
 # =============================================================================

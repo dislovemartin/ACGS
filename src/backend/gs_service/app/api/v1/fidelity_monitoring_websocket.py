@@ -23,30 +23,30 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from fastapi.websockets import WebSocketState
 from pydantic import BaseModel
 
-from app.workflows.multi_model_manager import get_multi_model_manager
-from app.workflows.structured_output_models import (
+from src.backend.gs_service.app.workflows.multi_model_manager import get_multi_model_manager
+from src.backend.gs_service.app.workflows.structured_output_models import (
     ConstitutionalFidelityScore,
     ConstitutionalComplianceLevel,
     ConstitutionalViolation
 )
 
 # Import violation detection services
-from app.services.violation_detection_service import (
+from src.backend.gs_service.app.services.violation_detection_service import (
     ViolationDetectionService,
     ViolationType,
     ViolationSeverity,
     ViolationDetectionResult
 )
-from app.services.violation_escalation_service import (
+from src.backend.gs_service.app.services.violation_escalation_service import (
     ViolationEscalationService,
     EscalationLevel,
     EscalationResult
 )
-from app.services.violation_audit_service import (
+from src.backend.gs_service.app.services.violation_audit_service import (
     ViolationAuditService,
     AuditEventType
 )
-from app.services.qec_error_correction_service import (
+from src.backend.gs_service.app.services.qec_error_correction_service import (
     QECErrorCorrectionService,
     ConflictDetectionResult,
     ErrorCorrectionResult,
