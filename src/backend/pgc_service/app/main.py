@@ -15,6 +15,7 @@ from app.services.integrity_client import integrity_service_client
 from app.api.v1.enforcement import router as enforcement_router
 from app.api.v1.alphaevolve_enforcement import router as alphaevolve_enforcement_router
 from app.api.v1.incremental_compilation import router as incremental_compilation_router
+from app.api.v1.ultra_low_latency import router as ultra_low_latency_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +36,7 @@ add_security_middleware(app)
 app.include_router(enforcement_router, prefix="/api/v1/enforcement", tags=["Policy Enforcement"])
 app.include_router(alphaevolve_enforcement_router, prefix="/api/v1/alphaevolve", tags=["AlphaEvolve Enforcement"]) # Added Phase 2
 app.include_router(incremental_compilation_router, prefix="/api/v1/incremental", tags=["Incremental Compilation"]) # Added Task 8
+app.include_router(ultra_low_latency_router, prefix="/api/v1/ultra-low-latency", tags=["Ultra Low Latency Optimization"]) # Added AlphaEvolve Enhancement
 
 @app.on_event("startup")
 async def on_startup():
