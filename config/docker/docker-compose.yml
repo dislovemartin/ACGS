@@ -248,6 +248,7 @@ services:
     volumes:
       - ../../src/backend/gs_service:/app
       - ../../src/backend/shared:/app/shared
+      - ../../src/alphaevolve_gs_engine/src/alphaevolve_gs_engine:/app/alphaevolve_gs_engine
     restart: unless-stopped
 
   pgc_service:

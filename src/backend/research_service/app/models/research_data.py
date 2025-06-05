@@ -48,7 +48,7 @@ class ResearchDataset(Base):
     
     # Metadata
     tags = Column(JSON, default=list)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)
@@ -131,7 +131,7 @@ class AnalysisResult(Base):
     
     # Metadata
     tags = Column(JSON, default=list)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)
@@ -166,7 +166,7 @@ class Benchmark(Base):
     
     # Metadata
     tags = Column(JSON, default=list)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)
@@ -211,7 +211,7 @@ class BenchmarkResult(Base):
     
     # Metadata
     environment_info = Column(JSON, default=dict)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     executed_by = Column(Integer)
@@ -251,7 +251,7 @@ class ReproducibilityRecord(Base):
     
     # Metadata
     reproduction_notes = Column(Text)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)

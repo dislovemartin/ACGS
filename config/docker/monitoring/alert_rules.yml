@@ -71,3 +71,85 @@ groups:
         annotations:
           summary: "High CPU usage for {{ $labels.container_label_com_docker_compose_service }}"
           description: "Container {{ $labels.container_label_com_docker_compose_service }} CPU usage is above 80% for more than 5 minutes"
+
+      # Constitutional monitoring alerts (Task 19.4)
+      - alert: ConstitutionalFidelityLow
+        expr: acgs_constitutional_fidelity_score < 0.70
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Constitutional fidelity score critically low"
+          description: "Constitutional fidelity score is {{ $value | humanizePercentage }} for component {{ $labels.component }}"
+
+      - alert: ConstitutionalFidelityWarning
+        expr: acgs_constitutional_fidelity_score < 0.85 and acgs_constitutional_fidelity_score >= 0.70
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Constitutional fidelity score below target"
+          description: "Constitutional fidelity score is {{ $value | humanizePercentage }} for component {{ $labels.component }}"
+
+      - alert: HighViolationRate
+        expr: rate(acgs_constitutional_violations_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High constitutional violation rate detected"
+          description: "Constitutional violations occurring at {{ $value }} per minute for {{ $labels.violation_type }}"
+
+      - alert: CriticalViolationDetected
+        expr: rate(acgs_constitutional_violations_total{severity="critical"}[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical constitutional violation detected"
+          description: "Critical constitutional violation of type {{ $labels.violation_type }} detected"
+
+      - alert: QECResponseTimeSlow
+        expr: histogram_quantile(0.95, rate(acgs_qec_response_time_seconds_bucket[5m])) > 30
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "QEC error correction response time slow"
+          description: "95th percentile QEC response time is {{ $value }}s for {{ $labels.error_type }}"
+
+      - alert: QECSuccessRateLow
+        expr: rate(acgs_qec_error_corrections_total{success="true"}[5m]) / rate(acgs_qec_error_corrections_total[5m]) < 0.80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "QEC auto-resolution rate below target"
+          description: "QEC success rate is {{ $value | humanizePercentage }} for {{ $labels.error_type }}"
+
+      - alert: EscalationRateHigh
+        expr: rate(acgs_violation_escalations_total[10m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High violation escalation rate"
+          description: "Violation escalations occurring at {{ $value }} per minute"
+
+      - alert: LLMReliabilityLow
+        expr: acgs_llm_reliability_score < 0.90
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LLM reliability score below target"
+          description: "LLM reliability is {{ $value | humanizePercentage }} for {{ $labels.model }} {{ $labels.operation_type }}"
+
+      - alert: MonitoringSystemDown
+        expr: acgs_monitoring_health_status == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Constitutional monitoring system component down"
+          description: "Monitoring component {{ $labels.component }} is unhealthy"

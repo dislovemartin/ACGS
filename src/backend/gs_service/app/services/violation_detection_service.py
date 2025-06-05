@@ -26,7 +26,7 @@ from sqlalchemy.orm import selectinload
 
 from shared.models import (
     ConstitutionalViolation, ViolationAlert, ViolationThreshold,
-    ConstitutionalPrinciple, Policy, User
+    Principle, Policy, User
 )
 from shared.database import get_async_db
 
@@ -122,7 +122,7 @@ class ViolationDetectionService:
     
     async def detect_violation(
         self,
-        principle: Optional[ConstitutionalPrinciple] = None,
+        principle: Optional[Principle] = None,
         policy: Optional[Policy] = None,
         fidelity_score: Optional[float] = None,
         context_data: Optional[Dict[str, Any]] = None
@@ -237,15 +237,15 @@ class ViolationDetectionService:
         try:
             # Get active principles and policies
             principles_result = await db.execute(
-                select(ConstitutionalPrinciple).where(
-                    ConstitutionalPrinciple.is_active == True
+                select(Principle).where(
+                    Principle.status == "active"
                 )
             )
             principles = principles_result.scalars().all()
             
             policies_result = await db.execute(
                 select(Policy).where(
-                    Policy.is_active == True
+                    Policy.status == "active"
                 )
             )
             policies = policies_result.scalars().all()
@@ -306,7 +306,7 @@ class ViolationDetectionService:
 
     async def _detect_principle_violations(
         self,
-        principle: ConstitutionalPrinciple,
+        principle: Principle,
         context_data: Dict[str, Any]
     ) -> List[ViolationDetectionResult]:
         """Detect violations specific to constitutional principles."""
@@ -440,7 +440,7 @@ class ViolationDetectionService:
 
     async def _detect_consistency_violations(
         self,
-        principle: ConstitutionalPrinciple,
+        principle: Principle,
         policy: Policy,
         context_data: Dict[str, Any]
     ) -> List[ViolationDetectionResult]:
@@ -500,7 +500,7 @@ class ViolationDetectionService:
 
     def _get_detection_methods_used(
         self,
-        principle: Optional[ConstitutionalPrinciple],
+        principle: Optional[Principle],
         policy: Optional[Policy],
         fidelity_score: Optional[float]
     ) -> List[str]:

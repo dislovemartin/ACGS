@@ -27,7 +27,7 @@ class Experiment(Base):
     expected_duration_hours = Column(Float)
     success_criteria = Column(JSON, default=dict)
     tags = Column(JSON, default=list)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     status = Column(String(50), nullable=False, default="created", index=True)
     
     # Audit fields
@@ -64,7 +64,7 @@ class ExperimentRun(Base):
     recommendations = Column(JSON, default=list)
     
     # Metadata
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Relationships
     experiment = relationship("Experiment", back_populates="runs")
@@ -86,7 +86,7 @@ class ExperimentMetric(Base):
     value = Column(Float, nullable=False)
     step = Column(Integer)
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Relationships
     run = relationship("ExperimentRun", back_populates="metrics")
@@ -107,7 +107,7 @@ class ExperimentArtifact(Base):
     path = Column(String(500), nullable=False)
     size_bytes = Column(Integer)
     checksum = Column(String(64))  # SHA-256 hash
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     
     # Relationships
@@ -138,7 +138,7 @@ class ResearchProject(Base):
     
     # Metadata
     tags = Column(JSON, default=list)
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)
@@ -169,7 +169,7 @@ class AutomationRule(Base):
     failure_count = Column(Integer, default=0)
     
     # Metadata
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)
@@ -201,7 +201,7 @@ class ResearchPipeline(Base):
     average_duration_seconds = Column(Float)
     
     # Metadata
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     # Audit fields
     created_by = Column(Integer)
@@ -235,7 +235,7 @@ class PipelineExecution(Base):
     error_message = Column(Text)
     
     # Metadata
-    metadata = Column(JSON, default=dict)
+    model_metadata = Column(JSON, default=dict)
     
     def __repr__(self):
         return f"<PipelineExecution(id='{self.id}', pipeline_id='{self.pipeline_id}', status='{self.status}')>"

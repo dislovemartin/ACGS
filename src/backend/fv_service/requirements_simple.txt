@@ -13,3 +13,5 @@ fairlearn==0.10.0
 scikit-learn==1.5.2
 numpy==1.26.4
 pandas==2.2.3
+psutil==6.1.0
+redis==5.2.1

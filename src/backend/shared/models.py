@@ -1,7 +1,7 @@
 # ACGS Federated Service Models
 from .database import Base
 from sqlalchemy import (
-    Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func, JSON, Float, Index, Enum
+    Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func, JSON, Float, Index, Enum, Numeric
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID, ARRAY # For PostgreSQL specific JSONB, UUID, and ARRAY types
 from sqlalchemy.orm import relationship
@@ -771,9 +771,26 @@ class ConstitutionalValidation(Base):
     constitutional_violations = Column(JSONB, nullable=True)  # Detected violations
 
     # Validation details
-    validation_method = Column(String(100), nullable=True)
+    validation_method = Column(String(100), nullable=True)  # "automated", "human_review", "hybrid"
     validation_timestamp = Column(DateTime, nullable=True)
     validation_metadata = Column(JSON, nullable=True)
+    validator_confidence = Column(Float, nullable=True)  # Confidence in validation (0.0 to 1.0)
+
+    # Cross-platform consistency
+    consistency_across_platforms = Column(Float, nullable=True)  # Consistency score across platforms
+    platform_specific_issues = Column(JSONB, nullable=True)  # Platform-specific compliance issues
+
+    # Integration with Constitutional Council
+    council_review_required = Column(Boolean, default=False, nullable=False)
+    council_decision = Column(String(100), nullable=True)  # "approved", "rejected", "conditional"
+    council_feedback = Column(Text, nullable=True)
+
+    # Timestamps
+    validated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    council_reviewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    evaluation = relationship("FederatedEvaluation")
 
 
 # --- Constitutional Violation Detection Models ---
@@ -785,8 +802,8 @@ class ConstitutionalViolation(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     violation_type = Column(String(100), nullable=False, index=True)  # principle_violation, synthesis_failure, enforcement_breach, stakeholder_conflict
     severity = Column(String(20), nullable=False, index=True)  # low, medium, high, critical
-    principle_id = Column(UUID(as_uuid=True), ForeignKey("constitutional_principles.id"), nullable=True)
-    policy_id = Column(UUID(as_uuid=True), ForeignKey("policies.id"), nullable=True)
+    principle_id = Column(Integer, ForeignKey("principles.id"), nullable=True)
+    policy_id = Column(Integer, ForeignKey("policies.id"), nullable=True)
 
     # Violation details
     violation_description = Column(Text, nullable=False)
@@ -807,13 +824,13 @@ class ConstitutionalViolation(Base):
     escalated = Column(Boolean, default=False, nullable=False, index=True)
     escalation_level = Column(String(50), nullable=True)  # policy_manager, constitutional_council, emergency_response
     escalated_at = Column(DateTime, nullable=True)
-    escalated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    escalated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Audit trail
     detected_at = Column(DateTime, default=func.now(), nullable=False, index=True)
-    detected_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # User who detected (if manual)
+    detected_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # User who detected (if manual)
     resolved_at = Column(DateTime, nullable=True)
-    resolved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    resolved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=func.now(), nullable=False)
@@ -854,7 +871,7 @@ class ViolationAlert(Base):
     # Response tracking
     acknowledged = Column(Boolean, default=False, nullable=False)
     acknowledged_at = Column(DateTime, nullable=True)
-    acknowledged_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    acknowledged_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     response_actions = Column(JSON, nullable=True)  # Actions taken in response to alert
 
     # Timestamps
@@ -888,8 +905,8 @@ class ViolationThreshold(Base):
     configuration = Column(JSON, nullable=True)  # Additional configuration parameters
 
     # Metadata
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    updated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=func.now(), nullable=False)
@@ -913,7 +930,7 @@ class ViolationEscalation(Base):
     escalation_rules = Column(JSON, nullable=True)    # Rules applied for escalation
 
     # Assignment and notification
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
     assigned_role = Column(String(50), nullable=True)  # Role required for handling
     notification_sent = Column(Boolean, default=False, nullable=False)
     notification_channels = Column(JSON, nullable=True)
@@ -928,8 +945,8 @@ class ViolationEscalation(Base):
     resolution_summary = Column(Text, nullable=True)
 
     # Audit trail
-    escalated_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    resolved_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    escalated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    resolved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Timestamps
     escalated_at = Column(DateTime, default=func.now(), nullable=False, index=True)
@@ -943,24 +960,7 @@ class ViolationEscalation(Base):
         Index('idx_escalation_type_level', 'escalation_type', 'escalation_level'),
         Index('idx_escalation_status_escalated', 'status', 'escalated_at'),
         Index('idx_escalation_assigned', 'assigned_to', 'assigned_role'),
-    )), nullable=True)  # "automated", "human_review", "hybrid"
-    validator_confidence = Column(Float, nullable=True)  # Confidence in validation (0.0 to 1.0)
-
-    # Cross-platform consistency
-    consistency_across_platforms = Column(Float, nullable=True)  # Consistency score across platforms
-    platform_specific_issues = Column(JSONB, nullable=True)  # Platform-specific compliance issues
-
-    # Integration with Constitutional Council
-    council_review_required = Column(Boolean, default=False, nullable=False)
-    council_decision = Column(String(100), nullable=True)  # "approved", "rejected", "conditional"
-    council_feedback = Column(Text, nullable=True)
-
-    # Timestamps
-    validated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    council_reviewed_at = Column(DateTime(timezone=True), nullable=True)
-
-    # Relationships
-    evaluation = relationship("FederatedEvaluation")
+    )
 
 
 # --- Task 13: Cross-Domain Principle Testing Framework Models ---

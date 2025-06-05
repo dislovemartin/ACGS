@@ -9,7 +9,8 @@ Email: martin.lyu@protonmail.com
 
 Files included:
 - main.tex: Main LaTeX source file (modified for arXiv)
-- main.bbl: Bibliography file with 317 references
+- main.bbl: Bibliography file with 36 references
+- AlphaEvolve-ACGS.bib: Source bibliography file
 - figs/: Directory containing 6 figures
   - Figure_1_Appeal_and_Dispute_Resolution_Workflow.png
   - Figure_2_Enhanced_Explainability_Dashboard_Mockup.png
@@ -19,10 +20,15 @@ Files included:
   - architecture_overview.png (teaser figure)
 
 Compilation instructions:
-1. Use XeLaTeX for compilation
-2. Run: xelatex main.tex
+1. Use PDFLaTeX for compilation (arXiv default for PNG figures)
+2. Run: pdflatex main.tex
 3. Process bibliography: bibtex main
-4. Run XeLaTeX twice more for cross-references
+4. Run PDFLaTeX twice more for cross-references
+
+Alternative (XeLaTeX):
+1. Run: xelatex main.tex
+2. Process bibliography: bibtex main
+3. Run XeLaTeX twice more for cross-references
 
 arXiv categories:
 - Primary: cs.AI (Artificial Intelligence)

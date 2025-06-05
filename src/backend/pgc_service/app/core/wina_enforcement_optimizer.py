@@ -42,7 +42,7 @@ except ImportError as e:
     logging.getLogger(__name__).warning(f"WINA modules not available: {e}")
 
 from .opa_client import OPAClient, PolicyEvaluationRequest, PolicyEvaluationResponse
-from .incremental_compiler import IncrementalPolicyCompiler, CompilationMetrics
+from .incremental_compiler import IncrementalCompiler, CompilationMetrics
 from .wina_policy_compiler import WINAPolicyCompiler, WINACompilationResult
 from ..models.policy_models import IntegrityPolicyRule
 from .. import schemas

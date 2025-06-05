@@ -77,6 +77,56 @@ class ACGSMetrics:
             'Total inter-service calls',
             ['source_service', 'target_service', 'endpoint', 'status_code']
         )
+
+        # Constitutional monitoring metrics (Task 19.4)
+        self.constitutional_fidelity_score = Gauge(
+            'acgs_constitutional_fidelity_score',
+            'Current constitutional fidelity score',
+            ['service', 'component']
+        )
+
+        self.constitutional_violations_total = Counter(
+            'acgs_constitutional_violations_total',
+            'Total constitutional violations detected',
+            ['service', 'violation_type', 'severity']
+        )
+
+        self.qec_error_corrections_total = Counter(
+            'acgs_qec_error_corrections_total',
+            'Total QEC error corrections performed',
+            ['service', 'error_type', 'strategy', 'success']
+        )
+
+        self.qec_response_time = Histogram(
+            'acgs_qec_response_time_seconds',
+            'QEC error correction response time',
+            ['service', 'error_type'],
+            buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0)
+        )
+
+        self.violation_escalations_total = Counter(
+            'acgs_violation_escalations_total',
+            'Total violation escalations',
+            ['service', 'escalation_level', 'auto_resolved']
+        )
+
+        self.constitutional_council_activities = Counter(
+            'acgs_constitutional_council_activities_total',
+            'Constitutional Council activities',
+            ['service', 'activity_type', 'status']
+        )
+
+        self.llm_reliability_score = Gauge(
+            'acgs_llm_reliability_score',
+            'LLM reliability score for constitutional operations',
+            ['service', 'model', 'operation_type']
+        )
+
+        self.monitoring_health_status = Gauge(
+            'acgs_monitoring_health_status',
+            'Constitutional monitoring system health (1=healthy, 0=unhealthy)',
+            ['service', 'component']
+        )
         
         self.service_call_duration = Histogram(
             'acgs_service_call_duration_seconds',
@@ -306,6 +356,68 @@ class ACGSMetrics:
             service=self.service_name,
             pool_status=pool_status
         ).set(count)
+
+    # Constitutional monitoring metric methods (Task 19.4)
+    def update_constitutional_fidelity_score(self, component: str, score: float):
+        """Update constitutional fidelity score gauge."""
+        self.constitutional_fidelity_score.labels(
+            service=self.service_name,
+            component=component
+        ).set(score)
+
+    def record_constitutional_violation(self, violation_type: str, severity: str):
+        """Record a constitutional violation."""
+        self.constitutional_violations_total.labels(
+            service=self.service_name,
+            violation_type=violation_type,
+            severity=severity
+        ).inc()
+
+    def record_qec_error_correction(self, error_type: str, strategy: str,
+                                  success: bool, response_time: float):
+        """Record QEC error correction metrics."""
+        self.qec_error_corrections_total.labels(
+            service=self.service_name,
+            error_type=error_type,
+            strategy=strategy,
+            success=str(success).lower()
+        ).inc()
+
+        self.qec_response_time.labels(
+            service=self.service_name,
+            error_type=error_type
+        ).observe(response_time)
+
+    def record_violation_escalation(self, escalation_level: str, auto_resolved: bool):
+        """Record violation escalation."""
+        self.violation_escalations_total.labels(
+            service=self.service_name,
+            escalation_level=escalation_level,
+            auto_resolved=str(auto_resolved).lower()
+        ).inc()
+
+    def record_constitutional_council_activity(self, activity_type: str, status: str):
+        """Record Constitutional Council activity."""
+        self.constitutional_council_activities.labels(
+            service=self.service_name,
+            activity_type=activity_type,
+            status=status
+        ).inc()
+
+    def update_llm_reliability_score(self, model: str, operation_type: str, score: float):
+        """Update LLM reliability score."""
+        self.llm_reliability_score.labels(
+            service=self.service_name,
+            model=model,
+            operation_type=operation_type
+        ).set(score)
+
+    def update_monitoring_health_status(self, component: str, healthy: bool):
+        """Update monitoring system health status."""
+        self.monitoring_health_status.labels(
+            service=self.service_name,
+            component=component
+        ).set(1.0 if healthy else 0.0)
 
     def record_llm_response_time(self, model_name: str, request_type: str, duration: float):
         """Record LLM response time."""

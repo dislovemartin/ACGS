@@ -21,10 +21,10 @@ class DatasetCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     domain: Optional[str] = None
-    data_type: str = Field(..., regex="^(experimental|observational|synthetic)$")
+    data_type: str = Field(..., pattern="^(experimental|observational|synthetic)$")
     schema_definition: Dict[str, Any] = Field(default_factory=dict)
     data_format: str = Field(default="json")
-    access_level: str = Field(default="private", regex="^(public|private|restricted)$")
+    access_level: str = Field(default="private", pattern="^(public|private|restricted)$")
     tags: List[str] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 

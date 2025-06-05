@@ -15,7 +15,7 @@ Task 19: Real-time Constitutional Fidelity Monitoring
 import asyncio
 import json
 import logging
-from typing import Dict, Set, Optional, Any
+from typing import Dict, Set, Optional, Any, List
 from datetime import datetime
 import uuid
 
@@ -30,6 +30,29 @@ from app.workflows.structured_output_models import (
     ConstitutionalViolation
 )
 
+# Import violation detection services
+from app.services.violation_detection_service import (
+    ViolationDetectionService,
+    ViolationType,
+    ViolationSeverity,
+    ViolationDetectionResult
+)
+from app.services.violation_escalation_service import (
+    ViolationEscalationService,
+    EscalationLevel,
+    EscalationResult
+)
+from app.services.violation_audit_service import (
+    ViolationAuditService,
+    AuditEventType
+)
+from app.services.qec_error_correction_service import (
+    QECErrorCorrectionService,
+    ConflictDetectionResult,
+    ErrorCorrectionResult,
+    ErrorCorrectionStatus
+)
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
@@ -37,11 +60,46 @@ router = APIRouter()
 class FidelityAlert(BaseModel):
     """Alert for constitutional fidelity violations."""
     alert_id: str
-    alert_type: str  # "violation", "threshold", "performance"
-    severity: str    # "green", "amber", "red"
+    alert_type: str  # "violation", "threshold", "performance", "escalation"
+    severity: str    # "green", "amber", "red", "critical"
     message: str
-    fidelity_score: float
-    violations: int
+    fidelity_score: Optional[float] = None
+    violations: int = 0
+    timestamp: datetime
+    metadata: Dict[str, Any] = {}
+
+
+class ViolationAlert(BaseModel):
+    """Alert for specific constitutional violations."""
+    alert_id: str
+    violation_id: str
+    violation_type: str  # ViolationType enum value
+    severity: str        # ViolationSeverity enum value
+    title: str
+    description: str
+    fidelity_score: Optional[float] = None
+    distance_score: Optional[float] = None
+    recommended_actions: List[str] = []
+    escalated: bool = False
+    escalation_level: Optional[str] = None
+    timestamp: datetime
+    metadata: Dict[str, Any] = {}
+
+
+class ErrorCorrectionAlert(BaseModel):
+    """Alert for QEC error correction activities."""
+    alert_id: str
+    correction_id: str
+    alert_type: str  # "conflict_detected", "correction_applied", "escalation_required"
+    status: str      # ErrorCorrectionStatus enum value
+    conflict_type: Optional[str] = None  # ConflictType enum value
+    resolution_strategy: Optional[str] = None  # ResolutionStrategy enum value
+    title: str
+    description: str
+    response_time_seconds: float = 0.0
+    fidelity_improvement: Optional[float] = None
+    escalation_required: bool = False
+    recommended_actions: List[str] = []
     timestamp: datetime
     metadata: Dict[str, Any] = {}
 
@@ -129,6 +187,72 @@ class FidelityMonitoringSession:
         
         await self.send_message(message)
         self.last_alert_time = datetime.utcnow()
+
+    async def send_violation_alert(self, alert: ViolationAlert):
+        """Send violation-specific alert to client."""
+        message = {
+            "type": "violation_alert",
+            "alert": {
+                "alert_id": alert.alert_id,
+                "violation_id": alert.violation_id,
+                "violation_type": alert.violation_type,
+                "severity": alert.severity,
+                "title": alert.title,
+                "description": alert.description,
+                "fidelity_score": alert.fidelity_score,
+                "distance_score": alert.distance_score,
+                "recommended_actions": alert.recommended_actions,
+                "escalated": alert.escalated,
+                "escalation_level": alert.escalation_level,
+                "timestamp": alert.timestamp.isoformat(),
+                "metadata": alert.metadata
+            }
+        }
+
+        await self.send_message(message)
+
+    async def send_error_correction_alert(self, alert: ErrorCorrectionAlert):
+        """Send error correction alert to client."""
+        message = {
+            "type": "error_correction_alert",
+            "alert": {
+                "alert_id": alert.alert_id,
+                "correction_id": alert.correction_id,
+                "alert_type": alert.alert_type,
+                "status": alert.status,
+                "conflict_type": alert.conflict_type,
+                "resolution_strategy": alert.resolution_strategy,
+                "title": alert.title,
+                "description": alert.description,
+                "response_time_seconds": alert.response_time_seconds,
+                "fidelity_improvement": alert.fidelity_improvement,
+                "escalation_required": alert.escalation_required,
+                "recommended_actions": alert.recommended_actions,
+                "timestamp": alert.timestamp.isoformat(),
+                "metadata": alert.metadata
+            }
+        }
+
+        await self.send_message(message)
+
+    async def send_escalation_notification(self, escalation_result: EscalationResult, violation_id: str):
+        """Send escalation notification to client."""
+        message = {
+            "type": "escalation_notification",
+            "escalation": {
+                "escalation_id": escalation_result.escalation_id,
+                "violation_id": violation_id,
+                "escalated": escalation_result.escalated,
+                "escalation_level": escalation_result.escalation_level.value,
+                "assigned_to": escalation_result.assigned_to,
+                "notification_sent": escalation_result.notification_sent,
+                "response_time_target": escalation_result.response_time_target,
+                "timestamp": datetime.utcnow().isoformat(),
+                "metadata": escalation_result.escalation_metadata
+            }
+        }
+
+        await self.send_message(message)
     
     async def _check_and_send_alert(self, workflow_id: str, fidelity_score: ConstitutionalFidelityScore):
         """Check if an alert should be sent based on fidelity score."""
@@ -226,6 +350,21 @@ class FidelityMonitoringManager:
         for session in self.active_sessions.values():
             await session.send_alert(alert)
 
+    async def broadcast_violation_alert(self, alert: ViolationAlert):
+        """Broadcast violation alert to all active sessions."""
+        for session in self.active_sessions.values():
+            await session.send_violation_alert(alert)
+
+    async def broadcast_escalation_notification(self, escalation_result: EscalationResult, violation_id: str):
+        """Broadcast escalation notification to all active sessions."""
+        for session in self.active_sessions.values():
+            await session.send_escalation_notification(escalation_result, violation_id)
+
+    async def broadcast_error_correction_alert(self, alert: ErrorCorrectionAlert):
+        """Broadcast error correction alert to all active sessions."""
+        for session in self.active_sessions.values():
+            await session.send_error_correction_alert(alert)
+
 
 # Global monitoring manager
 monitoring_manager = FidelityMonitoringManager()
@@ -258,7 +397,10 @@ async def fidelity_monitoring_websocket(websocket: WebSocket):
                 "fidelity_updates",
                 "performance_metrics",
                 "alerts",
-                "workflow_subscription"
+                "workflow_subscription",
+                "error_correction_monitoring",
+                "conflict_detection",
+                "automatic_resolution"
             ]
         })
         
@@ -358,6 +500,58 @@ async def handle_websocket_message(session: FidelityMonitoringSession, message: 
                 await session.send_message({
                     "type": "error",
                     "message": f"Failed to get fidelity status: {str(e)}",
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+
+        elif message_type == "start_error_correction":
+            # Start error correction workflow
+            try:
+                principle_ids = data.get("principle_ids", [])
+                policy_ids = data.get("policy_ids", [])
+                context_data = data.get("context_data", {})
+
+                # Initialize QEC service if not already done
+                if not hasattr(session, 'qec_service'):
+                    session.qec_service = QECErrorCorrectionService()
+
+                # Send acknowledgment
+                await session.send_message({
+                    "type": "error_correction_started",
+                    "workflow_id": f"qec_workflow_{uuid.uuid4().hex[:8]}",
+                    "message": "Error correction workflow initiated",
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+
+                # Note: Actual workflow execution would be handled by the API endpoint
+                # This is just for real-time monitoring acknowledgment
+
+            except Exception as e:
+                logger.error(f"Error starting error correction: {e}")
+                await session.send_message({
+                    "type": "error",
+                    "message": f"Failed to start error correction: {str(e)}",
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+
+        elif message_type == "get_error_correction_status":
+            # Get current error correction performance
+            try:
+                if not hasattr(session, 'qec_service'):
+                    session.qec_service = QECErrorCorrectionService()
+
+                performance_summary = session.qec_service.get_performance_summary()
+
+                await session.send_message({
+                    "type": "error_correction_status",
+                    "performance_summary": performance_summary,
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+
+            except Exception as e:
+                logger.error(f"Error getting error correction status: {e}")
+                await session.send_message({
+                    "type": "error",
+                    "message": f"Failed to get error correction status: {str(e)}",
                     "timestamp": datetime.utcnow().isoformat()
                 })
 

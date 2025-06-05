@@ -210,6 +210,7 @@ class WINAECOversightCoordinator:
         self._constitutional_compliance_cache: Dict[str, Tuple[bool, datetime]] = {}
         self._oversight_cache: Dict[str, Tuple[WINAOversightResult, datetime]] = {}
         self._learning_feedback: Dict[str, List[Dict[str, Any]]] = {}
+        self._constitutional_principles: List[Dict[str, Any]] = []
         
         # Reporting infrastructure
         self._oversight_reports: List[ECOversightReport] = []
@@ -1636,6 +1637,60 @@ class WINAECOversightCoordinator:
         except Exception as e:
             logger.warning(f"System health indicators calculation failed: {e}")
             return {"error": str(e)}
+
+    async def _perform_health_check(self) -> Dict[str, Any]:
+        """
+        Perform periodic health check for the WINA EC oversight coordinator.
+
+        Returns:
+            Dict containing health status and metrics
+        """
+        try:
+            health_status = {
+                "status": "healthy",
+                "wina_enabled": self.enable_wina,
+                "timestamp": time.time(),
+                "oversight_operations_count": len(self._oversight_history),
+                "constitutional_principles_loaded": len(self._constitutional_principles) > 0
+            }
+
+            # Check WINA components if enabled
+            if self.enable_wina and WINA_AVAILABLE:
+                try:
+                    # Check WINA core health
+                    if hasattr(self.wina_core, 'is_healthy'):
+                        health_status["wina_core_healthy"] = self.wina_core.is_healthy()
+                    else:
+                        health_status["wina_core_healthy"] = True
+
+                    # Check performance collector
+                    if self.performance_collector:
+                        health_status["performance_monitoring_active"] = True
+
+                    health_status["wina_components_status"] = "operational"
+
+                except Exception as wina_error:
+                    logger.warning(f"WINA health check failed: {wina_error}")
+                    health_status["wina_components_status"] = "degraded"
+                    health_status["wina_error"] = str(wina_error)
+
+            # Calculate recent performance metrics
+            if self._oversight_history:
+                recent_operations = self._oversight_history[-10:]  # Last 10 operations
+                avg_processing_time = sum(op.get("processing_time_ms", 0) for op in recent_operations) / len(recent_operations)
+                health_status["avg_processing_time_ms"] = avg_processing_time
+                health_status["recent_operations_count"] = len(recent_operations)
+
+            logger.debug("Health check completed successfully")
+            return health_status
+
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return {
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": time.time()
+            }
     
     async def _generate_oversight_recommendations(
         self,

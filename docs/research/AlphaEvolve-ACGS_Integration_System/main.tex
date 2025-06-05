@@ -22,10 +22,13 @@
     BoldFont={Latin Modern Mono} % Ensure bold variant is specified
   ]
 \else
-  % Fallback for pdflatex
-  \usepackage[utf8]{inputenc} % Ensure UTF-8 input encoding
-  \usepackage[T1]{fontenc}    % Font encoding
-  \usepackage{lmodern}        % Latin Modern fonts
+  % Fallback for pdflatex - acmart handles main fonts (Libertine/NewTXMath)
+  % We still need inputenc and fontenc if acmart doesn't set them as desired,
+  % but often it does. For safety, we can keep them if specific characters fail otherwise.
+  % For now, let's assume acmart handles them or they are correctly set for its defaults.
+  % \usepackage[utf8]{inputenc} % Usually handled by acmart or not strictly needed with modern TeX
+  % \usepackage[T1]{fontenc}    % acmart usually sets this up with its font choices
+  % DO NOT load \usepackage{lmodern} here, as it conflicts with acmart's pdflatex defaults.
 \fi
 
 % Mathematics packages (acmart loads amsmath and amsfonts)
@@ -1325,7 +1328,7 @@ We recognize and address several potential risks:
         \textit{Mitigation}: Diverse Council representation, term limits, transparent amendments, public comment, bias audits, challenge mechanisms.
     \item \textbf{Algorithmic Constitutionalism and Formalism Trap}: Oversimplification or misinterpretation when translating values to code \cite{Selbst2019FairnessAccountability}.
         \textit{Mitigation}: Multi-stage validation (semantic checks, human review for complex principles), iterative refinement, co-evolving constitution, appeal process.
-    \item \textbf{Legitimacy and Authority of AI-Mediated Governance}: Questions about legitimacy of AI-generated/enforced constitution.
+    \item \textbf{Legitimacy of AI-Mediated Governance}: Concerns about AI-generated/enforced constitutional authority.
         \textit{Mitigation}: \sloppy Emphasize ultimate human authority of Council, robust appeal mechanisms, human-in-the-loop validation, framing ACGS as augmenting human governance. \fussy
     \item \textbf{Complexity, Opacity, and Accessibility}: Framework complexity and LLM opacity excluding non-technical stakeholders.
         \textit{Mitigation}: Explainability Dashboard (\Cref{fig:explainability_dashboard}), open-source implementation, documentation, accessibility standards (WCAG 2.1 AA, \Cref{subsubsec:enhanced_accessibility}).

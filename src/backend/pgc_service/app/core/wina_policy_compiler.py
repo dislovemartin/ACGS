@@ -17,9 +17,9 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .incremental_compiler import IncrementalPolicyCompiler, CompilationMetrics
+from .incremental_compiler import IncrementalCompiler, CompilationMetrics
 from .policy_format_router import PolicyFormatRouter, PolicyValidationResult
-from ..models.policy_models import IntegrityPolicyRule
+from ..schemas import IntegrityPolicyRule
 
 # Import WINA components
 try:
@@ -87,7 +87,7 @@ class WINAPolicyCompiler:
             self.enable_wina = False
         
         # Initialize core components
-        self.incremental_compiler = IncrementalPolicyCompiler()
+        self.incremental_compiler = IncrementalCompiler()
         self.format_router = PolicyFormatRouter()
         
         # Performance tracking

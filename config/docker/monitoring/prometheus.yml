@@ -76,6 +76,20 @@ scrape_configs:
         target_label: 'component'
         replacement: 'constitutional_governance'
 
+  # Constitutional Fidelity Monitoring (Task 19.4)
+  - job_name: 'acgs-constitutional-monitoring'
+    static_configs:
+      - targets: ['gs_service:8004']
+    metrics_path: '/api/v1/constitutional-monitoring/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    scheme: http
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'acgs_(constitutional_fidelity_score|constitutional_violations_total|qec_.*|violation_escalations_total|constitutional_council_activities_total|llm_reliability_score|monitoring_health_status)'
+        target_label: 'monitoring_type'
+        replacement: 'constitutional_compliance'
+
   # ACGS-PGP PGC Service with Policy Enforcement Metrics
   - job_name: 'acgs-pgc-service'
     static_configs:

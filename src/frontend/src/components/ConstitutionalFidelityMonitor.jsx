@@ -285,6 +285,8 @@ const ConstitutionalFidelityMonitor = () => {
   const [currentFidelityScore, setCurrentFidelityScore] = useState(null);
   const [alertLevel, setAlertLevel] = useState('green');
   const [violationCount, setViolationCount] = useState(0);
+  const [violationAlerts, setViolationAlerts] = useState([]);
+  const [escalationNotifications, setEscalationNotifications] = useState([]);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(30); // 30 seconds
@@ -469,6 +471,29 @@ const ConstitutionalFidelityMonitor = () => {
         // Update violation count if alert contains violations
         if (message.alert.violations !== undefined) {
           setViolationCount(prev => prev + message.alert.violations);
+        }
+        break;
+
+      case 'violation_alert':
+        setViolationAlerts(prev => [message.alert, ...prev.slice(0, 19)]); // Keep last 20 violation alerts
+
+        // Update violation count
+        setViolationCount(prev => prev + 1);
+
+        // Update alert level based on violation severity
+        if (message.alert.severity === 'critical') {
+          setAlertLevel('red');
+        } else if (message.alert.severity === 'high' && alertLevel !== 'red') {
+          setAlertLevel('amber');
+        }
+        break;
+
+      case 'escalation_notification':
+        setEscalationNotifications(prev => [message.escalation, ...prev.slice(0, 19)]); // Keep last 20 escalations
+
+        // Show critical escalation alert
+        if (message.escalation.escalation_level === 'emergency_response') {
+          setAlertLevel('red');
         }
         break;
 
@@ -726,6 +751,7 @@ const ConstitutionalFidelityMonitor = () => {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="trends">Historical Trends</TabsTrigger>
           <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="violations">Violations</TabsTrigger>
           <TabsTrigger value="alerts">Alerts</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
@@ -1011,6 +1037,169 @@ const ConstitutionalFidelityMonitor = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Violations Tab */}
+        <TabsContent value="violations" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Violation Alerts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
+                  Constitutional Violations
+                  {violationAlerts.length > 0 && (
+                    <Badge variant="destructive" className="ml-2">
+                      {violationAlerts.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {violationAlerts.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500" />
+                      <p>No constitutional violations detected</p>
+                    </div>
+                  ) : (
+                    violationAlerts.map((alert, index) => (
+                      <div
+                        key={alert.alert_id || index}
+                        className={`p-3 rounded-lg border-l-4 ${
+                          alert.severity === 'critical' ? 'border-red-500 bg-red-50' :
+                          alert.severity === 'high' ? 'border-orange-500 bg-orange-50' :
+                          alert.severity === 'medium' ? 'border-yellow-500 bg-yellow-50' :
+                          'border-blue-500 bg-blue-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-medium text-sm">{alert.title}</h4>
+                              <Badge variant="outline" className={`text-xs ${
+                                alert.severity === 'critical' ? 'border-red-500 text-red-700' :
+                                alert.severity === 'high' ? 'border-orange-500 text-orange-700' :
+                                alert.severity === 'medium' ? 'border-yellow-500 text-yellow-700' :
+                                'border-blue-500 text-blue-700'
+                              }`}>
+                                {alert.severity}
+                              </Badge>
+                              {alert.escalated && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Escalated
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">{alert.description}</p>
+                            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                              <span>Type: {alert.violation_type?.replace('_', ' ')}</span>
+                              {alert.fidelity_score && (
+                                <span>Fidelity: {(alert.fidelity_score * 100).toFixed(1)}%</span>
+                              )}
+                              {alert.distance_score && (
+                                <span>Distance: {(alert.distance_score * 100).toFixed(1)}%</span>
+                              )}
+                            </div>
+                            {alert.recommended_actions && alert.recommended_actions.length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-xs font-medium text-gray-700">Recommended Actions:</p>
+                                <ul className="text-xs text-gray-600 list-disc list-inside">
+                                  {alert.recommended_actions.slice(0, 2).map((action, idx) => (
+                                    <li key={idx}>{action}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 ml-2">
+                            {formatTimestamp(alert.timestamp)}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Escalation Notifications */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-orange-500" />
+                  Escalation Notifications
+                  {escalationNotifications.length > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {escalationNotifications.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {escalationNotifications.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <CheckCircle className="h-12 w-12 mx-auto mb-2 text-green-500" />
+                      <p>No escalations required</p>
+                    </div>
+                  ) : (
+                    escalationNotifications.map((escalation, index) => (
+                      <div
+                        key={escalation.escalation_id || index}
+                        className={`p-3 rounded-lg border-l-4 ${
+                          escalation.escalation_level === 'emergency_response' ? 'border-red-500 bg-red-50' :
+                          escalation.escalation_level === 'constitutional_council' ? 'border-orange-500 bg-orange-50' :
+                          escalation.escalation_level === 'policy_manager' ? 'border-yellow-500 bg-yellow-50' :
+                          'border-blue-500 bg-blue-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-medium text-sm">
+                                Escalated to {escalation.escalation_level?.replace('_', ' ')}
+                              </h4>
+                              <Badge variant="outline" className={`text-xs ${
+                                escalation.escalation_level === 'emergency_response' ? 'border-red-500 text-red-700' :
+                                escalation.escalation_level === 'constitutional_council' ? 'border-orange-500 text-orange-700' :
+                                'border-yellow-500 text-yellow-700'
+                              }`}>
+                                {escalation.escalation_level}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                              <span>Violation: {escalation.violation_id}</span>
+                              {escalation.assigned_to && (
+                                <span>Assigned: {escalation.assigned_to}</span>
+                              )}
+                              <span>Target: {escalation.response_time_target}min</span>
+                            </div>
+                            <div className="flex items-center space-x-2 mt-2">
+                              {escalation.notification_sent ? (
+                                <div className="flex items-center text-xs text-green-600">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Notification sent
+                                </div>
+                              ) : (
+                                <div className="flex items-center text-xs text-red-600">
+                                  <XCircle className="h-3 w-3 mr-1" />
+                                  Notification failed
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-500 ml-2">
+                            {formatTimestamp(escalation.timestamp)}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Alerts Tab */}

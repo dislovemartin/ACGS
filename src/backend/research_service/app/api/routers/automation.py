@@ -21,7 +21,7 @@ class AutomationRuleRequest(BaseModel):
     """Request model for automation rules."""
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
-    trigger_type: str = Field(..., regex="^(scheduled|event_driven|threshold_based|manual)$")
+    trigger_type: str = Field(..., pattern="^(scheduled|event_driven|threshold_based|manual)$")
     conditions: Dict[str, Any] = Field(default_factory=dict)
     actions: List[Dict[str, Any]] = Field(default_factory=list)
     enabled: bool = Field(default=True)
