@@ -140,8 +140,12 @@ jobs:
           mypy src/ --ignore-missing-imports
 
       - name: Security analysis
+        working-directory: ./src
         run: |
-          bandit -r src/ -f json -o bandit-report.json || true
+          bandit -r . -f json -o ../bandit-report.json || true
+        
+      - name: Safety scan
+        run: |
           safety check --json --output safety-report.json || true
 
       - name: Upload security reports

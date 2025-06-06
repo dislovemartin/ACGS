@@ -28,6 +28,11 @@ ENV PYTHONPATH=/app/shared:/app:$PYTHONPATH
 # Create directories for research data
 RUN mkdir -p /app/research_data /app/experiment_artifacts /app/analysis_results
 
+# Create non-root user
+RUN useradd -m appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
 # Expose port
 EXPOSE 8007
 
