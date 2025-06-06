@@ -1,4 +1,7 @@
 name: Triage Board Management
+permissions:
+  contents: read
+  actions: none
 
 on:
   issues:

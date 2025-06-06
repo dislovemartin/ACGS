@@ -16,5 +16,13 @@ COPY . .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Create non-root user
+RUN useradd -m appuser && mkdir -p /home/appuser
+USER appuser
+
+# Simple health check just ensures the container is alive
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD [ -f /tmp/healthy ] || exit 1
+
 # Keep the container running by default
 CMD ["tail", "-f", "/dev/null"]

@@ -49,7 +49,7 @@ stringData:
   aws-access-key-id: "AWS_ACCESS_KEY_ID_PLACEHOLDER"
   aws-secret-access-key: "AWS_SECRET_ACCESS_KEY_PLACEHOLDER"
   encryption-key: "BACKUP_ENCRYPTION_KEY_PLACEHOLDER"
-  postgres-url: "postgresql://backup_user:backup_password@postgres-service.acgs-pgp:5432/acgs_pgp_db"
+  postgres-url: "${POSTGRES_URL}"
 
 ---
 apiVersion: batch/v1
