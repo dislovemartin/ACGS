@@ -410,25 +410,33 @@ class WINAOptimizedLLMClient:
         else:
             logger.warning(f"Could not determine specific model identifier for client type: {type(llm_client)}. Defaulting.")
             return "unknown-model"
+
+    def _detect_model_type(self, identifier: str) -> str:
+        id_lower = identifier.lower()
+        patterns = {
+            "openai": ["gpt", "davinci", "curie", "babbage", "ada"],
+            "groq": ["llama", "maverick", "scout"],
+            "anthropic": ["claude"],
+            "cohere": ["cohere"],
+            "gemini": ["gemini"],
+        }
+        for mtype, pats in patterns.items():
+            for p in pats:
+                if p in id_lower:
+                    return mtype
+        return "unknown"
     
     async def _apply_wina_optimization(self, model_identifier: str, llm_client: Any) -> WINAOptimizationResult:
         """Apply WINA optimization to the model."""
         
-        model_type = "unknown"
         if isinstance(llm_client, GroqLLMClient):
             model_type = "groq"
         elif isinstance(llm_client, RealLLMClient):
-            # Determine if it's an OpenAI model based on identifier
-            if "gpt" in model_identifier.lower() or \
-               "ada" in model_identifier.lower() or \
-               "davinci" in model_identifier.lower() or \
-               "babbage" in model_identifier.lower() or \
-               "curie" in model_identifier.lower():
-                model_type = "openai"
-            else:
-                model_type = "real_other" # Could be another type of real client
+            model_type = self._detect_model_type(model_identifier)
         elif hasattr(llm_client, '__class__') and "Mock" in llm_client.__class__.__name__:
             model_type = "mock"
+        else:
+            model_type = self._detect_model_type(model_identifier)
         
         if model_type == "unknown" or model_type == "real_other":
             logger.warning(f"WINA SVD optimization may not be fully compatible with model_identifier '{model_identifier}' and client type {type(llm_client)}. Proceeding with model_type '{model_type}'.")
