@@ -8,6 +8,8 @@ AlertManager integration, and distributed tracing capabilities.
 import asyncio
 import time
 import psutil
+import os
+import httpx
 from typing import Dict, Any, List, Optional, Callable
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
@@ -18,6 +20,13 @@ from prometheus_client import (
     CollectorRegistry, generate_latest, CONTENT_TYPE_LATEST
 )
 import structlog
+
+from .cache_manager import get_cache_manager
+from .performance_monitor import (
+    get_performance_monitor,
+    ERROR_RATE,
+    THROUGHPUT,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -310,17 +319,58 @@ class MonitoringService:
         memory_info = psutil.virtual_memory()
         cpu_percent = psutil.cpu_percent(interval=1)
         
-        # TODO: Integrate with cache manager and performance monitor
-        # For now, use placeholder values
-        
+        # Integrate with cache manager to obtain cache hit rate
+        cache_hit_rate = 0.0
+        try:
+            cache_manager = await get_cache_manager()
+            cache_stats = await cache_manager.get_cache_stats()
+            hit_rates = []
+            for stats in cache_stats.values():
+                mt_stats = stats.get("multi_tier")
+                if mt_stats:
+                    hit_rates.append(mt_stats.hit_rate)
+            if hit_rates:
+                cache_hit_rate = sum(hit_rates) / len(hit_rates)
+        except Exception as e:
+            logger.warning("Failed to get cache stats", error=str(e))
+
+        # Integrate with performance monitor for latency and active requests
+        policy_latency_ms = 0.0
+        concurrent_requests = 0
+        error_rate = 0.0
+        try:
+            monitor = get_performance_monitor()
+            profile = monitor.profiler.get_latency_profile(
+                "opa_policy_evaluation:policy_decision"
+            )
+            if profile:
+                policy_latency_ms = profile.avg_latency_ms
+            concurrent_requests = monitor.active_requests
+
+            errors = sum(
+                s.value
+                for metric in ERROR_RATE.collect()
+                for s in metric.samples
+                if s.name.endswith("_total")
+            )
+            requests = sum(
+                s.value
+                for metric in THROUGHPUT.collect()
+                for s in metric.samples
+                if s.name.endswith("_total")
+            )
+            error_rate = errors / requests if requests > 0 else 0.0
+        except Exception as e:
+            logger.warning("Failed to get performance metrics", error=str(e))
+
         return PerformanceMetrics(
             timestamp=datetime.now(),
-            policy_decision_latency_ms=25.0,  # Placeholder
-            cache_hit_rate=0.85,  # Placeholder
-            concurrent_requests=10,  # Placeholder
+            policy_decision_latency_ms=policy_latency_ms,
+            cache_hit_rate=cache_hit_rate,
+            concurrent_requests=concurrent_requests,
             memory_usage_mb=memory_info.used / (1024 * 1024),
             cpu_usage_percent=cpu_percent,
-            error_rate=0.01  # Placeholder
+            error_rate=error_rate,
         )
     
     def _update_prometheus_metrics(self, metrics: PerformanceMetrics):
@@ -345,8 +395,17 @@ class MonitoringService:
                 severity=alert['severity']
             )
             
-            # TODO: Integrate with external alerting systems
-            # (Slack, email, PagerDuty, etc.)
+            # Forward alerts to external alerting systems
+            slack_url = os.getenv("SLACK_WEBHOOK_URL")
+            if slack_url:
+                try:
+                    async with httpx.AsyncClient() as client:
+                        await client.post(
+                            slack_url,
+                            json={"text": f"ACGS Alert: {alert['description']}"},
+                        )
+                except Exception as e:
+                    logger.error("Failed to send Slack alert", error=str(e))
     
     def get_metrics_export(self) -> str:
         """Get Prometheus metrics export."""
