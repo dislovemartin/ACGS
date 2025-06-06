@@ -49,6 +49,8 @@ DEPLOYMENT_METRICS="{
     \"services_deployed\": [],
     \"performance_metrics\": {},
     \"security_validation\": {},
+    \"log_directory\": \"\",
+    \"log_files\": [],
     \"issues_encountered\": []
 }"
 
@@ -59,6 +61,37 @@ update_metrics() {
     echo "$DEPLOYMENT_METRICS" | jq ".$key = $value" > /tmp/metrics.json
     DEPLOYMENT_METRICS=$(cat /tmp/metrics.json)
 }
+
+# Capture docker logs when deployment fails
+collect_docker_logs() {
+    LOG_CAPTURE_DIR="$PROJECT_ROOT/logs/staging/docker_logs_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$LOG_CAPTURE_DIR"
+    local services
+    services=$(docker-compose -f docker-compose.prod.yml --env-file "$STAGING_ENV_FILE" ps --services 2>/dev/null || true)
+    if [ -z "$services" ]; then
+        echo "No services found" > "$LOG_CAPTURE_DIR/no_services.log"
+    else
+        for svc in $services; do
+            docker-compose -f docker-compose.prod.yml --env-file "$STAGING_ENV_FILE" logs "$svc" > "$LOG_CAPTURE_DIR/${svc}.log" 2>&1 || true
+        done
+    fi
+
+    local file_list
+    file_list=$(ls -1 "$LOG_CAPTURE_DIR" | sed 's/.*/"&"/' | paste -sd ',' -)
+    update_metrics "log_directory" "\"$LOG_CAPTURE_DIR\""
+    update_metrics "log_files" "[$file_list]"
+}
+
+# Trap any error to collect logs before exiting
+handle_failure() {
+    local exit_code=$?
+    error "Deployment failed with exit code $exit_code"
+    collect_docker_logs
+    log "Docker logs saved to $LOG_CAPTURE_DIR"
+    exit $exit_code
+}
+
+trap handle_failure ERR
 
 # Function to check system requirements
 check_system_requirements() {
