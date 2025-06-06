@@ -29,10 +29,10 @@ While all major components are implemented, **production readiness gaps** requir
 **Files to Execute:**
 ```bash
 # Service health and communication testing
-python test_service_integration.py
+python scripts/tests/test_service_integration.py
 
 # Production configuration setup
-python production_config_setup.py
+python scripts/deployment/production_config_setup.py
 ```
 
 **Expected Outcomes:**
@@ -73,7 +73,7 @@ python test_comprehensive_features.py
 **Files to Execute:**
 ```bash
 # Performance benchmarking and optimization
-python performance_optimization.py
+python scripts/performance_optimization.py
 ```
 
 **Optimization Targets:**
@@ -99,7 +99,7 @@ REDIS_CACHE_CONFIG = {
 **Files to Execute:**
 ```bash
 # Security assessment and hardening
-python security_hardening.py
+python scripts/security_hardening.py
 ```
 
 **Security Requirements:**
@@ -117,7 +117,7 @@ python security_hardening.py
 **Files to Execute:**
 ```bash
 # Automated deployment and validation
-python deployment_automation.py
+python scripts/deployment/deployment_automation.py
 ```
 
 **Deployment Components:**

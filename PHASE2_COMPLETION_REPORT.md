@@ -93,7 +93,7 @@ Phase 2: Module Interaction Optimization has been successfully completed, implem
 
 ## Demonstration Results
 
-The `phase2_demo.py` script successfully demonstrated:
+The `phase2_demo.py` script (located in `scripts/`) successfully demonstrated:
 
 ```
 📊 Demonstration Metrics:

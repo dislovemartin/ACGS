@@ -296,7 +296,7 @@ python test_comprehensive_acgs_validation.py
 
 # 2. Performance optimization validation
 python scripts/phase3_load_testing.py
-python validate_phase3_monitoring.py
+python scripts/tests/validate_phase3_monitoring.py
 
 # 3. Production deployment preparation
 python scripts/phase3_comprehensive_health_deployment.py
@@ -325,7 +325,7 @@ python scripts/setup_gpu_acceleration.py
 ### **Step 1: Run Phase 1 Completion Validation**
 ```bash
 # Execute the comprehensive next phase implementation
-python execute_alphaevolve_next_phase.py
+python scripts/execute_alphaevolve_next_phase.py
 
 # Run advanced features integration tests
 python -m pytest tests/integration/test_alphaevolve_advanced_features.py -v
@@ -383,7 +383,7 @@ asyncio.run(test())
 python scripts/phase3_load_testing.py
 
 # Validate monitoring infrastructure
-python validate_phase3_monitoring.py
+python scripts/tests/validate_phase3_monitoring.py
 
 # Check production deployment readiness
 python scripts/validate_production_deployment_comprehensive.py
@@ -430,4 +430,4 @@ python scripts/validate_production_deployment_comprehensive.py
 
 ---
 
-**Next Immediate Action**: Execute `python execute_alphaevolve_next_phase.py` to begin comprehensive validation and implementation.
+**Next Immediate Action**: Execute `python scripts/execute_alphaevolve_next_phase.py` to begin comprehensive validation and implementation.

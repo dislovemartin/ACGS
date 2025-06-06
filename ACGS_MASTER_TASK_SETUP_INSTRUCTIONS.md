@@ -37,10 +37,10 @@ python scripts/coverage_analysis.py
 tm get-tasks
 
 # 3. Validate service health
-python test_service_integration.py
+python scripts/tests/test_service_integration.py
 
 # 4. Check security status
-python security_hardening.py
+python scripts/security_hardening.py
 
 # 5. Review documentation completeness
 find docs/ -name "*.md" -exec wc -l {} +
@@ -191,7 +191,7 @@ find docs/ -name "*.md" -exec wc -l {} +
    python test_comprehensive_features.py
    
    # Benchmark policy decision latency
-   python performance_optimization.py
+   python scripts/performance_optimization.py
    ```
 
 4. **Implement Caching Strategy**
@@ -231,7 +231,7 @@ find docs/ -name "*.md" -exec wc -l {} +
 1. **Establish Performance Baseline**
    ```bash
    # Run comprehensive performance analysis
-   python performance_optimization.py
+   python scripts/performance_optimization.py
    
    # Generate performance report
    python -c "
@@ -331,7 +331,7 @@ find docs/ -name "*.md" -exec wc -l {} +
 3. **Security Hardening Implementation**
    ```bash
    # Execute security hardening
-   python security_hardening.py
+   python scripts/security_hardening.py
    
    # Validate security configuration
    python scripts/security_infrastructure_audit.py

@@ -29,7 +29,7 @@
 - ✅ **Multi-Model Validation**: Cross-model consistency and validation rules
 
 #### 3. **Test Execution Pipeline** - **FUNCTIONAL**
-- ✅ **Automated Test Runner**: `./run_tests.sh` with comprehensive reporting
+- ✅ **Automated Test Runner**: `./scripts/tests/run_tests.sh` with comprehensive reporting
 - ✅ **CI/CD Ready**: Pytest configuration with proper markers and timeouts
 - ✅ **Performance Tracking**: Test execution time monitoring
 - ✅ **Error Handling**: Robust test failure reporting and debugging
@@ -103,7 +103,7 @@
 ### Test Infrastructure Enhancements
 ```bash
 # Current test execution
-./run_tests.sh                    # Basic test suite
+./scripts/tests/run_tests.sh      # Basic test suite
 python -m pytest --cov=src       # Coverage analysis
 python -m pytest -m integration  # Integration tests only
 python -m pytest -m performance  # Performance tests only

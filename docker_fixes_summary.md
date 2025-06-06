@@ -100,7 +100,7 @@ async def health_check() -> dict:
 ### For Development:
 1. **Use Test Configuration**: `docker-compose -f docker-compose-test.yml up -d`
 2. **Monitor Logs**: Check for any remaining import issues
-3. **Run Integration Tests**: Execute test_service_integration.py
+3. **Run Integration Tests**: Execute `scripts/tests/test_service_integration.py`
 4. **Run Comprehensive Tests**: Execute test_comprehensive_features.py
 
 ## Commands to Test
@@ -118,7 +118,7 @@ curl http://localhost:8004/health  # GS Service
 curl http://localhost:8005/health  # PGC Service
 
 # Run integration tests
-python test_service_integration.py
+python scripts/tests/test_service_integration.py
 
 # Clean up
 docker-compose -f docker-compose-test.yml down --remove-orphans

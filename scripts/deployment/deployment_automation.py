@@ -374,10 +374,10 @@ echo "Backup completed: $BACKUP_DIR"
             print("✅ No issues encountered!")
         
         print("\n📋 Next Steps:")
-        print("1. Run integration tests: python test_service_integration.py")
-        print("2. Run feature tests: python test_comprehensive_features.py")
-        print("3. Run performance analysis: python performance_optimization.py")
-        print("4. Run security assessment: python security_hardening.py")
+        print("1. Run integration tests: python scripts/tests/test_service_integration.py")
+        print("2. Run feature tests: python scripts/tests/test_comprehensive_features.py")
+        print("3. Run performance analysis: python scripts/performance_optimization.py")
+        print("4. Run security assessment: python scripts/security_hardening.py")
         print("5. Access services at: http://localhost:8000")
         print("6. Monitor with Grafana: http://localhost:3000 (admin/admin)")
         

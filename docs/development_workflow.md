@@ -771,7 +771,7 @@ async def metrics_middleware(request: Request, call_next):
 ```bash
 # Available development scripts in scripts/
 ./scripts/setup_dev_environment.sh    # Initial development setup
-./scripts/run_tests.sh                # Run all tests
+./scripts/tests/run_tests.sh          # Run all tests
 ./scripts/run_linting.sh              # Run code quality checks
 ./scripts/run_migrations.sh           # Apply database migrations
 ./scripts/seed_test_data.sh           # Seed development test data

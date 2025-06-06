@@ -531,7 +531,7 @@ src/backend/shared/service_mesh/
 
 ### 📊 Demonstration Results
 
-The `refactoring_demo.py` script demonstrates:
+The `refactoring_demo.py` script (located in `scripts/`) demonstrates:
 - ✅ Unified HTTP client eliminating 15+ duplicate implementations
 - ✅ Standardized validation reducing code duplication by 70%
 - ✅ Consistent error handling across all services

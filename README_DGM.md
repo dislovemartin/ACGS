@@ -57,7 +57,7 @@ pip install -r requirements.txt
 
 ```bash
 # Clone or download the DGM files
-cp dgm_best_swe_agent.py /path/to/your/project/
+cp scripts/dgm_best_swe_agent.py /path/to/your/project/
 cp dgm_config.json /path/to/your/project/
 
 # Optional: Install Requesty API for enhanced capabilities
@@ -69,7 +69,7 @@ pip install -r requirements-requesty.txt
 ### Basic Usage
 
 ```bash
-python dgm_best_swe_agent.py \
+python scripts/dgm_best_swe_agent.py \
     --problem_statement "Fix the failing unit tests in the authentication module" \
     --git_dir /path/to/repo \
     --base_commit abc123def \
@@ -81,7 +81,7 @@ python dgm_best_swe_agent.py \
 ### Advanced Usage with Configuration
 
 ```bash
-python dgm_best_swe_agent.py \
+python scripts/dgm_best_swe_agent.py \
     --problem_statement "Implement OAuth2 authentication with JWT tokens" \
     --git_dir /path/to/repo \
     --base_commit abc123def \
@@ -329,7 +329,7 @@ Enable detailed debugging:
 ```bash
 export DGM_DEBUG=1
 export DGM_LOG_LEVEL=DEBUG
-python dgm_best_swe_agent.py [args...]
+python scripts/dgm_best_swe_agent.py [args...]
 ```
 
 ## Research Foundation

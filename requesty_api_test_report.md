@@ -6,7 +6,7 @@
 
 ## Test Overview
 
-This report documents the successful testing of the Requesty API integration using the [`requesty_example.py`](requesty_example.py) script to validate API connectivity, authentication, and response handling.
+This report documents the successful testing of the Requesty API integration using the [`requesty_example.py`](scripts/requesty_example.py) script to validate API connectivity, authentication, and response handling.
 
 ## Test Environment
 
@@ -57,7 +57,7 @@ pip install -r requirements-requesty.txt
 
 ## Key Features Validated
 
-1. **Client Initialization** - [`RequestyAPIClient`](requesty_example.py:34) class properly configured
+1. **Client Initialization** - [`RequestyAPIClient`](scripts/requesty_example.py:34) class properly configured
 2. **Environment Variable Loading** - [`.env`](.env:2) file correctly parsed
 3. **OpenAI-Compatible Interface** - Seamless integration with OpenAI client library
 4. **Error Handling** - Robust exception handling implemented
@@ -104,7 +104,7 @@ The Requesty API integration is **validated and ready** for:
 
 ## Technical Notes
 
-- The [`RequestyAPIClient`](requesty_example.py:34) class provides a clean abstraction layer
+- The [`RequestyAPIClient`](scripts/requesty_example.py:34) class provides a clean abstraction layer
 - Environment variable configuration is properly isolated
 - Token usage monitoring enables cost tracking
 - Response format is consistent with OpenAI API standards

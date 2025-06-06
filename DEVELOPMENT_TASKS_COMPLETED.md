@@ -124,7 +124,7 @@ This document summarizes the completion of four critical development tasks for t
 ### Test Execution:
 ```bash
 # Run all tests
-./run_tests.sh
+./scripts/tests/run_tests.sh
 
 # Run individual test suites
 python -m pytest tests/test_constitutional_council_fixtures.py -v

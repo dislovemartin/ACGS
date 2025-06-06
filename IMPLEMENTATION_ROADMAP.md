@@ -21,7 +21,7 @@ The ACGS-PGP framework is **architecturally complete** with all Phase 1-3 compon
 #### Tasks:
 1. **Service Integration Testing**
    ```bash
-   python test_service_integration.py
+   python scripts/tests/test_service_integration.py
    ```
    - Validate cross-service communication
    - Test health endpoints across all services
@@ -30,7 +30,7 @@ The ACGS-PGP framework is **architecturally complete** with all Phase 1-3 compon
 
 2. **Production Configuration Setup**
    ```bash
-   python production_config_setup.py
+   python scripts/deployment/production_config_setup.py
    ```
    - Generate secure environment variables
    - Create production-ready `.env.production`
@@ -86,7 +86,7 @@ The ACGS-PGP framework is **architecturally complete** with all Phase 1-3 compon
 #### Tasks:
 1. **Performance Benchmarking**
    ```bash
-   python performance_optimization.py
+   python scripts/performance_optimization.py
    ```
    - Database query optimization
    - LLM inference performance tuning
@@ -119,7 +119,7 @@ The ACGS-PGP framework is **architecturally complete** with all Phase 1-3 compon
 #### Tasks:
 1. **Security Vulnerability Assessment**
    ```bash
-   python security_hardening.py
+   python scripts/security_hardening.py
    ```
    - Authentication security testing
    - Input validation verification
@@ -154,7 +154,7 @@ The ACGS-PGP framework is **architecturally complete** with all Phase 1-3 compon
 #### Tasks:
 1. **Automated Deployment**
    ```bash
-   python deployment_automation.py
+   python scripts/deployment/deployment_automation.py
    ```
    - Docker image building automation
    - Service orchestration with Docker Compose

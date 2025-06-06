@@ -54,7 +54,7 @@ Based on our comprehensive AlphaEvolve-ACGS framework enhancement implementation
 - End-to-end integration testing with performance targets
 
 ### **5. Execution Framework**
-**Location**: `execute_alphaevolve_next_phase.py`
+**Location**: `scripts/execute_alphaevolve_next_phase.py`
 **Capabilities**:
 - Automated validation of all components
 - Performance target verification
@@ -68,7 +68,7 @@ Based on our comprehensive AlphaEvolve-ACGS framework enhancement implementation
 ### **Step 1: Validate Implementation (30 minutes)**
 ```bash
 # Execute comprehensive validation
-python execute_alphaevolve_next_phase.py
+python scripts/execute_alphaevolve_next_phase.py
 
 # Run advanced features tests
 python -m pytest tests/integration/test_alphaevolve_advanced_features.py -v
@@ -113,7 +113,7 @@ asyncio.run(validate_all())
 ```bash
 # Establish performance baselines
 python scripts/phase3_load_testing.py
-python validate_phase3_monitoring.py
+python scripts/tests/validate_phase3_monitoring.py
 python scripts/validate_production_deployment_comprehensive.py
 ```
 
@@ -207,7 +207,7 @@ python scripts/validate_production_deployment_comprehensive.py
 ## 🎯 Critical Path Forward
 
 ### **Immediate Priority (Next 48 hours)**
-1. **Execute Validation**: Run `python execute_alphaevolve_next_phase.py`
+1. **Execute Validation**: Run `python scripts/execute_alphaevolve_next_phase.py`
 2. **Verify Components**: Ensure all advanced components initialize correctly
 3. **Performance Baseline**: Establish current performance metrics
 4. **Address Issues**: Fix any validation failures immediately
@@ -238,4 +238,4 @@ The AlphaEvolve-ACGS framework enhancement implementation has successfully estab
 
 **The system is now ready for the next phase of implementation and production deployment.**
 
-**Execute `python execute_alphaevolve_next_phase.py` to begin the validation and continue with the critical path forward.**
+**Execute `python scripts/execute_alphaevolve_next_phase.py` to begin the validation and continue with the critical path forward.**
