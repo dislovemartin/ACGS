@@ -36,6 +36,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python environment and install dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9 # Or any other version appropriate for the project
+      - name: Install dependencies
+        run: pip install -r tools/requirements.txt
       - name: Set up Snyk CLI to check for security issues
         # Snyk can be used to break the build when it detects security issues.
         # In this case we want to upload the SAST issues to GitHub Code Scanning

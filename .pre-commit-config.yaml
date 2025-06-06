@@ -1,57 +1,9 @@
 repos:
--   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+  - repo: https://github.com/psf/black
+    rev: 23.1.0 # You can use a newer version if available
     hooks:
-    -   id: codespell
-        args: ["--ignore-words-list", "tex,acgs,pgp,gs,fv,pgc,kpis,ba,acmart,authoryear,dont,didnt,hadnt,hasnt,isnt,shouldnt,wasnt,werent,wont,wouldnt,couldnt,datas,organisation,organisations,utilisation,harcoded,ware,parantheses,mystyle,backcolour,codegreen,codegray,codepurple,sigconf,dontleaveemptyhanded,cryptpad,ndss,commitlint,versionlens,todos,bitwarden,emojisense,quicktime,sourcetree,sourcetrail,devops,kustomize,devcontainer,devcontainers,githubactions,azuredevops,gitlabci,circleci,jenkins,travisci,sonarqube,whitesource,checkmarx,veracode,fortify,anchore,sysdig,trivy,clair,falco,snyk,dependabot,renovatebot,prettierrc,eslintignore,stylelint,pylintrc,flake8,mypy,yapf,autopep8,isort,terraformrc,ansiblelint,hadolint,shellcheck,alex,textlint,vale,redoc,stoplight,asyncapi,plantuml,drawio,mermaidjs,doxygen,jsdoc,tsdoc,esdoc,apidoc,npmrc,yarnrc,pnpm,pnpmfile,pnpmefile,pnpjs,pnpmefilejs,nvmrc,mise,miseignore,miseconfigtoml,miseconfigjson,miseconfigjs,miseconfigyml,miseconfigyaml,miseconfig"] # Added more potential false positives
-        # Consider excluding specific file types if codespell is too noisy, e.g.:
-        # exclude_types: [json, yaml, csv, log]
-        # Or exclude specific files/directories:
-        # exclude: "^docs/ocr_outputs/.*$"
--   repo: https://github.com/psf/black
-    rev: 23.11.0 # Kept as specified, but consider updating to a newer stable version like 24.x.x if project aligns
+      - id: black
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1 # You can use a newer version if available
     hooks:
-    -   id: black
-        language_version: python3.10 # Ensure this matches the project's Python version
--   repo: https://github.com/markdownlint/markdownlint-cli
-    rev: v0.37.0 # Kept as specified, consider updating if newer compatible versions are available
-    hooks:
-    -   id: markdownlint
-      # args: ["--config", ".markdownlint.json"] # Example: if you have a custom config
-      # To ignore specific rules across all files:
-      # args: ["--disable", "MD013", "MD041"]
-      # To ignore specific files:
-      # exclude: "^docs/some_legacy_file.md$"
-
-# Example of adding a YAML linter:
-# -   repo: https://github.com/adrienverge/yamllint
-#     rev: v1.33.0
-#     hooks:
-#     -   id: yamllint
-#         args: ["-c", ".yamllint.yml"] # Example: if you have a custom config
-
-# Example of adding a requirements.txt sorter:
-# -   repo: https://github.com/PyCQA/isort # isort also sorts imports in Python files
-#     rev: 5.12.0 # Check for latest stable
-#     hooks:
-#       - id: isort
-#         name: isort (requirements)
-#         args: ["--profile", "black"]
-#         files: "requirements.*\.txt$"
-#       - id: isort
-#         name: isort (python)
-#         args: ["--profile", "black"]
-#         exclude: "requirements.*\\.txt$"
-
-# Example of adding end-of-file fixer and trailing-whitespace fixer:
-# -   repo: https://github.com/pre-commit/pre-commit-hooks
-#     rev: v4.5.0 # Check for latest stable
-#     hooks:
-#     -   id: trailing-whitespace
-#     -   id: end-of-file-fixer
-#     -   id: check-yaml
-#     -   id: check-json
-#     -   id: check-toml
-#     -   id: check-merge-conflict
-#     -   id: debug-statements
-#     -   id: detect-private-key
+      - id: isort
