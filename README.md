@@ -79,6 +79,9 @@ ACGS-PGP/
 # Run all tests
 pytest
 
+# Legacy integration scripts (require running services)
+ACGS_INTEGRATION=1 pytest tests/integration/legacy
+
 # Run specific service tests
 pytest tests/backend/ac_service/
 

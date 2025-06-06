@@ -1,3 +1,7 @@
+import os, pytest
+if not os.environ.get("ACGS_INTEGRATION"):
+    pytest.skip("integration test requires running services", allow_module_level=True)
+
 #!/usr/bin/env python3
 """
 ACGS-PGP Authentication Service - Final Comprehensive Test
@@ -207,3 +211,15 @@ def test_complete_auth_workflow():
 
 if __name__ == "__main__":
     test_complete_auth_workflow()
+
+import os
+import asyncio
+import pytest
+
+@pytest.mark.skipif(not os.environ.get("ACGS_INTEGRATION"), reason="Integration test requires running services")
+def test_main_wrapper():
+    if 'test_complete_auth_workflow' in globals():
+        if asyncio.iscoroutinefunction(test_complete_auth_workflow):
+            asyncio.run(test_complete_auth_workflow())
+        else:
+            test_complete_auth_workflow()
