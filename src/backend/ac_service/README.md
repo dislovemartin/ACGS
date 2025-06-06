@@ -1,36 +1,36 @@
-# Ac Service
+# AC Service
 
-## Overview
-Artificial Constitution (AC) Service
+## Purpose
+Provides constitutional management including principles, council workflows, and conflict resolution mechanisms.
 
-## Features
+## Main Features
+- Manage principles and guidelines
+- Support Constitutional Council voting and amendments
+- Monitor fidelity and handle conflict resolution events
 
+## Key API Endpoints
+- `/api/v1/principles` - CRUD operations for constitutional principles
+- `/api/v1/constitutional-council` - council management and voting
+- `/api/v1/conflict-resolution` - resolve policy conflicts
+- `/api/v1/fidelity` - track adherence to principles
+- `/api/v1/dashboard` - WebSocket dashboard updates
 
-## API Endpoints
-- `/api/v1/principles`
-- `/api/v1/constitutional-council`
-- `/api/v1/conflict-resolution`
-- `/api/v1/fidelity`
-- `/api/v1`
-- `/api/v1`
-- `/api/v1`
-- `/api/v1`
-- `/api/v1`
-- `/api/v1`
-- `/api/v1`
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Copy `.env.example` to `.env` and configure:
+   - `DATABASE_URL` - PostgreSQL connection string
+   - `APP_ENV` - `development` or `production`
+   - `AUTH_SERVICE_TOKEN` - token for internal calls
 
-## Configuration
-See `.env.example` for configuration options
+### Running Service
+```bash
+uvicorn main:app --reload
+```
 
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+```bash
+pytest tests
+```

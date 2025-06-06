@@ -1,26 +1,22 @@
-# Shared
+# Shared Utilities
 
-## Overview
-ACGS-PGP service component
+## Purpose
+Provides common libraries, database models, and helper utilities used across all services.
 
-## Features
+## Main Features
+- Centralized database models and schemas
+- Reusable utility modules
+- Shared security and caching logic
 
+## Key API Endpoints
+_This package exposes no API endpoints_
 
-## API Endpoints
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. No environment variables are required.
 
-
-## Configuration
-See `.env.example` for configuration options
-
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+_No dedicated tests for this package_
