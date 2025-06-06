@@ -33,7 +33,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: tj-actions/changed-files@v36
+        uses: tj-actions/changed-files@v46
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # We only care about changes in these paths for running tests
