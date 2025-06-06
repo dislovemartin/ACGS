@@ -135,6 +135,17 @@ except Exception as e:
 fi
 ((total_tests++))
 
+# Legacy Integration Scripts converted to pytest
+echo -e "\n${YELLOW}🧩 Legacy Integration Scripts${NC}"
+pytest tests/integration/legacy -v
+exit_code=$?
+if [ $exit_code -eq 0 ] || [ $exit_code -eq 5 ]; then
+    ((passed_tests++))
+else
+    echo -e "${RED}❌ Legacy integration scripts failed${NC}"
+fi
+((total_tests++))
+
 # Summary
 echo -e "\n${BLUE}📊 Test Results Summary${NC}"
 echo "=============================================="

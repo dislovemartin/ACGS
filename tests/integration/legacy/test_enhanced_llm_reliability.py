@@ -1,3 +1,7 @@
+import os, pytest
+if not os.environ.get("ACGS_INTEGRATION"):
+    pytest.skip("integration test requires running services", allow_module_level=True)
+
 #!/usr/bin/env python3
 """
 Test script for Enhanced LLM Reliability Framework
@@ -201,3 +205,15 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+import os
+import asyncio
+import pytest
+
+@pytest.mark.skipif(not os.environ.get("ACGS_INTEGRATION"), reason="Integration test requires running services")
+def test_main_wrapper():
+    if 'main' in globals():
+        if asyncio.iscoroutinefunction(main):
+            asyncio.run(main())
+        else:
+            main()
