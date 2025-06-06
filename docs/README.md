@@ -11,6 +11,7 @@ This directory contains detailed documentation for the ACGS-PGP (Artificial Cons
 -   **`roadmap.md`**: Outlines the project's development phases, planned features, current progress, and future milestones for the ACGS-PGP system.
 -   **`security.md`**: Discusses security considerations, best practices, potential threats, and measures implemented or planned to ensure the security of the ACGS-PGP system.
 -   **`user_guide.md`**: Explains how to use the ACGS-PGP platform from an end-user's perspective, covering its features, functionalities, and user interface interactions.
+-   **`ai-research-assistant-guidelines.md`**: Best practices for developing accurate and reliable AI research assistants.
 
 ## Microservice Guides
 
