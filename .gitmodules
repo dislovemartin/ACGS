@@ -1,0 +1,15 @@
+[submodule "data/principle-policy-corpus/azure-policy"]
+	path = data/principle-policy-corpus/azure-policy
+	url = https://github.com/Azure/azure-policy.git
+[submodule "data/principle-policy-corpus/Community-Policy"]
+	path = data/principle-policy-corpus/Community-Policy
+	url = https://github.com/Azure/Community-Policy.git
+[submodule "data/principle-policy-corpus/gatekeeper-library"]
+	path = data/principle-policy-corpus/gatekeeper-library
+	url = https://github.com/open-policy-agent/gatekeeper-library.git
+[submodule "data/principle-policy-corpus/opa-library"]
+	path = data/principle-policy-corpus/opa-library
+	url = https://github.com/open-policy-agent/library.git
+[submodule "mcp-servers/mcp-server-browserbase"]
+	path = mcp-servers/mcp-server-browserbase
+	url = https://github.com/browserbase/mcp-server-browserbase.git
