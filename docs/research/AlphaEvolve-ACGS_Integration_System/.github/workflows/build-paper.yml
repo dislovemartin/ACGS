@@ -1,4 +1,7 @@
 name: Build and Validate AlphaEvolve-ACGS Paper
+permissions:
+  contents: read
+  actions: none
 
 on:
   push:

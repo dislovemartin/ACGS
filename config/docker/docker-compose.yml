@@ -84,7 +84,7 @@ services:
       postgres_db:
         condition: service_healthy
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://USER:PASSWORD@postgres_db:5432/DBNAME}
       # POSTGRES_USER and POSTGRES_PASSWORD needed by wait-for-postgres.sh
       - POSTGRES_USER=${POSTGRES_USER:-acgs_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-acgs_password}
@@ -106,7 +106,7 @@ services:
     ports:
       - "8000:8000" # External port mapping for direct access
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://USER:PASSWORD@postgres_db:5432/DBNAME}
       - SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - ALGORITHM=${AUTH_SERVICE_ALGORITHM:-HS256}
@@ -137,7 +137,7 @@ services:
     ports:
       - "8001:8001" # Internal port
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://USER:PASSWORD@postgres_db:5432/DBNAME}
       - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
@@ -167,7 +167,7 @@ services:
     ports:
       - "8002:8002" # Internal port
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://USER:PASSWORD@postgres_db:5432/DBNAME}
       - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       - ENVIRONMENT=${ENVIRONMENT:-development}
@@ -283,7 +283,7 @@ services:
     ports:
       - "8007:8007" # Internal port
     environment:
-      - RESEARCH_DATABASE_URL=${RESEARCH_DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_research}
+      - RESEARCH_DATABASE_URL=${RESEARCH_DATABASE_URL:-postgresql+asyncpg://USER:PASSWORD@postgres_db:5432/DBNAME}
       - RESEARCH_REDIS_URL=${RESEARCH_REDIS_URL:-redis://redis:6379/2}
       - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001}
       - GS_SERVICE_URL=${GS_SERVICE_URL:-http://gs_service:8004}
@@ -328,7 +328,7 @@ services:
     ports:
       - "8006:8006" # Internal port (service runs on 8006 inside container)
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://acgs_user:acgs_password@postgres_db:5432/acgs_pgp_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://USER:PASSWORD@postgres_db:5432/DBNAME}
       - AC_SERVICE_URL=${AC_SERVICE_URL:-http://ac_service:8001/api/v1}
       - GS_SERVICE_URL=${GS_SERVICE_URL:-http://gs_service:8004/api/v1}
       - JWT_SECRET_KEY=${AUTH_SERVICE_SECRET_KEY:-acgs-development-secret-key-2024-phase1-infrastructure-stabilization-jwt-token-signing}

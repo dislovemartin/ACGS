@@ -10,6 +10,9 @@ on:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 name: Process Content Artifacts
+permissions:
+  contents: read
+  actions: none
 env:
   HOME_REPO: usnistgov/oscal-content
   # With the default GEN_CONTENT_DIR, the resulting catalogs, profiles, and
