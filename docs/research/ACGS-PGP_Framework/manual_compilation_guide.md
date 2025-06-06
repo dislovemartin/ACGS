@@ -7,7 +7,8 @@ This guide provides step-by-step instructions for compiling the ACGS-PGP paper m
 You'll need:
 
 1. **LaTeX Distribution**: TeX Live (Linux/Mac) or MiKTeX (Windows)
-2. **Image Conversion Tool**: One of the following:
+2. **ACM LaTeX Package**: Install the `acmart` class. On Debian/Ubuntu systems run `sudo apt-get install texlive-publishers` or use `tlmgr install acmart`.
+3. **Image Conversion Tool**: One of the following:
    - Mermaid CLI (`npm install -g @mermaid-js/mermaid-cli`)
    - Draw.io Desktop or web version
    - Any vector graphics editor (Inkscape, Adobe Illustrator, etc.)
