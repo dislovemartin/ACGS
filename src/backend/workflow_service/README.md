@@ -1,26 +1,31 @@
 # Workflow Service
 
-## Overview
-ACGS-PGP Workflow Service
+## Purpose
+Manages long-running workflows and exposes monitoring and recovery endpoints.
 
-## Features
+## Main Features
+- Create and control workflow executions
+- Monitoring dashboard and metrics
+- Recovery and testing utilities
 
+## Key API Endpoints
+- `/workflows` - create and list workflows
+- `/workflows/{workflow_id}/start` - start a workflow
+- `/workflows/{workflow_id}/status` - check status
+- `/monitoring/dashboard` - view monitoring dashboard
+- `/recovery/checkpoints` - create recovery checkpoints
 
-## API Endpoints
-- `/api/v1`
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. No additional environment variables are required.
 
-## Configuration
-See `.env.example` for configuration options
+### Running Service
+```bash
+uvicorn main:app --reload
+```
 
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+_No dedicated tests for this service_
