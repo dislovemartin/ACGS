@@ -1,26 +1,27 @@
 # Monitoring
 
-## Overview
-ACGS-PGP service component
+## Purpose
+Provides scripts and dashboards for tracking system reliability metrics.
 
-## Features
+## Main Features
+- Reliability metrics dashboard
+- Utility scripts for monitoring
 
+## Key API Endpoints
+_This component exposes no API endpoints_
 
-## API Endpoints
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. No service-specific environment variables are required.
 
+### Running Service
+Scripts can be executed directly, for example:
+```bash
+python reliability_metrics_dashboard.py
+```
 
-## Configuration
-See `.env.example` for configuration options
-
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+_No dedicated tests for this service_

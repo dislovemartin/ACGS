@@ -12,4 +12,21 @@ This directory contains detailed documentation for the ACGS-PGP (Artificial Cons
 -   **`security.md`**: Discusses security considerations, best practices, potential threats, and measures implemented or planned to ensure the security of the ACGS-PGP system.
 -   **`user_guide.md`**: Explains how to use the ACGS-PGP platform from an end-user's perspective, covering its features, functionalities, and user interface interactions.
 
+## Microservice Guides
+
+Each backend service has its own README with setup details and API overviews:
+
+- **ac_service**: [README](../src/backend/ac_service/README.md)
+- **auth_service**: [README](../src/backend/auth_service/README.md)
+- **ec_service**: [README](../src/backend/ec_service/README.md)
+- **federated_service**: [README](../src/backend/federated_service/README.md)
+- **fv_service**: [README](../src/backend/fv_service/README.md)
+- **gs_service**: [README](../src/backend/gs_service/README.md)
+- **integrity_service**: [README](../src/backend/integrity_service/README.md)
+- **monitoring**: [README](../src/backend/monitoring/README.md)
+- **pgc_service**: [README](../src/backend/pgc_service/README.md)
+- **research_service**: [README](../src/backend/research_service/README.md)
+- **shared**: [README](../src/backend/shared/README.md)
+- **workflow_service**: [README](../src/backend/workflow_service/README.md)
+
 Please refer to the main project [README.md](../README.md) for general project information and setup instructions.
