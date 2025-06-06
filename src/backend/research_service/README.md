@@ -1,30 +1,31 @@
 # Research Service
 
-## Overview
-ACGS-PGP Research Infrastructure Service
+## Purpose
+Supports experimentation infrastructure including data collection and reproducibility tooling.
 
-## Features
+## Main Features
+- Experiment tracking and automation
+- Data collection and analysis endpoints
+- Reproducibility workflows
 
+## Key API Endpoints
+- `/api/v1/experiments` - manage experiments
+- `/api/v1/data` - upload and retrieve datasets
+- `/api/v1/analysis` - run analysis jobs
+- `/api/v1/automation` - automated experiment pipelines
+- `/api/v1/reproducibility` - reproducibility checks
 
-## API Endpoints
-- `/api/v1/experiments`
-- `/api/v1/data`
-- `/api/v1/analysis`
-- `/api/v1/automation`
-- `/api/v1/reproducibility`
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. No environment variables are required by default.
 
-## Configuration
-See `.env.example` for configuration options
+### Running Service
+```bash
+uvicorn main:app --reload
+```
 
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+_No dedicated tests for this service_

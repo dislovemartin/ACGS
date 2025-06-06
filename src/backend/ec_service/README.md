@@ -1,31 +1,31 @@
-# Ec Service
+# EC Service
 
-## Overview
-ACGS-PGP Evolutionary Computation (EC) Service
+## Purpose
+Provides evolutionary computation capabilities used for governed model evolution and performance monitoring.
 
-## Features
+## Main Features
+- Oversight of evolutionary algorithms and operators
+- AlphaEvolve integration for iterative improvement
+- Reporting and monitoring of experiment progress
 
+## Key API Endpoints
+- `/api/v1/oversight` - manage evolutionary oversight tasks
+- `/api/v1/alphaevolve` - run AlphaEvolve processes
+- `/api/v1/reporting` - fetch execution reports
+- `/api/v1/monitoring` - monitor ongoing runs
+- `/api/v1/wina/performance` - WINA performance metrics
 
-## API Endpoints
-- `/api/v1/oversight`
-- `/api/v1`
-- `/api/v1/alphaevolve`
-- `/api/v1/reporting`
-- `/api/v1/monitoring`
-- `/api/v1/wina/performance`
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. No special environment variables are required.
 
-## Configuration
-See `.env.example` for configuration options
+### Running Service
+```bash
+uvicorn main:app --reload
+```
 
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+_No dedicated tests for this service_

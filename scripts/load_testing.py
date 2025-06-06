@@ -22,6 +22,8 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timezone
 import argparse
+import os
+import asyncpg
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -57,6 +59,13 @@ class TestResult:
     error_message: Optional[str] = None
 
 @dataclass
+class DatabasePerformanceMetrics:
+    """Database performance metrics collected during testing."""
+    connection_time_ms: float
+    avg_query_time_ms: float
+    throughput_qps: float
+
+@dataclass
 class LoadTestReport:
     """Comprehensive load test report."""
     config: LoadTestConfig
@@ -70,7 +79,7 @@ class LoadTestReport:
     p99_response_time_ms: float
     service_results: Dict[str, List[TestResult]]
     cross_service_tests: List[TestResult]
-    database_performance: Dict[str, Any]
+    database_performance: DatabasePerformanceMetrics
     alphaevolve_integration_results: List[TestResult]
 
 class LoadTester:
@@ -221,6 +230,51 @@ class LoadTester:
         
         return alphaevolve_results
 
+    async def test_database_performance(self) -> DatabasePerformanceMetrics:
+        """Measure database connection and query performance."""
+        user = os.getenv("POSTGRES_USER", "acgs_user")
+        password = os.getenv("POSTGRES_PASSWORD", "acgs_password")
+        database = os.getenv("POSTGRES_DB", "acgs_pgp_db")
+        host = os.getenv("POSTGRES_HOST", "localhost")
+
+        start_conn = time.time()
+        try:
+            conn = await asyncpg.connect(
+                user=user,
+                password=password,
+                database=database,
+                host=host,
+                port=self.config.database_port,
+            )
+            connection_time_ms = (time.time() - start_conn) * 1000
+
+            query_times = []
+            for _ in range(5):
+                q_start = time.time()
+                await conn.execute("SELECT 1")
+                query_times.append((time.time() - q_start) * 1000)
+
+            await conn.close()
+
+            avg_query_time = statistics.mean(query_times) if query_times else 0.0
+            throughput = (
+                len(query_times) / (sum(qt for qt in query_times) / 1000)
+                if query_times else 0.0
+            )
+
+            return DatabasePerformanceMetrics(
+                connection_time_ms=connection_time_ms,
+                avg_query_time_ms=avg_query_time,
+                throughput_qps=throughput,
+            )
+        except Exception as e:
+            logger.error(f"Database performance test failed: {e}")
+            return DatabasePerformanceMetrics(
+                connection_time_ms=0.0,
+                avg_query_time_ms=0.0,
+                throughput_qps=0.0,
+            )
+
     async def run_concurrent_user_simulation(self, user_id: int) -> List[TestResult]:
         """Simulate a single concurrent user's workflow."""
         user_results = []
@@ -259,10 +313,14 @@ class LoadTester:
         # Test cross-service communication
         logger.info("🔗 Testing cross-service communication...")
         cross_service_results = await self.test_cross_service_communication()
-        
+
         # Test AlphaEvolve integration
         logger.info("🧬 Testing AlphaEvolve integration...")
         alphaevolve_results = await self.test_alphaevolve_integration()
+
+        # Measure database performance
+        logger.info("🗄️ Measuring database performance...")
+        database_metrics = await self.test_database_performance()
         
         end_time = datetime.now(timezone.utc)
         
@@ -289,7 +347,7 @@ class LoadTester:
             p99_response_time_ms=statistics.quantiles(response_times, n=100)[98] if len(response_times) > 100 else 0,
             service_results=service_results,
             cross_service_tests=cross_service_results,
-            database_performance={},  # TODO: Implement database performance tests
+            database_performance=database_metrics,
             alphaevolve_integration_results=alphaevolve_results
         )
         
@@ -336,6 +394,14 @@ def print_load_test_report(report: LoadTestReport):
         status = "✅" if cross_success_rate >= 90 else "⚠️"
         print(f"   {status} Success Rate: {cross_success_rate:.1f}%")
         print(f"   📈 Average Response Time: {cross_avg_response:.1f}ms")
+
+    # Database performance
+    print(f"\n🗄️ Database Performance:")
+    if report.database_performance:
+        dp = report.database_performance
+        print(f"   Connection Time: {dp.connection_time_ms:.1f}ms")
+        print(f"   Avg Query Time: {dp.avg_query_time_ms:.1f}ms")
+        print(f"   Throughput: {dp.throughput_qps:.1f} qps")
     
     # AlphaEvolve integration
     print(f"\n🧬 AlphaEvolve Integration:")

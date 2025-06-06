@@ -1,28 +1,31 @@
 # Federated Service
 
-## Overview
-Federated Evaluation (FE) Service
+## Purpose
+Implements privacy-preserving federated evaluation across distributed environments.
 
-## Features
+## Main Features
+- Federated policy evaluation workflows
+- Secure aggregation of results
+- Privacy metrics computation
 
+## Key API Endpoints
+- `/api/v1/federated` - manage evaluation rounds
+- `/api/v1/aggregation` - run secure result aggregation
+- `/api/v1/privacy` - compute privacy metrics
 
-## API Endpoints
-- `/api/v1/federated`
-- `/api/v1/aggregation`
-- `/api/v1/privacy`
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. No additional environment variables are required.
 
-## Configuration
-See `.env.example` for configuration options
+### Running Service
+```bash
+uvicorn main:app --reload
+```
 
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+```bash
+pytest tests
+```
