@@ -23,6 +23,7 @@ from collections import defaultdict, deque
 
 # Core dependencies
 from ..schemas import LLMInterpretationInput, LLMStructuredOutput, ConstitutionalSynthesisInput, ConstitutionalSynthesisOutput
+from ..models.reliability_models import ConstitutionalPrinciple, SynthesisContext
 from .llm_integration import get_llm_client
 
 # Enhanced dependencies for reliability framework
@@ -1099,25 +1100,24 @@ class EnhancedMultiModelValidator:
 
     async def achieve_ultra_reliable_consensus(
         self,
-        # Adapting input_data to represent principle and context for now.
-        # In a full implementation, these would be more structured types
-        # like ConstitutionalPrinciple and SynthesisContext from the protocol.
-        input_data: LLMInterpretationInput, # Contains principle_id, principle_text, context
-        # TODO: Define ConstitutionalPrinciple and SynthesisContext dataclasses
-        # principle: ConstitutionalPrinciple,
-        # context: SynthesisContext
+        principle: ConstitutionalPrinciple,
+        context: Optional[SynthesisContext] = None,
     ) -> UltraReliableResult:
         """
         Achieve >99.9% reliable policy synthesis through a multi-stage consensus framework,
         aligning with the research protocol's UltraReliableConsensus class.
         """
         start_time = time.time()
-        # Using principle_id from input_data for request_id generation
-        request_id = hashlib.md5(f"{getattr(input_data, 'principle_id', 'unknown_principle')}_{start_time}".encode()).hexdigest()[:8]
-        
-        # For now, principle_text is directly from input_data
-        principle_text = getattr(input_data, 'principle_text', '')
-        synthesis_context = getattr(input_data, 'context', None)
+        request_id = hashlib.md5(f"{principle.id}_{start_time}".encode()).hexdigest()[:8]
+
+        principle_text = principle.text
+        synthesis_context = context
+
+        input_data = LLMInterpretationInput(
+            principle_id=principle.id,
+            principle_content=principle.text,
+            target_context=getattr(context, "domain", None),
+        )
 
         cache_key = self.cache_manager._generate_cache_key(input_data) + ":ultra"
         if cache_key in self.ultra_result_cache:
@@ -2524,7 +2524,14 @@ class EnhancedLLMReliabilityFramework:
             # The request_id for the overall process_with_reliability context
             process_request_id = hashlib.md5(f"{getattr(input_data, 'principle_id', 'unknown_principle')}_{start_time}_process".encode()).hexdigest()[:8]
             
-            ultra_reliable_result = await self.multi_model_validator.achieve_ultra_reliable_consensus(input_data)
+            principle = ConstitutionalPrinciple(
+                id=str(input_data.principle_id),
+                text=input_data.principle_content,
+            )
+            context = SynthesisContext(domain=input_data.target_context)
+            ultra_reliable_result = await self.multi_model_validator.achieve_ultra_reliable_consensus(
+                principle, context
+            )
 
             output: LLMStructuredOutput = LLMStructuredOutput(interpretations=[], raw_llm_response="") # Initialize output
 
