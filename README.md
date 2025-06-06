@@ -59,6 +59,24 @@ The AI Compliance Governance System - Policy Generation Platform (ACGS-PGP) is a
    curl http://localhost:8000/health
    ```
 
+### Policy Corpus Setup
+
+The policy corpus under `data/principle-policy-corpus` includes
+profiles from the [NIST OSCAL project](https://github.com/usnistgov/OSCAL).
+These files total more than 100 MB. To keep the repository small, you can
+store them using [Git LFS](https://git-lfs.github.com/) or host them on an
+external storage service such as S3.
+
+If the directory `nist-oscal-profiles` is missing, retrieve the latest
+profiles and place them under `data/principle-policy-corpus`:
+
+```bash
+git clone https://github.com/usnistgov/oscal-content.git tmp-oscal
+mkdir -p data/principle-policy-corpus/nist-oscal-profiles
+cp -r tmp-oscal/examples/* data/principle-policy-corpus/nist-oscal-profiles/
+rm -rf tmp-oscal
+```
+
 ## Development
 
 ### Project Structure
