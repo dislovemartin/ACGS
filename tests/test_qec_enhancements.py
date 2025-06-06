@@ -79,7 +79,7 @@ class TestConstitutionalDistanceCalculator:
             name="Vague Principle",
             description="AI should be appropriate and reasonable when possible.",
             category="General",
-            policy_code="# TODO: implement policy"
+            policy_code="package test.low_quality\n" "default allow = false\n" "allow { input.valid }"
         )
     
     def test_calculate_score_high_quality(self):
