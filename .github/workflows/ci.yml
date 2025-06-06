@@ -126,6 +126,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 black isort mypy pytest-cov bandit safety
 
+    - name: Reformat code with black
+      run: |
+        black src/ tests/
+
       - name: Code formatting check
         run: |
           black --check --diff src/ tests/
@@ -247,6 +251,14 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4.1.7
+
+      - name: Update tlmgr to the latest version
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y wget
+          wget https://mirror.ctan.org/systems/texlive/tlnet/update-tlmgr-latest.sh
+          chmod +x update-tlmgr-latest.sh
+          sudo ./update-tlmgr-latest.sh --update
 
       - name: Install TeX Live
         run: |

@@ -733,4 +733,30 @@ class ReliabilityMetricsDashboard:
                 body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
                 .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
                 .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-                .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0
+                .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Reliability Metrics Dashboard</h1>
+            </div>
+            <div id="dashboard-content">
+                Loading dashboard...
+            </div>
+            <script>
+                // Basic script to fetch and display data (conceptual)
+                async function loadDashboard() {
+                    try {
+                        const response = await fetch('/api/dashboard/summary');
+                        const data = await response.json();
+                        document.getElementById('dashboard-content').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    } catch (error) {
+                        document.getElementById('dashboard-content').innerHTML = 'Error loading dashboard data.';
+                        console.error('Error loading dashboard:', error);
+                    }
+                }
+                loadDashboard();
+            </script>
+        </body>
+        </html>
+"""
