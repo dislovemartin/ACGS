@@ -43,7 +43,9 @@ jobs:
         with:
           python-version: 3.9 # Or any other version appropriate for the project
       - name: Install dependencies
-        run: pip install -r tools/requirements.txt
+        run: |-
+          pip install --upgrade pip
+          pip install -r src/dgm-best_swe_agent/requirements.txt
       - name: Set up Snyk CLI to check for security issues
         # Snyk can be used to break the build when it detects security issues.
         # In this case we want to upload the SAST issues to GitHub Code Scanning
@@ -59,9 +61,7 @@ jobs:
         # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
         # Use --severity-threshold=high to only fail for high/critical issues.
       - name: Snyk Code test
-        run: |
-          set -x
-          snyk code test --sarif --severity-threshold=high > snyk-code.sarif || echo "Snyk code test completed with issues."
+        run: snyk code test --sarif --severity-threshold=high > snyk-code.sarif || echo "Snyk code test completed with issues."
 
         # Runs Snyk Open Source (SCA) analysis.
       - name: Snyk Open Source test and monitor
