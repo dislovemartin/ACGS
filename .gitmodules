@@ -1,0 +1,3 @@
+[submodule "data/principle-policy-corpus/Community-Policy"]
+path = data/principle-policy-corpus/Community-Policy
+url = https://github.com/Azure/Community-Policy
