@@ -73,3 +73,5 @@ alembic==1.16.1
 python-dotenv==1.1.0
 numpy==2.2.6
 tenacity==8.2.3                           # Retry logic for LLM integration
+transformers==4.41.2                     # Local model neuron activations
+torch==2.2.2

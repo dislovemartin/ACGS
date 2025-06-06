@@ -14,6 +14,7 @@ This module provides:
 import logging # Moved to top
 import asyncio
 import time
+import os
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
@@ -100,6 +101,33 @@ except ImportError:
     logger.warning("LLM reliability framework not available. Using mock.")
     class EnhancedLLMReliabilityFramework:
         pass
+
+
+async def _retrieve_neuron_activations(text: str) -> Optional[Dict[str, List[float]]]:
+    """Attempt to retrieve real neuron activations for the given text."""
+    get_activations_error = ""
+    try:
+        import torch  # Imported lazily
+        from transformers import AutoTokenizer, AutoModel
+
+        model_name = os.getenv("HF_ACTIVATION_MODEL", "distilbert-base-uncased")
+
+        async def _worker() -> Dict[str, List[float]]:
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            model = AutoModel.from_pretrained(model_name, output_hidden_states=True)
+            model.eval()
+            with torch.no_grad():
+                inputs = tokenizer(text, return_tensors="pt")
+                outputs = model(**inputs)
+                hidden = outputs.last_hidden_state.squeeze(0).T.cpu().tolist()
+                return {f"layer0_neuron{i}": act for i, act in enumerate(hidden)}
+
+        return await asyncio.to_thread(_worker)
+    except Exception as e:  # pragma: no cover - optional dependency
+        get_activations_error = str(e)
+
+    logger.info(f"Neuron activation retrieval unavailable: {get_activations_error}")
+    return None
 
 
 
@@ -190,35 +218,20 @@ class WINAOptimizedLLMClient:
             if should_apply_wina and self.wina_integration_config.gs_engine_optimization:
                 try:
                     # --- WINA Runtime Gating Integration START ---
-                    # 1. Simulate NeuronActivationInput
-                    #    TODO: Replace with actual LLM neuron data when available.
-                    #    Current API-based LLMs (OpenAI, Groq) do not provide direct neuron activation access.
-                    #    This simulation is a placeholder for WINA gating mechanism testing.
-                    simulated_activations = {
-                        "layer1_neuron1": [0.1, 0.2, 0.8, 0.9, 0.5],
-                        "layer1_neuron2": [0.7, 0.6, 0.5, 0.4, 0.3],
-                        "layer2_neuron1": [0.9, 0.85, 0.92, 0.88, 0.95]
-                    }
-                    neuron_activation_input = NeuronActivationInput(
-                        activations=simulated_activations,
-                        metadata={"source": "simulated_for_wina_gating"}
-                    )
-
-                    # 2. Analyze activations
-                    analyzed_acts = await analyze_neuron_activations(neuron_activation_input)
-
-                    # 3. Calculate WINA weights (placeholder logic in core.py)
-                    wina_weights_output = await calculate_wina_weights(analyzed_acts)
-                    
-                    # 4. Determine Gating Decision
-                    #    Using a default threshold for now. This should be configurable.
-                    gating_config = GatingThresholdConfig(threshold=0.5, default_gating_state=False)
-                    gating_decision_applied = await determine_gating_decision(wina_weights_output, gating_config)
-                    
-                    logger.info(f"WINA Gating Mask for P{query.principle_id}: {gating_decision_applied.gating_mask}")
-                    # The gating_mask is passed to query_llm_for_structured_output,
-                    # which in turn passes it to the specific LLM client's get_structured_interpretation method.
-                    llm_call_kwargs['wina_gating_mask'] = gating_decision_applied.gating_mask
+                    activations = await _retrieve_neuron_activations(query.principle_text)
+                    if activations:
+                        neuron_activation_input = NeuronActivationInput(
+                            activations=activations,
+                            metadata={"source": "real"}
+                        )
+                        analyzed_acts = await analyze_neuron_activations(neuron_activation_input)
+                        wina_weights_output = await calculate_wina_weights(analyzed_acts)
+                        gating_config = GatingThresholdConfig(threshold=0.5, default_gating_state=False)
+                        gating_decision_applied = await determine_gating_decision(wina_weights_output, gating_config)
+                        logger.info(f"WINA Gating Mask for P{query.principle_id}: {gating_decision_applied.gating_mask}")
+                        llm_call_kwargs['wina_gating_mask'] = gating_decision_applied.gating_mask
+                    else:
+                        logger.info("Neuron activations unavailable; skipping gating")
                     # --- WINA Runtime Gating Integration END ---
 
                     # Existing SVD-based optimization
@@ -312,23 +325,20 @@ class WINAOptimizedLLMClient:
             if should_apply_wina and self.wina_integration_config.gs_engine_optimization:
                 try:
                     # --- WINA Runtime Gating Integration START ---
-                    # TODO: Replace with actual LLM neuron data when available.
-                    # Current API-based LLMs (OpenAI, Groq) do not provide direct neuron activation access.
-                    # This simulation is a placeholder for WINA gating mechanism testing.
-                    simulated_activations = {
-                        "cs_layer1_neuron1": [0.1, 0.2, 0.8, 0.9, 0.5],
-                        "cs_layer1_neuron2": [0.7, 0.6, 0.5, 0.4, 0.3],
-                    }
-                    neuron_activation_input = NeuronActivationInput(
-                        activations=simulated_activations,
-                        metadata={"source": "simulated_for_wina_gating_cs"}
-                    )
-                    analyzed_acts = await analyze_neuron_activations(neuron_activation_input)
-                    wina_weights_output = await calculate_wina_weights(analyzed_acts)
-                    gating_config = GatingThresholdConfig(threshold=0.5, default_gating_state=False)
-                    gating_decision_applied = await determine_gating_decision(wina_weights_output, gating_config)
-                    logger.info(f"WINA Gating Mask for CS '{synthesis_input.context}': {gating_decision_applied.gating_mask}")
-                    llm_call_kwargs['wina_gating_mask'] = gating_decision_applied.gating_mask
+                    activations = await _retrieve_neuron_activations(synthesis_input.context)
+                    if activations:
+                        neuron_activation_input = NeuronActivationInput(
+                            activations=activations,
+                            metadata={"source": "real"}
+                        )
+                        analyzed_acts = await analyze_neuron_activations(neuron_activation_input)
+                        wina_weights_output = await calculate_wina_weights(analyzed_acts)
+                        gating_config = GatingThresholdConfig(threshold=0.5, default_gating_state=False)
+                        gating_decision_applied = await determine_gating_decision(wina_weights_output, gating_config)
+                        logger.info(f"WINA Gating Mask for CS '{synthesis_input.context}': {gating_decision_applied.gating_mask}")
+                        llm_call_kwargs['wina_gating_mask'] = gating_decision_applied.gating_mask
+                    else:
+                        logger.info("Neuron activations unavailable; skipping gating")
                     # --- WINA Runtime Gating Integration END ---
 
                     # Existing SVD-based optimization
