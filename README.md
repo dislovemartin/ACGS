@@ -93,10 +93,23 @@ ACGS-PGP/
 ```
 
 ### Running Tests
-```bash
-# Run all tests
-pytest
+To run the test suite locally you need the packages listed in
+`requirements-test.txt`. The recommended workflow is:
 
+```bash
+# Create and activate a virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install test dependencies
+pip install -r requirements-test.txt
+
+# Execute the full test suite
+./run_tests.sh
+```
+
+You can also invoke `pytest` directly:
+```bash
 # Legacy integration scripts (require running services)
 ACGS_INTEGRATION=1 pytest tests/integration/legacy
 
