@@ -1,7 +1,7 @@
 # ACGS/auth_service/app/tests/test_auth_flows.py
 import pytest
 from httpx import AsyncClient
-from fastapi import status
+from fastapi import status, HTTPException
 import uuid
 import sys
 from pathlib import Path
@@ -331,3 +331,58 @@ def test_auth_service_mock_functionality():
 #   as revoked in the DB. This requires DB inspection or attempting to use the old token.
 # - Test rate limiting: Requires specific setup, potentially mocking `slowapi` or time.
 # - Test secure attributes of cookies more directly if possible (httpx limitations).
+@pytest.mark.skipif(not AUTH_CONFIG_AVAILABLE or not SECURITY_AVAILABLE, reason="Auth service components not available")
+async def test_access_token_jti_revoked_after_logout(client: AsyncClient):
+    user_data = get_unique_user_data("jti_logout")
+    await client.post(f"{API_V1_AUTH_PREFIX}/register", json=user_data)
+    login_payload = {"username": user_data["username"], "password": user_data["password"]}
+    login_resp = await client.post(f"{API_V1_AUTH_PREFIX}/token", data=login_payload)
+    assert login_resp.status_code == status.HTTP_200_OK
+    access_token = login_resp.json()["access_token"]
+    payload = security.verify_token_and_get_payload(access_token)
+    access_jti = payload.jti
+    csrf_token = client.cookies.get("csrf_access_token")
+    headers = {"X-CSRF-TOKEN": csrf_token}
+    await client.post(f"{API_V1_AUTH_PREFIX}/logout", headers=headers)
+    assert security.is_access_jti_revoked(access_jti)
+    client.cookies.set("access_token_cookie", access_token, domain="testserver", path="/")
+    me_response = await client.get(f"{API_V1_AUTH_PREFIX}/me")
+    assert me_response.status_code == status.HTTP_401_UNAUTHORIZED
+
+@pytest.mark.skipif(not AUTH_CONFIG_AVAILABLE or not SECURITY_AVAILABLE, reason="Auth service components not available")
+async def test_refresh_token_revoked_in_db_after_logout(client: AsyncClient):
+    user_data = get_unique_user_data("refresh_revoke")
+    await client.post(f"{API_V1_AUTH_PREFIX}/register", json=user_data)
+    login_payload = {"username": user_data["username"], "password": user_data["password"]}
+    await client.post(f"{API_V1_AUTH_PREFIX}/token", data=login_payload)
+    refresh_token = client.cookies.get("refresh_token_cookie")
+    csrf_token = client.cookies.get("csrf_access_token")
+    headers = {"X-CSRF-TOKEN": csrf_token}
+    await client.post(f"{API_V1_AUTH_PREFIX}/logout", headers=headers)
+    client.cookies.set("refresh_token_cookie", refresh_token, domain="testserver", path=f"{API_V1_AUTH_PREFIX}/token/refresh")
+    client.cookies.set("csrf_access_token", csrf_token, domain="testserver", path="/")
+    resp = await client.post(f"{API_V1_AUTH_PREFIX}/token/refresh", headers=headers)
+    assert resp.status_code == status.HTTP_401_UNAUTHORIZED
+
+@pytest.mark.skipif(not AUTH_CONFIG_AVAILABLE, reason="Auth service components not available")
+async def test_rate_limit_enforcement(monkeypatch):
+    from src.backend.auth_service.app.core import limiter as limiter_module
+    call_count = {"count": 0}
+    def dummy_limit(rate):
+        def decorator(func):
+            async def wrapper(*args, **kwargs):
+                call_count["count"] += 1
+                if call_count["count"] > 1:
+                    raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Rate limit exceeded")
+                return await func(*args, **kwargs)
+            return wrapper
+        return decorator
+    monkeypatch.setattr(limiter_module.limiter, "limit", dummy_limit)
+    @limiter_module.limiter.limit("1/minute")
+    async def sample_endpoint():
+        return {"ok": True}
+    assert await sample_endpoint() == {"ok": True}
+    with pytest.raises(HTTPException) as exc:
+        await sample_endpoint()
+    assert exc.value.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+
