@@ -13,9 +13,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: dev
-            file: .devcontainer/Dockerfile
-            context: .
           - name: auth
             file: src/backend/auth_service/Dockerfile
             context: src/backend/auth_service
