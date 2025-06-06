@@ -33,7 +33,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: actions/changed-files@v44 # Using a specific version
+        uses: actions/changed-files@v4 # Using a valid version
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # We only care about changes in these paths for running tests
