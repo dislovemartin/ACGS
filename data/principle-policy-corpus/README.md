@@ -62,3 +62,23 @@ Each policy is saved in the following format:
   "alignment_notes": ""
 }
 ```
+
+## Managing NIST OSCAL Profiles
+
+The `nist-oscal-profiles` directory contains official OSCAL example
+profiles from NIST and is over 100 MB. To reduce repository size, store
+these files in [Git LFS](https://git-lfs.github.com/) or host them on an
+external service (e.g., S3).
+
+If the directory is missing, download the profiles manually:
+
+```bash
+git clone https://github.com/usnistgov/oscal-content.git tmp-oscal
+mkdir -p nist-oscal-profiles
+cp -r tmp-oscal/examples/* nist-oscal-profiles/
+rm -rf tmp-oscal
+```
+
+Ensure the profiles are located at
+`data/principle-policy-corpus/nist-oscal-profiles` before running the
+parser.
