@@ -12,6 +12,7 @@ import logging
 from typing import Dict, List, Optional, Any, Union
 from enum import Enum
 from dataclasses import dataclass
+import dataclasses
 try:
     from .utils import get_config
 except ImportError:
@@ -179,12 +180,15 @@ class AIModelService:
         if model_name:
             if model_name not in self.models:
                 raise ValueError(f"Unknown model: {model_name}")
-            model_config = self.models[model_name]
+            selected_config = self.models[model_name]
         elif role:
-            model_config = self._get_model_by_role(role)
+            selected_config = self._get_model_by_role(role)
         else:
-            model_config = self.models['primary']
-        
+            selected_config = self.models['primary']
+
+        # Clone model configuration to avoid mutating shared instance
+        model_config = dataclasses.replace(selected_config)
+
         # Override parameters if provided
         if max_tokens:
             model_config.max_tokens = max_tokens
