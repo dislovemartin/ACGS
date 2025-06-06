@@ -1,37 +1,35 @@
-# Gs Service
+# GS Service
 
-## Overview
-Governance Synthesis (GS) Service
+## Purpose
+Synthesizes enforceable governance policies from constitutional principles and provides monitoring utilities.
 
-## Features
+## Main Features
+- Policy synthesis and management
+- AlphaEvolve integration for governance tuning
+- Reliability and performance monitoring
 
+## Key API Endpoints
+- `/api/v1/synthesize` - generate policies from principles
+- `/api/v1/policy-management` - manage compiled policies
+- `/api/v1/constitutional-reports` - produce governance reports
+- `/api/v1/alphaevolve` - run AlphaEvolve governance workflows
+- `/api/v1/performance` - access performance metrics
 
-## API Endpoints
-- `/api/v1/synthesize`
-- `/api/v1/policy-management`
-- `/api/v1/constitutional`
-- `/api/v1/alphaevolve`
-- `/api/v1/mab`
-- `/api/v1`
-- `/api/v1/enhanced`
-- `/api/v1/reliability`
-- `/api/v1/multi-model`
-- `/api/v1`
-- `/api/v1`
-- `/api/v1/performance`
+## Setup
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Copy `.env.example` to `.env` and set:
+   - `AC_SERVICE_URL` - URL of the AC service
+   - `INTEGRITY_SERVICE_URL` - URL of the Integrity service
 
-## Configuration
-See `.env.example` for configuration options
+### Running Service
+```bash
+uvicorn main:app --reload
+```
 
-## Development
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run service: `uvicorn main:app --reload`
-
-## Deployment
-Use Docker Compose: `docker-compose up -d`
-
-## Troubleshooting
-Check logs: `docker-compose logs service_name`
-
-## Contributing
-Follow project coding standards and submit pull requests
+### Running Tests
+```bash
+pytest tests
+```
