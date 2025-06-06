@@ -113,6 +113,7 @@ class ServiceStackValidator:
             'response_time_ms': None,
             'status_code': None,
             'error': None,
+            'last_error_or_status': None,
             'retries_attempted': 0
         }
         
@@ -130,9 +131,11 @@ class ServiceStackValidator:
                         
                         result['response_time_ms'] = round(response_time, 2)
                         result['status_code'] = response.status
-                        
+                        result['last_error_or_status'] = f"HTTP {response.status}"
+
                         if response.status == 200:
                             result['healthy'] = True
+                            result['error'] = None
                             logger.info(f"✅ {service_name} is healthy ({response_time:.1f}ms)")
                             break
                         else:
@@ -141,12 +144,15 @@ class ServiceStackValidator:
                             
             except asyncio.TimeoutError:
                 result['error'] = "Timeout"
+                result['last_error_or_status'] = "Timeout"
                 logger.warning(f"⚠️ {service_name} health check timed out")
             except aiohttp.ClientConnectorError:
                 result['error'] = "Connection refused"
+                result['last_error_or_status'] = "Connection refused"
                 logger.warning(f"⚠️ {service_name} connection refused")
             except Exception as e:
                 result['error'] = str(e)
+                result['last_error_or_status'] = str(e)
                 logger.warning(f"⚠️ {service_name} health check failed: {e}")
             
             result['retries_attempted'] = attempt + 1
@@ -157,8 +163,10 @@ class ServiceStackValidator:
         
         if not result['healthy']:
             status = "❌" if service_config['required'] else "⚠️"
-            logger.error(f"{status} {service_name} is unhealthy: {result['error']}")
-        
+            logger.error(
+                f"{status} {service_name} is unhealthy: {result['last_error_or_status']}"
+            )
+
         return result
     
     async def check_infrastructure_connectivity(self) -> Dict[str, bool]:
@@ -337,7 +345,14 @@ class ServiceStackValidator:
             logger.warning("⚠️ Unhealthy optional services:")
             for service in unhealthy_optional_services:
                 logger.warning(f"  - {service}")
-        
+
+        # Log detailed failure information for each service
+        logger.info("Service Failure Details:")
+        for svc_result in service_health_results:
+            if not svc_result['healthy']:
+                detail = svc_result.get('last_error_or_status')
+                logger.info(f"  {svc_result['service']}: {detail}")
+
         # Output JSON for orchestrator
         print(json.dumps(results, indent=2))
         
