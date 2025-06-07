@@ -7,7 +7,7 @@ pytest-asyncio==0.21.1
 pytest-mock==3.12.0                    # Enhanced mocking capabilities
 pytest-cov==4.1.0                      # Coverage reporting
 pytest-xdist==3.3.1                    # Parallel test execution
-pytest-timeout==2.1.0                  # Test timeout handling
+pytest-timeout==2.4.0                  # Test timeout handling
 pytest-benchmark==5.1.0                # Performance benchmarking
 pytest-html==4.1.1                     # HTML test reports
 pytest-json-report==1.5.0              # JSON test reports
