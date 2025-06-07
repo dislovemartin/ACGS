@@ -33,7 +33,7 @@ aiofiles==23.2.1                       # Async file operations for testing
 # Mock and fixture utilities
 freezegun==1.2.2                       # Time mocking
 faker==20.1.0                          # Fake data generation
-mimesis==11.1.0                        # Alternative fake data generator
+mimesis==18.0.0                        # Alternative fake data generator
 pyfakefs==5.3.2                        # Filesystem mocking
 
 # Security testing
