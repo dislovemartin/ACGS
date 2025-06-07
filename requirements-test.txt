@@ -23,7 +23,7 @@ requests-mock==1.11.0                  # Requests library mocking
 pytest-postgresql==5.0.0               # PostgreSQL testing utilities
 pytest-alembic==0.12.1                 # Alembic migration testing
 sqlalchemy-utils==0.41.1               # Database testing utilities
-factory-boy==3.3.0                     # Test data factories
+factory-boy==3.3.3                     # Test data factories
 
 # Async testing utilities
 asynctest==0.13.0                      # Async testing utilities
