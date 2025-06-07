@@ -80,7 +80,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.31.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
