@@ -37,7 +37,7 @@ mimesis==11.1.0                        # Alternative fake data generator
 pyfakefs==5.3.2                        # Filesystem mocking
 
 # Security testing
-bandit==1.7.5                          # Security linting
+bandit==1.8.3                          # Security linting
 
 # Performance and load testing
 locust==2.37.0                         # Load testing framework
