@@ -188,7 +188,7 @@ jobs:
       - name: Upload coverage reports
         uses: codecov/codecov-action@v5
         with:
-          file: src/backend/${{ matrix.service }}/coverage.xml
+          files: src/backend/${{ matrix.service }}/coverage.xml
           flags: ${{ matrix.service }}
           name: ${{ matrix.service }}-${{ matrix.python-version }}
 
